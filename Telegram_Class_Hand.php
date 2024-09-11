@@ -279,7 +279,10 @@ class Telegram {
         } else {
             $keyPath = $keys[$type];
             $chat = $this->data;
-            foreach (explode('.', $keyPath) as $key) { $chat = $chat[$key] ?? return null; }
+            foreach (explode('.', $keyPath) as $key) { 
+                if (!isset($chat[$key])) { return null; }
+                $chat = $chat[$key];
+            }
             return $chat;
         }
     }
