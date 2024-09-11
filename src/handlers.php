@@ -32,7 +32,7 @@ function handleCallbackQuery($callback_data, $telegram, $chat_id, $message_id, $
 function handleTextInput($text, $telegram, $chat_id, $db, $update) {
     if (is_null($text)) {
         error_log("Received null text input.");
-        return;
+        // return;
     }
     if (strpos($text, '/start') === 0) {
         $db->handleStartCommand($telegram, $chat_id, $update);
