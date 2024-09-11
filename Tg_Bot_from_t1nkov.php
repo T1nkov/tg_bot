@@ -18,13 +18,13 @@ $GLOBALS['inviteSumValue']    = 200; // how many people to invite to get the car
 $GLOBALS['offTgChannel']      = 'https://t.me/fgjhaksdlf';
 $GLOBALS['cards']             = 10; // cards amount
 $GLOBALS['ChannelID']         = 2248476665;
-$GLOBALS['subscribeSumValue'] = 1000 . $GLOBALS['valuta'];
+$GLOBALS['subscribeSumValue'] = 1000 . $GLOBALS['currency'];
 $GLOBALS['watchSumValue']     = 8;
 $GLOBALS['valueTg']           = 1;
-$GLOBALS['valuta']            = 'INR';
-$GLOBALS['joinChannelPay']    = 1000 . $GLOBALS['valuta'];
-$GLOBALS['minWithdraw']       = number_format(10, 2, '.', '') . $GLOBALS['valuta'];
-$GLOBALS['bonus']             = 10 . $GLOBALS['valuta'];
+$GLOBALS['currency']            = 'INR';
+$GLOBALS['joinChannelPay']    = 1000 . $GLOBALS['currency'];
+$GLOBALS['minWithdraw']       = number_format(10, 2, '.', '') . $GLOBALS['currency'];
+$GLOBALS['bonus']             = 10 . $GLOBALS['currency'];
 $GLOBALS['buttons']           = [
     "ru" => ["Русский"],
     "en" => ["English"],
@@ -172,7 +172,7 @@ class DatabaseConnection {
 		}
 
 		$stmt->close();
-		return $balance . $GLOBALS['valuta'];
+		return $balance . $GLOBALS['currency'];
 	}
 
 //Создание реф ссылки
@@ -405,12 +405,12 @@ class DatabaseConnection {
 			[
 				'{cards}',
 				'{summ}',
-				'{valuta}'
+				'{currency}'
 			],
 			[
 				$GLOBALS['cards'],
 				$GLOBALS['summ'],
-				$GLOBALS['valuta']
+				$GLOBALS['currency']
 			],
 			$message1
 		);
@@ -605,14 +605,14 @@ class DatabaseConnection {
 				$message       = str_replace(
 					[
 						'{summ}',
-						'{valuta}',
+						'{currency}',
 						'{inviteSumValue}',
 						'{referals}',
 						'{joined}'
 					],
 					[
 						$GLOBALS['summ'],
-						$GLOBALS['valuta'],
+						$GLOBALS['currency'],
 						$GLOBALS['inviteSumValue'],
 						$referals,
 						$joinedTG
@@ -623,11 +623,11 @@ class DatabaseConnection {
 				$getGiftButton = str_replace(
 					[
 						'{summ}',
-						'{valuta}'
+						'{currency}'
 					],
 					[
 						$GLOBALS['summ'],
-						$GLOBALS['valuta']
+						$GLOBALS['currency']
 					],
 					$getGift
 				);
@@ -652,14 +652,14 @@ class DatabaseConnection {
 				$message         = str_replace(
 					[
 						'{summ}',
-						'{valuta}',
+						'{currency}',
 						'{inviteSumValue}',
 						'{referals}',
 						'{joined}'
 					],
 					[
 						$GLOBALS['summ'],
-						$GLOBALS['valuta'],
+						$GLOBALS['currency'],
 						$GLOBALS['inviteSumValue'],
 						$referals,
 						$joinedTG
@@ -703,7 +703,7 @@ class DatabaseConnection {
 		$ref_link = $this->generateReferralLink($chat_id);
 
 		$referal        = $this->getReferralsCount($chat_id);
-		$balance        = $GLOBALS['bonus'] * $referal . $GLOBALS['valuta'];
+		$balance        = $GLOBALS['bonus'] * $referal . $GLOBALS['currency'];
 		$partnerMessage = $this->getPhraseText("partner_text", $chat_id);
 		$message        = str_replace(
 			[
@@ -864,11 +864,11 @@ class DatabaseConnection {
 		$message  = str_replace(
 			[
 				'{summ}',
-				'{valuta}'
+				'{currency}'
 			],
 			[
 				$GLOBALS['summ'],
-				$GLOBALS['valuta']
+				$GLOBALS['currency']
 			],
 			$message1
 		);
