@@ -66,7 +66,6 @@ function handleTextInput($text, $telegram, $chat_id, $db, $update) {
     }
 }
 
-
 function handleAdminCommands($text, $telegram, $chat_id, $db) {
     if ($text === 'Главное меню') {
         $db->setInputMode($chat_id, 'def');
