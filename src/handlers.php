@@ -30,6 +30,9 @@ function handleCallbackQuery($callback_data, $telegram, $chat_id, $message_id, $
 }
 
 function handleTextInput($text, $telegram, $chat_id, $db, $update) {
+    if (!is_string($text)) {
+        return;
+    }
     if (strpos($text, '/start') === 0) {
         $db->handleStartCommand($telegram, $chat_id, $update);
     } elseif (isTextMatchingButtons($text)) {
@@ -50,14 +53,13 @@ function handleTextInput($text, $telegram, $chat_id, $db, $update) {
             "button_earn" => 'handleEarnCommand',
             "download_button" => 'handleDwnloadCommand'
         ];
-
         foreach ($phrases as $phraseKey => $command) {
-            if ($text == $db->getPhraseText($phraseKey, $chat_id)) {
+            $phraseText = $db->getPhraseText($phraseKey, $chat_id);
+            if ($phraseText !== null && $text == $phraseText) {
                 $db->{$command}($telegram, $chat_id);
                 break;
             }
         }
-
         handleAdminCommands($text, $telegram, $chat_id, $db);
     }
 }
