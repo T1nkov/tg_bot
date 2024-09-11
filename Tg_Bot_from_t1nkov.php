@@ -4,7 +4,7 @@ include 'Telegram_Class_Hand.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$config = require 'config.php';
+$config = require __DIR__ . '/config.php';
 
 if (!isset($config['db'])) { die("Database configuration not found."); }
 
