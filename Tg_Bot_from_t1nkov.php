@@ -5,6 +5,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 $config = require 'config.php';
+
+if (!isset($config['db'])) { die("Database configuration not found."); }
+
 $bot_token = $config['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
@@ -14,10 +17,10 @@ $data = $telegram->getData();
 
 $GLOBALS['config'] = [
     'adminHREF' => 'https://t.me/t1nkov',
-    'summ' => 500,              // gift card amount
-    'inviteSumValue' => 200,    // how many people to invite to get the card
+    'summ' => 500,
+    'inviteSumValue' => 200,
     'offTgChannel' => 'https://t.me/fgjhaksdlf',
-    'cards' => 10,              // cards amount
+    'cards' => 10,
     'ChannelID' => 2248476665,
     'subscribeSumValue' => '1000 INR',
     'watchSumValue' => 8,
@@ -34,9 +37,9 @@ $GLOBALS['config'] = [
 ];
 
 $update = json_decode(file_get_contents('php://input'), true);
-$callback_data        = $update['callback_query']['data'];
-$message_id           = $update['callback_query']['message']['message_id'];
-$GLOBALS['username1'] = $data['message']['from']['username'];
+$callback_data = $update['callback_query']['data'] ?? null;
+$message_id = $update['callback_query']['message']['message_id'] ?? null;
+$GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
 class DatabaseConnection {
     private $host;
@@ -47,12 +50,18 @@ class DatabaseConnection {
 
     public function __construct() {
         global $config;
-        $this->host = $config['db']['host'];
+
+        if (!isset($config['db'])) {
+            die("Database configuration not found.");
+        }
+
+		$this->host = $config['db']['host'];
         $this->database = $config['db']['database'];
         $this->username = $config['db']['username'];
         $this->password = $config['db']['password'];
         $this->conn = new mysqli($this->host, $this->username, $this->password, $this->database);
         $this->conn->set_charset("utf8mb4");
+
         if ($this->conn->connect_error) {
             die("Database connection error: " . $this->conn->connect_error);
         }
@@ -78,7 +87,7 @@ class DatabaseConnection {
 		return $phrase_text;
 	}
 
-//Получение языка из таблицы пользователя
+	//Получение языка из таблицы пользователя
 	public function getLanguage($id_tg) {
 		$sql  = "SELECT select_language FROM users WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -90,7 +99,7 @@ class DatabaseConnection {
 		return $row["select_language"];
 	}
 
-//Получение chatId канала
+	//Получение chatId канала
 	public function getChatIdByLink($telegram, $bot_token, $chat_id) {
 		$telegram->sendMessage([
 			'chat_id' => $chat_id,
@@ -122,7 +131,7 @@ class DatabaseConnection {
 		}
 	}
 
-//Получение кол-ва приглашенных пользователей
+	//Получение кол-ва приглашенных пользователей
 	public function getReferralsCount($chat_id) {
 		$sql  = "SELECT referals FROM users WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -140,7 +149,7 @@ class DatabaseConnection {
 		return $referals;
 	}
 
-//Получение тг username
+	//Получение тг username
 	public function getUserUsername($chat_id) {
 		$sql  = "SELECT usernameTg FROM users WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -159,7 +168,6 @@ class DatabaseConnection {
 		return $username;
 	}
 
-//Получение 	а
 	public function getUserBalance($id_tg) {
 		$sql  = "SELECT balance FROM users WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -177,25 +185,23 @@ class DatabaseConnection {
 		return $balance . $GLOBALS['currency'];
 	}
 
-//Создание реф ссылки
+	//Создание реф ссылки
 	public function generateReferralLink($chat_id) {
 		$referralLink = "https://t.me/testest0001_bot?start=" . urlencode($chat_id);
 		return $referralLink;
 	}
 
-//Регистрация 
+	//Регистрация 
 	public function registerUser($telegram, $chat_id, $id_referal, $balance = 0.0, $role = 'user') {
 		$username = $GLOBALS['username1'];
 
 		// Измените SQL-запрос, чтобы включить поле status
 		$sql  = "INSERT INTO users (usernameTg, role, id_tg, id_referal, balance, referals, status) VALUES (?, ?, ?, ?, ?, 0, ?)";
 		$stmt = $this->conn->prepare($sql);
-
 		$telegram->sendMessage([
 			'chat_id' => $chat_id,
 			'text'    => 'New user sql: ' . $sql,
 		]);
-
 		try {
 			// Привязываем параметры, добавляя status
 			$status = 'def'; // Значение для поля status
@@ -206,18 +212,15 @@ class DatabaseConnection {
 				'text'    => 'Error with new user stmt: ' . json_encode($stmt),
 			]);
 		}
-
 		$telegram->sendMessage([
 			'chat_id' => $chat_id,
 			'text'    => 'Before execute',
 		]);
-
 		$stmt->execute();
-
 		return $this->conn->insert_id;
 	}
 
-//Есть ли уже такой пользователь
+	//Есть ли уже такой пользователь
 	public function userExists($id_tg) {
 		$sql  = "SELECT COUNT(*) as count FROM users WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -229,7 +232,7 @@ class DatabaseConnection {
 		return $row["count"] > 0;
 	}
 
-// Подписан ли пользователь на канал
+	// Подписан ли пользователь на канал
 	public function isUserSubscribed($chat_id, $telegram, $bot_token) {
 		error_log("isUserSubscribed called for chat_id: $chat_id");
 
