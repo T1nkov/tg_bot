@@ -50,19 +50,15 @@ class DatabaseConnection {
     private $conn;
 
     public function __construct($dbConfig) {
-        global $config;
-
-        if (!isset($config['db'])) {
+        if (!isset($dbConfig)) {
             die("Database configuration not found.");
         }
-
-		$this->host = $dbConfig['host'];
+        $this->host = $dbConfig['host'];
         $this->database = $dbConfig['database'];
         $this->username = $dbConfig['username'];
         $this->password = $dbConfig['password'];
         $this->conn = new mysqli($this->host, $this->username, $this->password, $this->database);
         $this->conn->set_charset("utf8mb4");
-
         if ($this->conn->connect_error) {
             die("Database connection error: " . $this->conn->connect_error);
         }
