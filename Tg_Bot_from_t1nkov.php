@@ -7,6 +7,7 @@ ini_set('display_errors', 1);
 $config = require __DIR__ . '/config.php';
 
 if (!isset($config['db'])) { die("Database configuration not found."); }
+var_dump($config); // debugging junk 
 
 $bot_token = $config['bot_token'];
 $telegram = new Telegram($bot_token);
