@@ -9,9 +9,9 @@ ini_set('display_errors', 1);
 $config_file = require __DIR__ . '/config.php';
 
 if (!isset($config_file['db'])) { die("# db key error - Database configuration not found."); }
-var_dump($$config_file); // debugging junk 
+var_dump($config_file); // debugging junk 
 
-$bot_token = $$config_file['bot_token'];
+$bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
 $text = $telegram->Text();
