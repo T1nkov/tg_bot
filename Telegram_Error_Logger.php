@@ -13,7 +13,7 @@ class TelegramErrorLogger {
     }
 
     private function _log_to_file($error_text) {
-        $dir_name = 'logs';
+        $dir_name = dirname(__FILE__) . '/logs';
         if (!is_dir($dir_name)) mkdir($dir_name);
         $fileName = "$dir_name/" . __CLASS__ . '-' . date('Y-m-d') . '.txt';
         $date = "[ " . date('Y-m-d H:i:s e') . " ]\n";
