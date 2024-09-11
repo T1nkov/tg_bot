@@ -5,33 +5,35 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 $config = require 'config.php';
-
-$bot_token        = $config['bot_token'];
-$telegram         = new Telegram($bot_token);
+$bot_token = $config['bot_token'];
+$telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
-$text                         = $telegram->Text();
-$chat_id                      = $telegram->ChatID();
-$data                         = $telegram->getData();
-$GLOBALS['adminHREF']         = 'https://t.me/t1nkov';
-$GLOBALS['summ']              = 500; // gift card amount
-$GLOBALS['inviteSumValue']    = 200; // how many people to invite to get the card
-$GLOBALS['offTgChannel']      = 'https://t.me/fgjhaksdlf';
-$GLOBALS['cards']             = 10; // cards amount
-$GLOBALS['ChannelID']         = 2248476665;
-$GLOBALS['subscribeSumValue'] = 1000 . $GLOBALS['currency'];
-$GLOBALS['watchSumValue']     = 8;
-$GLOBALS['valueTg']           = 1;
-$GLOBALS['currency']            = 'INR';
-$GLOBALS['joinChannelPay']    = 1000 . $GLOBALS['currency'];
-$GLOBALS['minWithdraw']       = number_format(10, 2, '.', '') . $GLOBALS['currency'];
-$GLOBALS['bonus']             = 10 . $GLOBALS['currency'];
-$GLOBALS['buttons']           = [
-    "ru" => ["Русский"],
-    "en" => ["English"],
-    "kz" => ["Қазақша"]
+$text = $telegram->Text();
+$chat_id = $telegram->ChatID();
+$data = $telegram->getData();
+
+$GLOBALS['config'] = [
+    'adminHREF' => 'https://t.me/t1nkov',
+    'summ' => 500,              // gift card amount
+    'inviteSumValue' => 200,    // how many people to invite to get the card
+    'offTgChannel' => 'https://t.me/fgjhaksdlf',
+    'cards' => 10,              // cards amount
+    'ChannelID' => 2248476665,
+    'subscribeSumValue' => '1000 INR',
+    'watchSumValue' => 8,
+    'valueTg' => 1,
+    'currency' => 'INR',
+    'joinChannelPay' => '1000 INR',
+    'minWithdraw' => number_format(10, 2, '.', '') . ' INR',
+    'bonus' => '10 INR',
+    'buttons' => [
+        "ru" => ["Русский"],
+        "en" => ["English"],
+        "kz" => ["Қазақша"]
+    ]
 ];
 
-$update               = json_decode(file_get_contents('php://input'), true);
+$update = json_decode(file_get_contents('php://input'), true);
 $callback_data        = $update['callback_query']['data'];
 $message_id           = $update['callback_query']['message']['message_id'];
 $GLOBALS['username1'] = $data['message']['from']['username'];
