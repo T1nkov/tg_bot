@@ -72,14 +72,12 @@ class DatabaseConnection {
 		$stmt->bind_param("s", $phrase_key);
 		$stmt->execute();
 		$result = $stmt->get_result();
-
-		if ($result->num_rows > 0) {
+		if ($result->num_rows <= 0) {
+			$phrase_text = null; // Если фраза не найдена, возвращаем null
+		} else {
 			$row         = $result->fetch_assoc();
 			$phrase_text = $row["phrase_text"];
-		} else {
-			$phrase_text = null; // Если фраза не найдена, возвращаем null
 		}
-
 		$stmt->close();
 		return $phrase_text;
 	}
@@ -102,14 +100,9 @@ class DatabaseConnection {
 			'chat_id' => $chat_id,
 			'text'    => 'функция началась'
 		]);
-		/* 	$link = $GLOBALS['offTgChannel'];
-			 $chatLink = str_replace("https://t.me/", "@", $link); */
 		$url = "https://api.telegram.org/bot7281054427:AAEKER8d_p6LHtCZNamVIsehbAZnHI2KF_M/getChat?chat_id=@fgjhaksdlf";
-
-
 		$response = @file_get_contents($url);
 		$data     = json_decode($response, true);
-
 		$telegram->sendMessage([
 			'chat_id' => $chat_id,
 			'text'    => 'после запроса ' . $data['result']['id']
@@ -120,10 +113,8 @@ class DatabaseConnection {
 				'text'    => 'блок иф ' . $data['result']['id']
 			]);
 			$chatId = $data['result']['id'];
-
 			return $chatId;
 		} else {
-
 			return null;
 		}
 	}
@@ -135,13 +126,12 @@ class DatabaseConnection {
 		$stmt->bind_param("i", $chat_id);
 		$stmt->execute();
 		$result = $stmt->get_result();
-		if ($result->num_rows > 0) {
+		if ($result->num_rows <= 0) {
+			$referals = 0.0;
+		} else {
 			$row      = $result->fetch_assoc();
 			$referals = $row["referals"];
-		} else {
-			$referals = 0.0;
 		}
-
 		$stmt->close();
 		return $referals;
 	}
@@ -153,14 +143,12 @@ class DatabaseConnection {
 		$stmt->bind_param("i", $chat_id);
 		$stmt->execute();
 		$result = $stmt->get_result();
-
 		if ($result->num_rows > 0) {
 			$row      = $result->fetch_assoc();
 			$username = $row["usernameTg"];
 		} else {
 			$username = null;
 		}
-
 		$stmt->close();
 		return $username;
 	}
@@ -191,7 +179,6 @@ class DatabaseConnection {
 	//Регистрация 
 	public function registerUser($telegram, $chat_id, $id_referal, $balance = 0.0, $role = 'user') {
 		$username = $GLOBALS['username1'];
-
 		// Измените SQL-запрос, чтобы включить поле status
 		$sql  = "INSERT INTO users (usernameTg, role, id_tg, id_referal, balance, referals, status) VALUES (?, ?, ?, ?, ?, 0, ?)";
 		$stmt = $this->conn->prepare($sql);
@@ -225,14 +212,11 @@ class DatabaseConnection {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$row    = $result->fetch_assoc();
-
 		return $row["count"] > 0;
 	}
-
 	// Подписан ли пользователь на канал
 	public function isUserSubscribed($chat_id, $telegram, $bot_token) {
 		error_log("isUserSubscribed called for chat_id: $chat_id");
-
 		$channelId = $GLOBALS['ChannelID'];
 		if ($channelId === null) {
 			$telegram->sendMessage([
@@ -241,7 +225,6 @@ class DatabaseConnection {
 			]);
 			return false; // Не удалось получить ID канала
 		}
-
 		$url = "https://api.telegram.org/bot$bot_token/getChatMember?chat_id=$channelId&user_id=$chat_id";
 
 		// Используем cURL
@@ -253,13 +236,11 @@ class DatabaseConnection {
 			error_log('cURL error: ' . curl_error($ch));
 			return false; // Ошибка cURL
 		}
-
 		curl_close($ch);
 		$data = json_decode($response, true);
 
 		// Логирование ответа
 		error_log("API response: " . print_r($data, true));
-
 		if ($data['ok'] && in_array($data['result']['status'], [
 				'member',
 				'administrator',
@@ -271,7 +252,7 @@ class DatabaseConnection {
 		}
 	}
 
-//Инкремент баланса	
+	//Инкремент баланса	
 	public function incrementBalance($id_tg, $amount) {
 		$sql  = "UPDATE users SET balance = balance + ? WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -285,7 +266,7 @@ class DatabaseConnection {
 		}
 	}
 
-//Инкремент рефералов	
+	//Инкремент рефералов	
 	public function incrementReferrals($id_tg) {
 		$sql  = "UPDATE users SET referals = referals + 1 WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -293,7 +274,7 @@ class DatabaseConnection {
 		$stmt->execute();
 	}
 
-//Обеовление реф ссылки
+	//Обеовление реф ссылки
 	public function updateReferralId($id_tg, $id_referal) {
 		$sql  = "UPDATE users SET id_referal = ? WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -301,7 +282,7 @@ class DatabaseConnection {
 		$stmt->execute();
 	}
 
-//Обновление языка
+	//Обновление языка
 	public function updateUserLanguage($userId, $key) {
 		$sql  = "UPDATE users SET select_language = ? WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
@@ -310,9 +291,8 @@ class DatabaseConnection {
 		$stmt->close();
 	}
 
-//Старт
+	//Старт
 	public function handleStartCommand($telegram, $chat_id, $update) {
-
 		// Получаем id реферала из параметра ссылки
 		$referral_id  = null;
 		$message_text = $update['message']['text'];
@@ -358,50 +338,38 @@ class DatabaseConnection {
 				'chat_id' => $chat_id,
 				'text'    => 'Start register new user',
 			]);
-
 			// Регистрируем нового пользователя, передавая id_referal, если он был передан
 			$new_user_id = $this->registerUser($telegram, $chat_id, $referral_id ?? 0);
-
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
 				'text'    => 'New user id: ' . $new_user_id,
 			]);
-
 			if ($referral_id && $referral_id != $chat_id) {
 				$message = $this->getPhraseText("bonus_text", $referral_id);
-
 				$this->incrementReferrals($referral_id);
 				$this->updateReferralId($referral_id, $new_user_id);
 				$this->incrementBalance($referral_id, $GLOBALS['inviteSumValue']);
-
 				$telegram->sendMessage([
 					'chat_id' => $referral_id,
 					'text'    => $message
 				]);
 			}
 		}
-
-
 		$reply_markup = $telegram->buildKeyboard(
 			array_values($GLOBALS['buttons']),
 			$oneTimeKeyboard = true,
 			$resizeKeyboard = true
 		);
-
 		$content = [
 			'chat_id'      => $chat_id,
 			'text'         => 'Выберите язык / Select language',
 			'reply_markup' => $reply_markup
 		];
-
-
 		$telegram->sendMessage($content);
 	}
 
-//Стартовое сообщение после выбора языка
+	//Стартовое сообщение после выбора языка
 	public function handleLanguage($telegram, $chat_id) {
-
-
 		$message1     = $this->getPhraseText('welcome_message', $chat_id);
 		$message      = str_replace(
 			[
@@ -434,7 +402,6 @@ class DatabaseConnection {
 		$user_ids         = $this->TakeAllId($telegram, $chat_id);
 		$successful_sends = 0;
 		$failed_sends     = 0;
-
 		foreach ($user_ids as $user_id) {
 			$message = $this->getPhraseText('button_earn', $user_id);
 			$result  = $telegram->sendMessage([
@@ -447,7 +414,6 @@ class DatabaseConnection {
 				$successful_sends++;
 			}
 		}
-
 		return "Сообщение успешно отправлено $successful_sends пользователям. Не удалось отправить сообщение $failed_sends пользователям.";
 	}
 
@@ -455,7 +421,6 @@ class DatabaseConnection {
 		try {
 			$sql    = 'SELECT id_tg FROM users';
 			$result = $this->conn->query($sql);
-
 			$ids = [];
 			if ($result->num_rows > 0) {
 				while ($row = $result->fetch_assoc()) {
@@ -500,7 +465,6 @@ class DatabaseConnection {
 		$stmt->execute();
 		$result = $stmt->get_result();
 		$row    = $result->fetch_assoc();
-
 		if ($row['role'] === 'admin') {
 			return true;
 		} else {
@@ -508,11 +472,9 @@ class DatabaseConnection {
 		}
 	}
 
-
-//Главное меню
+	//Главное меню
 	public function handleMainMenu($telegram, $chat_id) {
 		$role = $this->isAdmin($telegram, $chat_id);
-
 		if ($role) {
 			$message = '👤Admin панель👤'
 			           . PHP_EOL
@@ -539,7 +501,6 @@ class DatabaseConnection {
 			], $oneTimeKeyboard = false, $resizeKeyboard = true, $selective = true);
 		} else {
 			$message = $this->getPhraseText('main_menu', $chat_id);
-
 			$reply_markup = $telegram->buildKeyboard([
 				[
 					$this->getPhraseText('button_earn', $chat_id),
@@ -552,14 +513,11 @@ class DatabaseConnection {
 				],
 			], $oneTimeKeyboard = false, $resizeKeyboard = true, $selective = true);
 		}
-
-
 		$content = [
 			'chat_id'      => $chat_id,
 			'text'         => $message,
 			'reply_markup' => $reply_markup
 		];
-
 		$telegram->sendMessage($content);
 	}
 
@@ -568,14 +526,10 @@ class DatabaseConnection {
 		$referals   = $this->getReferralsCount($chat_id);
 		$joined     = $this->isUserSubscribed($chat_id, $telegram, $bot_token);
 		$conditions = $this->getPhraseText("conditions_text", $chat_id);
-
 		if (!$joined) {
 			$notSub       = $this->getPhraseText("doesntSub_text", $chat_id);
 			$checkChannel = $this->getPhraseText('checkChannel_button', $chat_id);
-
 			$subscribe = $this->getPhraseText('subscribe_button', $chat_id);
-
-
 			$keyboard = [
 				'inline_keyboard' => [
 					[
@@ -600,9 +554,7 @@ class DatabaseConnection {
 			];
 			$telegram->editMessageText($content);
 		} elseif ($joined) {
-
 			if ($referals > $GLOBALS['inviteSumValue'] - 1) {
-
 				$joinedTG      = $this->getPhraseText("joined_text ", $chat_id);
 				$message       = str_replace(
 					[
@@ -692,18 +644,13 @@ class DatabaseConnection {
 					'reply_markup' => json_encode($keyboard)
 				];
 			}
-
-
 			$telegram->editMessageText($content);
-
 		}
 	}
 
-
-//Пригласить друга
+	//Пригласить друга
 	public function handlePartnerCommand($telegram, $chat_id) {
 		$ref_link = $this->generateReferralLink($chat_id);
-
 		$referal        = $this->getReferralsCount($chat_id);
 		$balance        = $GLOBALS['bonus'] * $referal . $GLOBALS['currency'];
 		$partnerMessage = $this->getPhraseText("partner_text", $chat_id);
@@ -723,7 +670,6 @@ class DatabaseConnection {
 			$partnerMessage
 		);
 
-
 		$content = [
 			'chat_id' => $chat_id,
 			'text'    => $message,
@@ -731,10 +677,9 @@ class DatabaseConnection {
 		$telegram->sendMessage($content);
 	}
 
-//Баланс
+	//Баланс
 	public function handleBalanceCommand($telegram, $chat_id) {
 		$balance = $this->getUserBalance($chat_id);
-
 		$balanceMessage = $this->getPhraseText("balance_text", $chat_id);
 		$message        = str_replace(
 			[
@@ -748,7 +693,6 @@ class DatabaseConnection {
 			$balanceMessage
 		);
 		$withdraw       = $this->getPhraseText("withdraw_text", $chat_id);
-
 		$keyboard = [
 			'inline_keyboard' => [
 				[
@@ -759,21 +703,15 @@ class DatabaseConnection {
 				]
 			]
 		];
-
 		$content = [
 			'chat_id'      => $chat_id,
 			'text'         => $message,
 			'reply_markup' => json_encode($keyboard)
 		];
 		$telegram->sendMessage($content);
-		/* $content2 = [
-			'chat_id' => 5487112108,
-			'text' => $callback_data,
-		];
-		$telegram->sendMessage($content2); */
 	}
 
-//Вывод денег
+	//Вывод денег
 	public function handleWithdrawCommand($telegram, $chat_id, $message_id) {
 		$referal = $this->getReferralsCount($chat_id);
 		if ($referal < 3) {
@@ -785,7 +723,6 @@ class DatabaseConnection {
 			]);
 			return;
 		} else {
-
 			$keyboard = [
 				'inline_keyboard' => [
 					[
@@ -810,12 +747,10 @@ class DatabaseConnection {
 				'reply_markup' => json_encode($keyboard)
 			];
 			$telegram->editMessageText($content);
-
-
 		}
 	}
 
-// Скачать приложение
+	// Скачать приложение
 	public function handleDwnloadCommand($telegram, $chat_id) {
 		$lang     = $this->getLanguage($chat_id);
 		$message  = $this->getPhraseText("download_button", $chat_id);
@@ -858,9 +793,8 @@ class DatabaseConnection {
 		$telegram->sendMessage($content);
 	}
 
-//Помощь
+	//Помощь
 	public function handleHelpCommand($telegram, $chat_id) {
-
 		$report   = $this->getPhraseText("button_report", $chat_id);
 		$message1 = $this->getPhraseText("help_text", $chat_id);
 		$message  = str_replace(
@@ -892,13 +826,12 @@ class DatabaseConnection {
 		$telegram->sendMessage($content);
 	}
 
-//Заработать
+	//Заработать
 	public function handleEarnCommand($telegram, $chat_id) {
 		$message      = $this->getPhraseText("income_text", $chat_id);
 		$inviteSum    = str_replace('{$inviteSum}', $GLOBALS['inviteSumValue'], $this->getPhraseText("invite_friend", $chat_id));
 		$subscribeSum = str_replace('{$subscribeSum}', $GLOBALS['subscribeSumValue'], $this->getPhraseText("join_channel", $chat_id));
 		$watchSum     = str_replace('{$wachSum}', $GLOBALS['watchSumValue'], $this->getPhraseText("view_post", $chat_id));
-
 		$keyboard = [
 			'inline_keyboard' => [
 				[
@@ -929,20 +862,18 @@ class DatabaseConnection {
 		$telegram->sendMessage($content);
 	}
 
-//Проверка подписки + начисление к балансу
+	//Проверка подписки + начисление к балансу
 	public function handleSubscribeCheckCommand($chat_id, $telegram, $bot_token, $message_id) {
 		$flag = $this->isUserSubscribed($chat_id, $telegram, $bot_token);
 		if ($flag) {
 			$tg_key     = 'tg' . $GLOBALS['valueTg'];
 			$channelURL = $this->getURL($tg_key);
-
 			$handleMessage = $this->getPhraseText("approveSubscribe_text", $chat_id);
 			$message       = str_replace(
 				['{$joinChannelPay}'],
 				[$GLOBALS['joinChannelPay']],
 				$handleMessage
 			);
-
 			$skip     = $this->getPhraseText("skipChannel_button", $chat_id);
 			$keyboard = [
 				'inline_keyboard' => [
@@ -954,7 +885,6 @@ class DatabaseConnection {
 					]
 				]
 			];
-
 			$content = [
 				'chat_id'      => $chat_id,
 				'message_id'   => $message_id,
@@ -973,7 +903,6 @@ class DatabaseConnection {
 				[$channelURL],
 				$handleMessage
 			);
-
 			$skip     = $this->getPhraseText("skipChannel_button", $chat_id);
 			$check    = $this->getPhraseText("checkChannel_button", $chat_id);
 			$keyboard = [
@@ -992,8 +921,6 @@ class DatabaseConnection {
 					]
 				]
 			];
-
-
 			$content = [
 				'chat_id'      => $chat_id,
 				'message_id'   => $message_id,
@@ -1004,11 +931,10 @@ class DatabaseConnection {
 		}
 	}
 
-//Действие если не подписан
+	//Действие если не подписан
 	public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
 		$tg_key     = 'tg' . $GLOBALS['valueTg'];
 		$channelURL = $this->getURL($tg_key);
-
 		$handleMessage = $this->getPhraseText("join_text", $chat_id);
 		$message       = str_replace(
 			[
@@ -1021,10 +947,8 @@ class DatabaseConnection {
 			],
 			$handleMessage
 		);
-
 		$skip  = $this->getPhraseText("skipChannel_button", $chat_id);
 		$check = $this->getPhraseText("checkChannel_button", $chat_id);
-
 		$keyboard = [
 			'inline_keyboard' => [
 				[
@@ -1049,7 +973,6 @@ class DatabaseConnection {
 			'reply_markup' => json_encode($keyboard)
 		];
 
-		// Попробуйте обработать ошибки
 		try {
 			$telegram->editMessageText($content);
 		} catch (Exception $e) {
@@ -1057,7 +980,7 @@ class DatabaseConnection {
 		}
 	}
 
-//Блок  жалоб
+	//Блок  жалоб
 	public function handleReportCommand($telegram, $chat_id, $message_id) {
 		$message  = $this->getPhraseText("rep_text", $chat_id);
 		$keyboard = [
@@ -1104,7 +1027,7 @@ class DatabaseConnection {
 	}
 
 
-//Спам
+	//Спам
 	public function handleSpamCommand($telegram, $chat_id, $message_id) {
 		$message  = $this->getPhraseText("report_text", $chat_id);
 		$keyboard = [
@@ -1130,7 +1053,7 @@ class DatabaseConnection {
 		$telegram->editMessageText($content);
 	}
 
-//Мошенничество
+	//Мошенничество
 	public function handleFraudCommand($telegram, $chat_id, $message_id) {
 		$message  = $this->getPhraseText("report_text", $chat_id);
 		$keyboard = [
@@ -1156,7 +1079,7 @@ class DatabaseConnection {
 		$telegram->editMessageText($content);
 	}
 
-//Насилие
+	//Насилие
 	public function handleViolenceCommand($telegram, $chat_id, $message_id) {
 		$message  = $this->getPhraseText("report_text", $chat_id);
 		$keyboard = [
@@ -1182,7 +1105,7 @@ class DatabaseConnection {
 		$telegram->editMessageText($content);
 	}
 
-//Авторские права
+	//Авторские права
 	public function handleCopyrightCommand($telegram, $chat_id, $message_id) {
 		$message  = $this->getPhraseText("report_text", $chat_id);
 		$keyboard = [
@@ -1208,7 +1131,7 @@ class DatabaseConnection {
 		$telegram->editMessageText($content);
 	}
 
-//Другое
+	//Другое
 	public function handleOtherCommand($telegram, $chat_id, $message_id) {
 		$message  = $this->getPhraseText("report_text", $chat_id);
 		$keyboard = [
@@ -1234,7 +1157,7 @@ class DatabaseConnection {
 		$telegram->editMessageText($content);
 	}
 
-//Подтверждение жалобы
+	//Подтверждение жалобы
 	public function handleApprovCommand($telegram, $chat_id, $message_id, $callback_data) {
 		$rep      = $this->getPhraseText("approved_text", $chat_id);
 		$keyboard = [
@@ -1248,9 +1171,7 @@ class DatabaseConnection {
 			]
 		];
 		$username = $this->getUserUsername($chat_id);
-
 		$message = 'Жалоба пользоватлея';
-
 		$content      = [
 			'chat_id'      => $chat_id,
 			'message_id'   => $message_id,
@@ -1266,7 +1187,7 @@ class DatabaseConnection {
 		$telegram->sendMessage($contentAdmin);
 	}
 
-//Отмена жалобы
+	//Отмена жалобы
 	public function handleCanceledCommand($telegram, $chat_id, $message_id) {
 		$message = $this->getPhraseText("canceled_text", $chat_id);
 		$content = [
@@ -1277,7 +1198,6 @@ class DatabaseConnection {
 		];
 		$telegram->editMessageText($content);
 	}
-
 
 	public function getURL($tg_key) {
 		$sql  = "SELECT * FROM channel_tg WHERE tg_key = ?";
@@ -1295,116 +1215,6 @@ class DatabaseConnection {
 			return null;
 		}
 	}
-	/* public function handleSubscription($telegram, $chat_id) {
-		// Получаем активные каналы из БД
-		$channels = $this->getActiveChannels(); // Функция, которая возвращает активные каналы
-
-		// Проверка текущего канала
-		$current_channel_index = $GLOBALS['currentChannelIndex'] ?? 0;
-
-		// Если нет активных каналов, уведомляем пользователя
-		if (empty($channels)) {
-			$telegram->sendMessage([
-				'chat_id' => $chat_id,
-				'text' => "Нет активных каналов для подписки."
-			]);
-			return;
-		}
-
-		// Получаем текущий канал
-		$current_channel = $channels[$current_channel_index];
-
-		// Формируем сообщение
-		$message = "Подписка на канал: {$current_channel['channel_url']}\n";
-		$message .= "Пожалуйста, нажмите кнопку для подписки или пропустите.";
-
-		// Создаем клавиатуру
-		$keyboard = [
-			'inline_keyboard' => [
-				[
-					['text' => 'Подписаться', 'callback_data' => 'subscribe_' . $current_channel['id']],
-					['text' => 'Пропустить', 'callback_data' => 'skip']
-				],
-				[
-					['text' => 'Проверить подписку', 'callback_data' => 'check_' . $current_channel['id']]
-				]
-			]
-		];
-
-		$content = [
-			'chat_id' => $chat_id,
-			'text' => $message,
-			'reply_markup' => json_encode($keyboard)
-		];
-
-		// Отправляем сообщение пользователю
-		try {
-			$telegram->sendMessage($content);
-		} catch (Exception $e) {
-			error_log('Ошибка при отправке сообщения: ' . $e->getMessage());
-		}
-	} */
-
-// Функция для получения активных каналов
-	/* private function getActiveChannels() {
-		$sql = "SELECT * FROM channels WHERE status = 'active'";
-		$result = $this->conn->query($sql);
-		return $result->fetch_all(MYSQLI_ASSOC);
-	}
-	public function subscribeCallbackQuery($chat_id, $telegram){
-			$GLOBALS['currentChannelIndex']++;
-			$this->handleSubscription($telegram, $chat_id);}
-	}
-	public function handleCallbackQuery($telegram, $callback_query) {
-		// Обработка действий пользователя
-		if (strpos($data, 'subscribe_') === 0) {
-			$channel_id = substr($data, 9);
-			$this->subscribeUser($chat_id, $channel_id); // Функция для подписки
-			$telegram->sendMessage([
-				'chat_id' => $chat_id,
-				'text' => "Вы подписаны на канал."
-			]);
-		} elseif ($data === 'skip') {
-			// Логика пропуска канала
-			$GLOBALS['currentChannelIndex']++;
-			$this->handleSubscription($telegram, $chat_id);
-		} elseif (strpos($data, 'check_') === 0) {
-			$channel_id = substr($data, 6);
-			$is_subscribed = $this->checkSubscription($chat_id, $channel_id); // Проверка подписки
-			$message = $is_subscribed ? "Вы подписаны на этот канал." : "Вы не подписаны на этот канал.";
-			$telegram->sendMessage([
-				'chat_id' => $chat_id,
-				'text' => $message
-			]);
-		}
-	}
-
-	// Функция для получения активных каналов
-	private function getActiveChannels() {
-		$sql = "SELECT * FROM channels WHERE status = 'active'";
-		$result = $this->conn->query($sql);
-		return $result->fetch_all(MYSQLI_ASSOC);
-	} */
-
-	/* // Функция для подписки пользователя
-	private function subscribeUser($user_id, $channel_id) {
-		$sql = "INSERT INTO subscriptions (user_id, channel_id, subscribed) VALUES (?, ?, 1)
-				ON DUPLICATE KEY UPDATE subscribed = 1";
-		$stmt = $this->conn->prepare($sql);
-		$stmt->bind_param("si", $user_id, $channel_id);
-		$stmt->execute();
-	}
-
-	// Функция для проверки подписки
-	private function checkSubscription($user_id, $channel_id) {
-		$sql = "SELECT subscribed FROM subscriptions WHERE user_id = ? AND channel_id = ?";
-		$stmt = $this->conn->prepare($sql);
-		$stmt->bind_param("si", $user_id, $channel_id);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		return $result->num_rows > 0 && $result->fetch_assoc()['subscribed'];
-	} */
-
 
 	public function adminModeRas($chat_id, $telegram) {
 		$message      = 'Вы вошли в рассылку';
@@ -1415,7 +1225,6 @@ class DatabaseConnection {
 				'Главное меню'
 			],
 		], $oneTimeKeyboard = false, $resizeKeyboard = true, $selective = true);
-
 
 		$content = [
 			'chat_id'      => $chat_id,
@@ -1428,29 +1237,22 @@ class DatabaseConnection {
 	public function isInputMode($chat_id) {
 		$sql  = 'SELECT status FROM users WHERE id_tg = ?';
 		$stmt = $this->conn->prepare($sql);
-
 		if ($stmt === false) {
-			// Обработка ошибки подготовки запроса
-			return 'error'; // Или выбросьте исключение
+			return 'error';
 		}
 
-		// Привязка параметра
 		$stmt->bind_param("i", $chat_id);
 
-		// Выполнение запроса
 		if ($stmt->execute()) {
 			$result = $stmt->get_result();
-
-			// Проверка наличия результата
 			if ($result->num_rows > 0) {
 				$row = $result->fetch_assoc();
-				return $row['status']; // Возвращаем статус (например, 'input_mode' или 'def')
+				return $row['status'];
 			} else {
-				return 'def'; // Если пользователь не найден, возвращаем статус по умолчанию
+				return 'def';
 			}
 		} else {
-			// Обработка ошибки выполнения запроса
-			return 'error'; // Или выбросьте исключение
+			return 'error';
 		}
 	}
 
@@ -1459,8 +1261,7 @@ class DatabaseConnection {
 		$stmt = $this->conn->prepare($sql);
 
 		if ($stmt === false) {
-			// Обработка ошибки подготовки запроса
-			return false; // Или выбросьте исключение
+			return false;
 		}
 
 		// Привязка параметра
@@ -1468,10 +1269,8 @@ class DatabaseConnection {
 
 		// Выполнение запроса
 		if (!$stmt->execute()) {
-			// Обработка ошибки выполнения запроса
-			return false; // Или выбросьте исключение
+			return false;
 		}
-
 		return true; // Возвращаем успех
 	}
 
@@ -1483,17 +1282,13 @@ class DatabaseConnection {
 		$sql  = "INSERT INTO mailing (message_text) VALUES (?)";
 		$stmt = $this->conn->prepare($sql);
 
-
 		// Привязка параметра (используем "s" для строки)
 		$stmt->bind_param("s", $text);
 
-		// Выполнение запроса
 		if (!$stmt->execute()) {
-			// Обработка ошибки выполнения запроса
-			return false; // Или выбросьте исключение
+			return false;
 		}
-
-		return true; // Возвращаем успех
+		return true;
 	}
 
 	public function handleUserInput($chat_id, $telegram) {
@@ -1520,29 +1315,7 @@ function isTextMatchingButtons($text) {
 	return false;
 }
 
-/* function sendMessageToChat($telegram, $chat_id) {
-    $tgUrls = $db->getTgUrl();
-	foreach ($tgUrls as $url) {
-        $message .= "- " . $this->escapeString($url) . "\n";
-    }
-    $this->sendChatMessage($message);	
-    $params = [
-        'chat_id' => $chat_id,
-        'text' => $message
-    ];
-    $telegram->sendMessage($params);
-	
-}
-sendMessageToChat($telegram, $chat_id); */
-
 $db = new DatabaseConnection($config['db']);
-
-
-/* $telegram->sendMessage([
-    'chat_id' => $chat_id,
-    'text' => $GLOBALS['valueTg']
-]);
- */
 
 $telegram->sendMessage([
 	'chat_id' => $chat_id,
@@ -1603,16 +1376,12 @@ switch ($callback_data) {
 		break;
 	case 'check':
 		$db->handleSubscribeCheckCommand($chat_id, $telegram, $bot_token, $message_id);
-
 		break;
 	case 'checkSub':
 		$db->handleBalanceCommand($telegram, $chat_id, $bot_token);
 		break;
 	case 'no':
 		$db->handleCanceledCommand($telegram, $chat_id, $message_id);
-		break;
-	default:
-		// Handle any other cases or provide a default response
 		break;
 }
 
@@ -1640,7 +1409,6 @@ switch ($text) {
 		break;
 	case $db->getPhraseText("welcome_button", $chat_id):
 		$db->handleMainMenu($telegram, $chat_id);
-
 		break;
 	case $db->getPhraseText("button_balance", $chat_id):
 		$db->handleBalanceCommand($telegram, $chat_id, $bot_token);
@@ -1658,10 +1426,7 @@ switch ($text) {
 		$db->getChatIdByLink($telegram, $bot_token, $chat_id);
 		break;
 	case $db->getPhraseText("button_earn", $chat_id):
-
-
 		$db->handleEarnCommand($telegram, $chat_id);
-
 		break;
 	case 'Рассылка':
 		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
@@ -1679,8 +1444,7 @@ switch ($text) {
 		$db->setInputMode($chat_id, 'def');
 		$db->handleMainMenu($telegram, $chat_id);
 		break;
-	case ($text != null): // Проверяем, что текст не null
-
+	case ($text != null):
 		if ($db->isInputMode($chat_id) == 'input_mode') {
 			$params = [
 				'chat_id' => $chat_id,
@@ -1690,18 +1454,8 @@ switch ($text) {
 			$db->saveUserText($chat_id, $telegram, $text);
 		}
 		break;
-
 	case $db->getPhraseText('download_button', $chat_id):
 		$db->handleDwnloadCommand($telegram, $chat_id);
-
-		break;
-	default:
-		// Handle any other cases or provide a default response
 		break;
 }
-
-
 ?>
-
-
-	
