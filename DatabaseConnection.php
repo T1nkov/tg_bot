@@ -9,7 +9,7 @@ class DatabaseConnection {
 
     public function __construct($dbConfig) {
         if (!isset($dbConfig)) {
-            die("Database configuration not found.");
+            die("Class Error Database configuration not found.");
         }
         $this->host = $dbConfig['host'];
         $this->database = $dbConfig['database'];

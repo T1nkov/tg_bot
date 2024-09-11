@@ -8,7 +8,7 @@ ini_set('display_errors', 1);
 
 $config = require __DIR__ . '/config.php';
 
-if (!isset($config['db'])) { die("Database configuration not found."); }
+if (!isset($config['db'])) { die("# db key error - Database configuration not found."); }
 var_dump($config); // debugging junk 
 
 $bot_token = $config['bot_token'];
