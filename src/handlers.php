@@ -30,7 +30,8 @@ function handleCallbackQuery($callback_data, $telegram, $chat_id, $message_id, $
 }
 
 function handleTextInput($text, $telegram, $chat_id, $db, $update) {
-    if (!is_string($text)) {
+    if (is_null($text)) {
+        error_log("Received null text input.");
         return;
     }
     if (strpos($text, '/start') === 0) {
@@ -53,9 +54,10 @@ function handleTextInput($text, $telegram, $chat_id, $db, $update) {
             "button_earn" => 'handleEarnCommand',
             "download_button" => 'handleDwnloadCommand'
         ];
+
         foreach ($phrases as $phraseKey => $command) {
             $phraseText = $db->getPhraseText($phraseKey, $chat_id);
-            if ($phraseText !== null && $text == $phraseText) {
+            if ($text == $phraseText) {
                 $db->{$command}($telegram, $chat_id);
                 break;
             }
@@ -63,6 +65,7 @@ function handleTextInput($text, $telegram, $chat_id, $db, $update) {
         handleAdminCommands($text, $telegram, $chat_id, $db);
     }
 }
+
 
 function handleAdminCommands($text, $telegram, $chat_id, $db) {
     if ($text === 'Главное меню') {
