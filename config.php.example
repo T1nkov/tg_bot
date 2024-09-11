@@ -1,0 +1,11 @@
+<?php
+return [
+    'bot_token' => 'TOKEN FROM BOT FATHER',
+    'db' => [
+        'host' => 'YOUR IP',
+        'database' => 'YOUR DB NAME',
+        'username' => 'YOUR USERNAME',
+        'password' => 'YOUR PASSWORD'
+    ],
+    'adminID' => 403480319,
+];
