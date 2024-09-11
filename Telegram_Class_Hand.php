@@ -1,83 +1,25 @@
 <?php
 
-if (file_exists('Telegram_Error_Logger.php')) {
-    require_once 'Telegram_Error_Logger.php';
-}
+if (file_exists('Telegram_Error_Logger.php')) { require_once 'Telegram_Error_Logger.php'; }
 
-
-class Telegram
-{
-    /**
-     * Constant for type Inline Query.
-     */
+class Telegram {
     const INLINE_QUERY = 'inline_query';
-    /**
-     * Constant for type Callback Query.
-     */
     const CALLBACK_QUERY = 'callback_query';
-    /**
-     * Constant for type Edited Message.
-     */
     const EDITED_MESSAGE = 'edited_message';
-    /**
-     * Constant for type Reply.
-     */
     const REPLY = 'reply';
-    /**
-     * Constant for type Message.
-     */
     const MESSAGE = 'message';
-    /**
-     * Constant for type Photo.
-     */
     const PHOTO = 'photo';
-    /**
-     * Constant for type Video.
-     */
     const VIDEO = 'video';
-    /**
-     * Constant for type Audio.
-     */
     const AUDIO = 'audio';
-    /**
-     * Constant for type Voice.
-     */
     const VOICE = 'voice';
-    /**
-     * Constant for type animation.
-     */
     const ANIMATION = 'animation';
-    /**
-     * Constant for type sticker.
-     */
     const STICKER = 'sticker';
-    /**
-     * Constant for type Document.
-     */
     const DOCUMENT = 'document';
-    /**
-     * Constant for type Location.
-     */
     const LOCATION = 'location';
-    /**
-     * Constant for type Contact.
-     */
     const CONTACT = 'contact';
-    /**
-     * Constant for type Channel Post.
-     */
     const CHANNEL_POST = 'channel_post';
-    /**
-     * Constant for type New Chat Member.
-     */
     const NEW_CHAT_MEMBER = 'new_chat_member';
-    /**
-     * Constant for type Left Chat Member.
-     */
     const LEFT_CHAT_MEMBER = 'left_chat_member';
-    /**
-     * Constant for type My Chat Member.
-     */
     const MY_CHAT_MEMBER = 'my_chat_member';
 
     private $bot_token = '';
@@ -87,1785 +29,594 @@ class Telegram
     private $proxy;
     private $update_type;
 
-    /// Class constructor
-
-    /**
-     * Create a Telegram instance from the bot token
-     * \param $bot_token the bot token
-     * \param $log_errors enable or disable the logging
-     * \param $proxy array with the proxy configuration (url, port, type, auth)
-     * \return an instance of the class.
-     */
-    public function __construct($bot_token, $log_errors = true, array $proxy = [])
-    {
+    public function __construct($bot_token, $log_errors = true, array $proxy = []) { // Telegram instance from bot token
         $this->bot_token = $bot_token;
         $this->data = $this->getData();
         $this->log_errors = $log_errors;
         $this->proxy = $proxy;
     }
 
-    /// Do requests to Telegram Bot API
-
-    /**
-     * Contacts the various API's endpoints
-     * \param $api the API endpoint
-     * \param $content the request parameters as array
-     * \param $post boolean tells if $content needs to be sends
-     * \return the JSON Telegram's reply.
-     */
-    public function endpoint($api, array $content, $post = true)
-    {
-        $url = 'https://api.telegram.org/bot'.$this->bot_token.'/'.$api;
-        if ($post) {
-            $reply = $this->sendAPIRequest($url, $content);
-        } else {
-            $reply = $this->sendAPIRequest($url, [], false);
-        }
-
+    public function endpoint($api, array $content = [], $post = true) { // requests to Telegram Bot API
+        $url = 'https://api.telegram.org/bot' . $this->bot_token . '/' . $api;
+        $reply = $this->sendAPIRequest($url, $post ? $content : [], !$post);
         return json_decode($reply, true);
     }
 
-    /// A method for testing your bot.
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getme">getMe</a>
-     * \return the JSON Telegram's reply.
-     */
-    public function getMe()
-    {
-        return $this->endpoint('getMe', [], false);
-    }
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#logout">logOut</a>
-     * \return the JSON Telegram's reply.
-     */
-    public function logOut()
-    {
-        return $this->endpoint('logOut', [], false);
-    }
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#close">close</a>
-     * \return the JSON Telegram's reply.
-     */
-    public function close()
-    {
-        return $this->endpoint('close', [], false);
-    }
-
-    /// A method for responding http to Telegram.
-
-    /**
-     * \return the HTTP 200 to Telegram.
-     */
-    public function respondSuccess()
-    {
+    public function respondSuccess() { // Responds with a success HTTP status to Telegram.
         http_response_code(200);
-
-        return json_encode(['status' => 'success']);
+        return json_encode(['status' => 'success']); // @return string JSON-encoded response.
     }
+ 
+    public function getMe() { return $this->endpoint('getMe', [], false); } //for testing bot - https://core.telegram.org/bots/api#getme
 
-    /// Send a message
+    public function logOut() { return $this->endpoint('logOut', [], false); } // https://core.telegram.org/bots/api#logout
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendmessage">sendMessage</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendMessage(array $content)
-    {
-        return $this->endpoint('sendMessage', $content);
-    }
+    public function close() { return $this->endpoint('close', [], false); } // https://core.telegram.org/bots/api#close
 
-    /// Copy a message
+    public function sendMessage(array $content) { return $this->endpoint('sendMessage', $content); } // https://core.telegram.org/bots/api#sendmessage
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#copymessage">copyMessage</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function copyMessage(array $content)
-    {
-        return $this->endpoint('copyMessage', $content);
-    }
+    public function copyMessage(array $content) { return $this->endpoint('copyMessage', $content); } // https://core.telegram.org/bots/api#copymessage
 
-    /// Forward a message
+    public function forwardMessage(array $content) { return $this->endpoint('forwardMessage', $content); } // https://core.telegram.org/bots/api#forwardmessage
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#forwardmessage">forwardMessage</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function forwardMessage(array $content)
-    {
-        return $this->endpoint('forwardMessage', $content);
-    }
+    public function sendPhoto(array $content) { return $this->endpoint('sendPhoto', $content); } // https://core.telegram.org/bots/api#sendphoto
 
-    /// Send a photo
+    public function sendAudio(array $content) { return $this->endpoint('sendAudio', $content); } // https://core.telegram.org/bots/api#sendaudio
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendphoto">sendPhoto</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendPhoto(array $content)
-    {
-        return $this->endpoint('sendPhoto', $content);
-    }
+    public function sendDocument(array $content) { return $this->endpoint('sendDocument', $content); } // https://core.telegram.org/bots/api#senddocument
 
-    /// Send an audio
+    public function sendAnimation(array $content) { return $this->endpoint('sendAnimation', $content); } // https://core.telegram.org/bots/api#sendanimation
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendaudio">sendAudio</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendAudio(array $content)
-    {
-        return $this->endpoint('sendAudio', $content);
-    }
+    public function sendSticker(array $content) { return $this->endpoint('sendSticker', $content); } // https://core.telegram.org/bots/api#sendsticker
 
-    /// Send a document
+    public function sendVideo(array $content) { return $this->endpoint('sendVideo', $content); } // https://core.telegram.org/bots/api#sendvideo
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#senddocument">sendDocument</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendDocument(array $content)
-    {
-        return $this->endpoint('sendDocument', $content);
-    }
+    public function sendVoice(array $content) { return $this->endpoint('sendVoice', $content); } // https://core.telegram.org/bots/api#sendvoice
 
-    /// Send an animation
+    public function sendLocation(array $content) { return $this->endpoint('sendLocation', $content); } // https://core.telegram.org/bots/api#sendlocation
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendanimation">sendAnimation</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendAnimation(array $content)
-    {
-        return $this->endpoint('sendAnimation', $content);
-    }
+    // https://core.telegram.org/bots/api#editmessageliveLocation
+    public function editMessageLiveLocation(array $content) { return $this->endpoint('editMessageLiveLocation', $content); }
 
-    /// Send a sticker
+    // https://core.telegram.org/bots/api#stopmessagelivelocation
+    public function stopMessageLiveLocation(array $content) { return $this->endpoint('stopMessageLiveLocation', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendsticker">sendSticker</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendSticker(array $content)
-    {
-        return $this->endpoint('sendSticker', $content);
-    }
+    // https://core.telegram.org/bots/api#setchatstickerset
+    public function setChatStickerSet(array $content) { return $this->endpoint('setChatStickerSet', $content); }
 
-    /// Send a video
+    // https://core.telegram.org/bots/api#deletechatstickerset
+    public function deleteChatStickerSet(array $content) { return $this->endpoint('deleteChatStickerSet', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendvideo">sendVideo</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendVideo(array $content)
-    {
-        return $this->endpoint('sendVideo', $content);
-    }
+    // https://core.telegram.org/bots/api#sendmediagroup
+    public function sendMediaGroup(array $content) { return $this->endpoint('sendMediaGroup', $content); }
 
-    /// Send a voice message
+    // https://core.telegram.org/bots/api#sendvenue
+    public function sendVenue(array $content) { return $this->endpoint('sendVenue', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendvoice">sendVoice</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendVoice(array $content)
-    {
-        return $this->endpoint('sendVoice', $content);
-    }
+    // https://core.telegram.org/bots/api#sendcontact
+    public function sendContact(array $content) { return $this->endpoint('sendContact', $content); }
 
-    /// Send a location
+    // https://core.telegram.org/bots/api#sendpoll
+    public function sendPoll(array $content) { return $this->endpoint('sendPoll', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendlocation">sendLocation</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendLocation(array $content)
-    {
-        return $this->endpoint('sendLocation', $content);
-    }
+    // https://core.telegram.org/bots/api#senddice
+    public function sendDice(array $content) { return $this->endpoint('sendDice', $content); }
 
-    /// Edit Message Live Location
+    // https://core.telegram.org/bots/api#sendchataction
+    public function sendChatAction(array $content) { return $this->endpoint('sendChatAction', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#editmessageliveLocation">editMessageLiveLocation</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function editMessageLiveLocation(array $content)
-    {
-        return $this->endpoint('editMessageLiveLocation', $content);
-    }
+    // https://core.telegram.org/bots/api#getuserprofilephotos
+    public function getUserProfilePhotos(array $content) { return $this->endpoint('getUserProfilePhotos', $content); }
 
-    /// Stop Message Live Location
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#stopmessagelivelocation">stopMessageLiveLocation</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function stopMessageLiveLocation(array $content)
-    {
-        return $this->endpoint('stopMessageLiveLocation', $content);
-    }
-
-    /// Set Chat Sticker Set
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setchatstickerset">setChatStickerSet</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setChatStickerSet(array $content)
-    {
-        return $this->endpoint('setChatStickerSet', $content);
-    }
-
-    /// Delete Chat Sticker Set
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#deletechatstickerset">deleteChatStickerSet</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function deleteChatStickerSet(array $content)
-    {
-        return $this->endpoint('deleteChatStickerSet', $content);
-    }
-
-    /// Send Media Group
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendmediagroup">sendMediaGroup</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendMediaGroup(array $content)
-    {
-        return $this->endpoint('sendMediaGroup', $content);
-    }
-
-    /// Send Venue
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendvenue">sendVenue</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendVenue(array $content)
-    {
-        return $this->endpoint('sendVenue', $content);
-    }
-
-    //Send contact
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendcontact">sendContact</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendContact(array $content)
-    {
-        return $this->endpoint('sendContact', $content);
-    }
-
-    //Send a poll
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendpoll">sendPoll</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendPoll(array $content)
-    {
-        return $this->endpoint('sendPoll', $content);
-    }
-
-    //Send a dice
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#senddice">sendDice</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendDice(array $content)
-    {
-        return $this->endpoint('sendDice', $content);
-    }
-
-    /// Send a chat action
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendchataction">sendChatAction</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendChatAction(array $content)
-    {
-        return $this->endpoint('sendChatAction', $content);
-    }
-
-    /// Get a list of profile pictures for a user
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getuserprofilephotos">getUserProfilePhotos</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getUserProfilePhotos(array $content)
-    {
-        return $this->endpoint('getUserProfilePhotos', $content);
-    }
-
-    /// Use this method to get basic info about a file and prepare it for downloading
-
-    /**
-     *  Use this method to get basic info about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size. On success, a File object is returned. The file can then be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>, where <file_path> is taken from the response. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile again.
-     * \param $file_id String File identifier to get info about
-     * \return the JSON Telegram's reply.
-     */
-    public function getFile($file_id)
-    {
-        $content = ['file_id' => $file_id];
-
-        return $this->endpoint('getFile', $content);
-    }
+    // https://api.telegram.org/file/bot<token>/<file_path>
+    public function getFile(string $file_id) { return $this->endpoint('getFile', ['file_id' => $file_id]); }
 
     /// Kick Chat Member
+    //  * * * Deprecated * * *
+    public function kickChatMember(array $content) { return $this->endpoint('kickChatMember', $content); }
 
-    /**
-     * Deprecated
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function kickChatMember(array $content)
-    {
-        return $this->endpoint('kickChatMember', $content);
-    }
+    // https://core.telegram.org/bots/api#leavechat
+    public function leaveChat(array $content) { return $this->endpoint('leaveChat', $content); }
 
-    /// Leave Chat
+    // https://core.telegram.org/bots/api#banchatmember
+    public function banChatMember(array $content) { return $this->endpoint('banChatMember', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#leavechat">leaveChat</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function leaveChat(array $content)
-    {
-        return $this->endpoint('leaveChat', $content);
-    }
+    // https://core.telegram.org/bots/api#unbanchatmember
+    public function unbanChatMember(array $content) { return $this->endpoint('unbanChatMember', $content); }
 
-    /// Ban Chat Member
+    // https://core.telegram.org/bots/api#getchat
+    public function getChat(array $content) { return $this->endpoint('getChat', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#banchatmember">banChatMember</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function banChatMember(array $content)
-    {
-        return $this->endpoint('banChatMember', $content);
-    }
+    // https://core.telegram.org/bots/api#getchatadministrators
+    public function getChatAdministrators(array $content) { return $this->endpoint('getChatAdministrators', $content); }
 
-    /// Unban Chat Member
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#unbanchatmember">unbanChatMember</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function unbanChatMember(array $content)
-    {
-        return $this->endpoint('unbanChatMember', $content);
-    }
-
-    /// Get Chat Information
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getchat">getChat</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getChat(array $content)
-    {
-        return $this->endpoint('getChat', $content);
-    }
-
-    /// Get chat Administrators
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getchatadministrators">getChatAdministrators</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getChatAdministrators(array $content)
-    {
-        return $this->endpoint('getChatAdministrators', $content);
-    }
-
-    /// Get chat member count
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getchatmembercount">getChatMemberCount</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getChatMemberCount(array $content)
-    {
-        return $this->endpoint('getChatMemberCount', $content);
-    }
+    // https://core.telegram.org/bots/api#getchatmembercount
+    public function getChatMemberCount(array $content) { return $this->endpoint('getChatMemberCount', $content); }
 
     /**
      * For retrocompatibility
      * \param $content the request parameters as array
      * \return the JSON Telegram's reply.
      */
-    public function getChatMembersCount(array $content)
-    {
-        return $this->getChatMemberCount($content);
-    }
+    public function getChatMembersCount(array $content) { return $this->getChatMemberCount($content); }
+
+    // https://core.telegram.org/bots/api#getchatmember
+    public function getChatMember(array $content) { return $this->endpoint('getChatMember', $content); }
+
+    // https://core.telegram.org/bots/api#answerinlinequery
+    public function answerInlineQuery(array $content) { return $this->endpoint('answerInlineQuery', $content); }
+
+    // https://core.telegram.org/bots/api#setgamescore
+    public function setGameScore(array $content) { return $this->endpoint('setGameScore', $content); }
+
+    // https://core.telegram.org/bots/api#getgamehighscores
+    public function getGameHighScores(array $content) { return $this->endpoint('getGameHighScores', $content); }
+
+    // https://core.telegram.org/bots/api#answercallbackquery
+    public function answerCallbackQuery(array $content) { return $this->endpoint('answerCallbackQuery', $content); }
+
+    // https://core.telegram.org/bots/api#setmycommands
+    public function setMyCommands(array $content) { return $this->endpoint('setMyCommands', $content); }
+
+    // https://core.telegram.org/bots/api#deletemycommands
+    public function deleteMyCommands(array $content) { return $this->endpoint('deleteMyCommands', $content); }
+
+    // https://core.telegram.org/bots/api#getmycommands
+    public function getMyCommands(array $content) { return $this->endpoint('getMyCommands', $content); }
+
+    // https://core.telegram.org/bots/api#setchatmenubutton
+    public function setChatMenuButton(array $content) { return $this->endpoint('setChatMenuButton', $content); }
+
+    // https://core.telegram.org/bots/api#getchatmenubutton
+    public function getChatMenuButton(array $content) { return $this->endpoint('getChatMenuButton', $content); }
+
+    // https://core.telegram.org/bots/api#setmydefaultadministratorrights
+    public function setMyDefaultAdministratorRights(array $content) { return $this->endpoint('setMyDefaultAdministratorRights', $content); }
+
+    // https://core.telegram.org/bots/api#getmydefaultadministratorrights
+    public function getMyDefaultAdministratorRights(array $content) { return $this->endpoint('getMyDefaultAdministratorRights', $content); }
+
+    // https://core.telegram.org/bots/api#editmessagetext
+    public function editMessageText(array $content) { return $this->endpoint('editMessageText', $content); }
+
+    // https://core.telegram.org/bots/api#editmessagecaption
+    public function editMessageCaption(array $content) { return $this->endpoint('editMessageCaption', $content); }
+
+    // https://core.telegram.org/bots/api#editmessagemedia
+    public function editMessageMedia(array $content) { return $this->endpoint('editMessageMedia', $content); }
+
+    // https://core.telegram.org/bots/api#editmessagereplymarkup
+    public function editMessageReplyMarkup(array $content) { return $this->endpoint('editMessageReplyMarkup', $content); }
+
+    // https://core.telegram.org/bots/api#stoppoll
+    public function stopPoll(array $content) { return $this->endpoint('stopPoll', $content); }
 
     /**
-     * See <a href="https://core.telegram.org/bots/api#getchatmember">getChatMember</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
+     * Use this method to download a file from the Telegram servers.
+     * @param string $telegram_file_path File path on Telegram servers
+     * @param string $local_file_path File path where to save the file.
+     * @throws Exception if the file cannot be opened
      */
-    public function getChatMember(array $content)
-    {
-        return $this->endpoint('getChatMember', $content);
-    }
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#answerinlinequery">answerInlineQuery</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function answerInlineQuery(array $content)
-    {
-        return $this->endpoint('answerInlineQuery', $content);
-    }
-
-    /// Set Game Score
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setgamescore">setGameScore</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setGameScore(array $content)
-    {
-        return $this->endpoint('setGameScore', $content);
-    }
-
-    /// Get Game Hi Scores
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getgamehighscores">getGameHighScores</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getGameHighScores(array $content)
-    {
-        return $this->endpoint('getGameHighScores', $content);
-    }
-
-    /// Answer a callback Query
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#answercallbackquery">answerCallbackQuery</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function answerCallbackQuery(array $content)
-    {
-        return $this->endpoint('answerCallbackQuery', $content);
-    }
-
-    /// Set the list of the bot commands
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setmycommands">setMyCommands</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setMyCommands(array $content)
-    {
-        return $this->endpoint('setMyCommands', $content);
-    }
-
-    /// Delete the list of the bot commands
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#deletemycommands">deleteMyCommands</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function deleteMyCommands(array $content)
-    {
-        return $this->endpoint('deleteMyCommands', $content);
-    }
-
-    /// Get the list of the bot commands
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getmycommands">getMyCommands</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getMyCommands(array $content)
-    {
-        return $this->endpoint('getMyCommands', $content);
-    }
-
-    /// Set the chat menu button
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setchatmenubutton">setChatMenuButton</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setChatMenuButton(array $content)
-    {
-        return $this->endpoint('setChatMenuButton', $content);
-    }
-
-    /// Get the chat menu button
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getchatmenubutton">getChatMenuButton</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getChatMenuButton(array $content)
-    {
-        return $this->endpoint('getChatMenuButton', $content);
-    }
-
-    /// Set the default aministrator rights
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setmydefaultadministratorrights">setMyDefaultAdministratorRights</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setMyDefaultAdministratorRights(array $content)
-    {
-        return $this->endpoint('setMyDefaultAdministratorRights', $content);
-    }
-
-    /// Get the default aministrator rights
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getmydefaultadministratorrights">getMyDefaultAdministratorRights</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getMyDefaultAdministratorRights(array $content)
-    {
-        return $this->endpoint('getMyDefaultAdministratorRights', $content);
-    }
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#editmessagetext">editMessageText</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function editMessageText(array $content)
-    {
-        return $this->endpoint('editMessageText', $content);
-    }
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#editmessagecaption">editMessageCaption</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function editMessageCaption(array $content)
-    {
-        return $this->endpoint('editMessageCaption', $content);
-    }
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#editmessagemedia">editMessageMedia</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function editMessageMedia(array $content)
-    {
-        return $this->endpoint('editMessageMedia', $content);
-    }
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#editmessagereplymarkup">editMessageReplyMarkup</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function editMessageReplyMarkup(array $content)
-    {
-        return $this->endpoint('editMessageReplyMarkup', $content);
-    }
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#stoppoll">stopPoll</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function stopPoll(array $content)
-    {
-        return $this->endpoint('stopPoll', $content);
-    }
-
-    /// Use this method to download a file
-
-    /**
-     *  Use this method to to download a file from the Telegram servers.
-     * \param $telegram_file_path String File path on Telegram servers
-     * \param $local_file_path String File path where save the file.
-     */
-    public function downloadFile($telegram_file_path, $local_file_path)
-    {
+    public function downloadFile(string $telegram_file_path, string $local_file_path) {
         $file_url = 'https://api.telegram.org/file/bot'.$this->bot_token.'/'.$telegram_file_path;
-        $in = fopen($file_url, 'rb');
-        $out = fopen($local_file_path, 'wb');
-
-        while ($chunk = fread($in, 8192)) {
-            fwrite($out, $chunk, 8192);
+        if (!$in = fopen($file_url, 'rb')) { throw new Exception("Could not open file: $file_url"); }
+        if (!$out = fopen($local_file_path, 'wb')) {
+            fclose($in);
+            throw new Exception("Could not open file for writing: $local_file_path");
         }
+        while ($chunk = fread($in, 8192)) { fwrite($out, $chunk); }
         fclose($in);
         fclose($out);
     }
 
-    /// Set a WebHook for the bot
-
     /**
-     *  Use this method to specify a url and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified url, containing a JSON-serialized Update. In case of an unsuccessful request, we will give up after a reasonable amount of attempts.
-     *
-     * If you'd like to make sure that the Webhook request comes from Telegram, we recommend using a secret path in the URL, e.g. https://www.example.com/<token>. Since nobody else knows your botâ€˜s token, you can be pretty sure itâ€™s us.
-     * \param $url String HTTPS url to send updates to. Use an empty string to remove webhook integration
-     * \param $certificate InputFile Upload your public key certificate so that the root certificate in use can be checked
-     * \return the JSON Telegram's reply.
+     * Set a WebHook for the bot.
+     * @param string $url HTTPS URL to send updates to. Use an empty string to remove webhook integration.
+     * @param string|InputFile $certificate Upload your public key certificate so that the root certificate can be checked.
+     * @return array The JSON Telegram's reply.
+     * @throws Exception If the URL is invalid.
      */
-    public function setWebhook($url, $certificate = '')
-    {
-        if ($certificate == '') {
-            $requestBody = ['url' => $url];
-        } else {
-            $requestBody = ['url' => $url, 'certificate' => "@$certificate"];
-        }
-
+    public function setWebhook(string $url, $certificate = null) {
+        if (!filter_var($url, FILTER_VALIDATE_URL) && $url !== '') { throw new Exception('Invalid URL provided.'); }
+        $requestBody = ['url' => $url];
+        if ($certificate) { $requestBody['certificate'] = is_string($certificate) ? '@' . $certificate : $certificate; }
         return $this->endpoint('setWebhook', $requestBody, true);
     }
-
-    /// Delete the WebHook for the bot
 
     /**
      *  Use this method to remove webhook integration if you decide to switch back to <a href="https://core.telegram.org/bots/api#getupdates">getUpdates</a>. Returns True on success. Requires no parameters.
      * \return the JSON Telegram's reply.
      */
-    public function deleteWebhook()
-    {
-        return $this->endpoint('deleteWebhook', [], false);
-    }
+    public function deleteWebhook() { return $this->endpoint('deleteWebhook', [], false); }
 
-    /// Get the data of the current message
-
-    /** Get the POST request of a user in a Webhook or the message actually processed in a getUpdates() enviroment.
-     * \return the JSON users's message.
+    /**
+     * Get the data of the current message.
+     * Retrieve the POST request of a user in a Webhook or the message processed
+     * in a getUpdates() environment.
+     * @return array The JSON user's message.
      */
-    public function getData()
-    {
-        if (empty($this->data)) {
-            $rawData = file_get_contents('php://input');
-
-            return json_decode($rawData, true);
-        } else {
-            return $this->data;
-        }
+    public function getData() {
+        if (!empty($this->data)) { return $this->data; }
+        $rawData = file_get_contents('php://input');
+        return $rawData ? json_decode($rawData, true) : [];
     }
 
     /// Set the data currently used
-    public function setData(array $data)
-    {
-        $this->data = $data;
-    }
+    public function setData(array $data) { $this->data = $data; }
 
     /// Get the text of the current message
-
-    /**
-     * \return the String users's text.
-     */
-    public function Text()
-    {
+    public function Text() { // return the String users's text.
+        $types = [
+            self::CALLBACK_QUERY => 'callback_query',
+            self::CHANNEL_POST => 'channel_post',
+            self::EDITED_MESSAGE => 'edited_message',
+            'default' => 'message'
+        ];
         $type = $this->getUpdateType();
-        if ($type == self::CALLBACK_QUERY) {
-            return @$this->data['callback_query']['data'];
-        }
-        if ($type == self::CHANNEL_POST) {
-            return @$this->data['channel_post']['text'];
-        }
-        if ($type == self::EDITED_MESSAGE) {
-            return @$this->data['edited_message']['text'];
-        }
-
-        return @$this->data['message']['text'];
+        $key = isset($types[$type]) ? $types[$type] : $types['default'];
+        return @$this->data[$key]['text'] ?? null;
     }
 
-    public function Caption()
-    {
+    public function Caption() {
         $type = $this->getUpdateType();
-        if ($type == self::CHANNEL_POST) {
-            return @$this->data['channel_post']['caption'];
-        }
-
+        if ($type == self::CHANNEL_POST) { return @$this->data['channel_post']['caption']; }
         return @$this->data['message']['caption'];
     }
 
-    /// Get the chat_id of the current message
+    public function ChatID() { return $this->Chat()['id'] ?? null; } // return null if chat_id doesn't exist
 
-    /**
-     * \return the String users's chat_id.
-     */
-   public function ChatID()
-{
-    $chat = $this->Chat();
-
-    // Проверка, что $chat не равен null
-    if ($chat !== null && isset($chat['id'])) {
-        return $chat['id'];
-    } else {
-        // Обработка случая, когда $chat равен null или отсутствует ключ 'id'
-        return null; // Или возвращайте то, что вам удобно в этом случае
-    }
-}
-
-    /**
-     * \return the Array chat.
-     */
-    public function Chat()
-    {
+    public function Chat() { // return the Array chat.
         $type = $this->getUpdateType();
-        if ($type == self::CALLBACK_QUERY) {
-            return @$this->data['callback_query']['message']['chat'];
-        }
-        if ($type == self::CHANNEL_POST) {
-            return @$this->data['channel_post']['chat'];
-        }
-        if ($type == self::EDITED_MESSAGE) {
-            return @$this->data['edited_message']['chat'];
-        }
-        if ($type == self::INLINE_QUERY) {
-            return @$this->data['inline_query']['from'];
-        }
-        if ($type == self::MY_CHAT_MEMBER) {
-            return @$this->data['my_chat_member']['chat'];
-        }
-        return $this->data['message']['chat'];
+        $keys = [
+            self::CALLBACK_QUERY => 'callback_query.message.chat',
+            self::CHANNEL_POST => 'channel_post.chat',
+            self::EDITED_MESSAGE => 'edited_message.chat',
+            self::INLINE_QUERY => 'inline_query.from',
+            self::MY_CHAT_MEMBER => 'my_chat_member.chat',
+        ];
+        return isset($keys[$type]) ? @$this->data[$keys[$type]] : $this->data['message']['chat'];
     }
 
-    /// Get the message_id of the current message
-
-    /**
-     * \return the String message_id.
-     */
-    public function MessageID()
-    {
+    public function MessageID() { // Get the message_id of the current message
         $type = $this->getUpdateType();
-        if ($type == self::CALLBACK_QUERY) {
-            return @$this->data['callback_query']['message']['message_id'];
-        }
-        if ($type == self::CHANNEL_POST) {
-            return @$this->data['channel_post']['message_id'];
-        }
-        if ($type == self::EDITED_MESSAGE) {
-            return @$this->data['edited_message']['message_id'];
-        }
-
-        return $this->data['message']['message_id'];
+        $keys = [
+            self::CALLBACK_QUERY => 'callback_query.message.message_id',
+            self::CHANNEL_POST => 'channel_post.message_id',
+            self::EDITED_MESSAGE => 'edited_message.message_id',
+        ];
+        return isset($keys[$type]) ? @$this->data[$keys[$type]] : $this->data['message']['message_id']; // String
     }
 
     /// Get the reply_to_message message_id of the current message
-
-    /**
-     * \return the String reply_to_message message_id.
-     */
-    public function ReplyToMessageID()
-    {
-        return $this->data['message']['reply_to_message']['message_id'];
-    }
+    public function ReplyToMessageID() { return $this->data['message']['reply_to_message']['message_id']; }
 
     /// Get the reply_to_message forward_from user_id of the current message
-
-    /**
-     * \return the String reply_to_message forward_from user_id.
-     */
-    public function ReplyToMessageFromUserID()
-    {
-        return $this->data['message']['reply_to_message']['forward_from']['id'];
-    }
+    public function ReplyToMessageFromUserID() { return $this->data['message']['reply_to_message']['forward_from']['id']; }
 
     /// Get the inline_query of the current update
-
-    /**
-     * \return the Array inline_query.
-     */
-    public function Inline_Query()
-    {
-        return $this->data['inline_query'];
-    }
+    public function Inline_Query() { return $this->data['inline_query']; } // Array
 
     /// Get the callback_query of the current update
-
-    /**
-     * \return the String callback_query.
-     */
-    public function Callback_Query()
-    {
-        return $this->data['callback_query'];
-    }
+    public function Callback_Query() { return $this->data['callback_query']; }
 
     /// Get the callback_query id of the current update
-
-    /**
-     * \return the String callback_query id.
-     */
-    public function Callback_ID()
-    {
-        return $this->data['callback_query']['id'];
-    }
+    public function Callback_ID() { return $this->data['callback_query']['id']; }
 
     /// Get the Get the data of the current callback
-
-    /**
-     * \deprecated Use Text() instead
-     * \return the String callback_data.
-     */
-    public function Callback_Data()
-    {
-        return $this->data['callback_query']['data'];
-    }
+    public function Callback_Data() { return $this->data['callback_query']['data']; }
 
     /// Get the Get the message of the current callback
-
-    /**
-     * \return the Message.
-     */
-    public function Callback_Message()
-    {
-        return $this->data['callback_query']['message'];
-    }
+    public function Callback_Message() { return $this->data['callback_query']['message']; }
 
     /// Get the Get the chat_id of the current callback
-
-    /**
-     * \deprecated Use ChatId() instead
-     * \return the String callback_query.
-     */
-    public function Callback_ChatID()
-    {
-        return $this->data['callback_query']['message']['chat']['id'];
-    }
+    public function Callback_ChatID() { return $this->data['callback_query']['message']['chat']['id']; }
 
     /// Get the Get the from_id of the current callback
-
-    /**
-     * \return the String callback_query from_id.
-     */
-    public function Callback_FromID()
-    {
-        return $this->data['callback_query']['from']['id'];
-    }
+    public function Callback_FromID() { return $this->data['callback_query']['from']['id']; }
 
     /// Get the date of the current message
+    public function Date() { return $this->data['message']['date']; }
 
-    /**
-     * \return the String message's date.
-     */
-    public function Date()
-    {
-        return $this->data['message']['date'];
-    }
-
-    /// Get the first name of the user
-    public function FirstName()
-    {
+    /// Get user data by the specified key
+    private function getUserData($key) {
         $type = $this->getUpdateType();
-        if ($type == self::CALLBACK_QUERY) {
-            return @$this->data['callback_query']['from']['first_name'];
-        }
-        if ($type == self::CHANNEL_POST) {
-            return @$this->data['channel_post']['from']['first_name'];
-        }
-        if ($type == self::EDITED_MESSAGE) {
-            return @$this->data['edited_message']['from']['first_name'];
-        }
-
-        return @$this->data['message']['from']['first_name'];
+        $keys = [
+            self::CALLBACK_QUERY => 'callback_query.from.' . $key,
+            self::CHANNEL_POST => 'channel_post.from.' . $key,
+            self::EDITED_MESSAGE => 'edited_message.from.' . $key,
+            self::MESSAGE => 'message.from.' . $key,
+        ];
+        return isset($keys[$type]) ? @$this->data[$keys[$type]] : '';
     }
 
-    /// Get the last name of the user
-    public function LastName()
-    {
-        $type = $this->getUpdateType();
-        if ($type == self::CALLBACK_QUERY) {
-            return @$this->data['callback_query']['from']['last_name'];
-        }
-        if ($type == self::CHANNEL_POST) {
-            return @$this->data['channel_post']['from']['last_name'];
-        }
-        if ($type == self::EDITED_MESSAGE) {
-            return @$this->data['edited_message']['from']['last_name'];
-        }
-        if ($type == self::MESSAGE) {
-            return @$this->data['message']['from']['last_name'];
-        }
+    public function FirstName() { return $this->getUserData('first_name'); } // Get the first name of the user
 
-        return '';
-    }
+    public function LastName() { return $this->getUserData('last_name'); } // Get the last name of the user
 
-    /// Get the username of the user
-    public function Username()
-    {
-        $type = $this->getUpdateType();
-        if ($type == self::CALLBACK_QUERY) {
-            return @$this->data['callback_query']['from']['username'];
-        }
-        if ($type == self::CHANNEL_POST) {
-            return @$this->data['channel_post']['from']['username'];
-        }
-        if ($type == self::EDITED_MESSAGE) {
-            return @$this->data['edited_message']['from']['username'];
-        }
+    public function Username() { return $this->getUserData('username'); } // Get the username of the user
 
-        return @$this->data['message']['from']['username'];
-    }
+    public function Location() { return $this->data['message']['location']; } // Get the location in the message
 
-    /// Get the location in the message
-    public function Location()
-    {
-        return $this->data['message']['location'];
-    }
+    public function UpdateID() { return $this->data['update_id']; } // Get the update_id of the message
 
-    /// Get the update_id of the message
-    public function UpdateID()
-    {
-        return $this->data['update_id'];
-    }
-
-    /// Get the number of updates
-    public function UpdateCount()
-    {
-        return count($this->updates['result']);
-    }
+    public function UpdateCount() { return count($this->updates['result']); } // Get the number of updates
 
     /// Get user's id of current message
-    public function UserID()
-    {
+    public function UserID() {
         $type = $this->getUpdateType();
-        if ($type == self::CALLBACK_QUERY) {
-            return $this->data['callback_query']['from']['id'];
-        }
-        if ($type == self::CHANNEL_POST) {
-            return $this->data['channel_post']['from']['id'];
-        }
-        if ($type == self::EDITED_MESSAGE) {
-            return @$this->data['edited_message']['from']['id'];
-        }
-        if ($type == self::INLINE_QUERY) {
-            return @$this->data['inline_query']['from']['id'];
-        }
-
-        return $this->data['message']['from']['id'];
+        $keys = [
+            self::CALLBACK_QUERY => 'callback_query.from.id',
+            self::CHANNEL_POST => 'channel_post.from.id',
+            self::EDITED_MESSAGE => 'edited_message.from.id',
+            self::INLINE_QUERY => 'inline_query.from.id',
+        ];
+        return isset($keys[$type]) ? $this->data[$keys[$type]] : $this->data['message']['from']['id'];
     }
 
     /// Get user's id of current forwarded message
-    public function FromID()
-    {
-        return $this->data['message']['forward_from']['id'];
-    }
+    public function FromID() { return $this->data['message']['forward_from']['id']; }
 
     /// Get chat's id where current message forwarded from
-    public function FromChatID()
-    {
-        return $this->data['message']['forward_from_chat']['id'];
-    }
+    public function FromChatID() { return $this->data['message']['forward_from_chat']['id']; }
 
-    /// Tell if a message is from a group or user chat
+    /// Check if a message is from a group chat and get additional info
+    // @return BOOLEAN true if the message is from a Group chat, false otherwise.
+    public function messageFromGroup() { return $this->data['message']['chat']['type'] != 'private'; }
 
-    /**
-     *  \return BOOLEAN true if the message is from a Group chat, false otherwise.
-     */
-    public function messageFromGroup()
-    {
-        if ($this->data['message']['chat']['type'] == 'private') {
-            return false;
-        }
+    // @return String of the contact phone number or an empty string if not available.
+    public function getContactPhoneNumber() { return $this->getUpdateType() == self::CONTACT ? $this->data['message']['contact']['phone_number'] : ''; }
 
-        return true;
-    }
+    // * @return String of the title chat or an empty string if it not a group chat.
+    public function messageFromGroupTitle() { return $this->messageFromGroup() ? $this->data['message']['chat']['title'] : ''; }
 
-    /// Get the contact phone number
-
-    /**
-     *  \return a String of the contact phone number.
-     */
-    public function getContactPhoneNumber()
-    {
-        if ($this->getUpdateType() == self::CONTACT) {
-            return $this->data['message']['contact']['phone_number'];
-        }
-
-        return '';
-    }
-
-    /// Get the title of the group chat
-
-    /**
-     *  \return a String of the title chat.
-     */
-    public function messageFromGroupTitle()
-    {
-        if ($this->data['message']['chat']['type'] != 'private') {
-            return $this->data['message']['chat']['title'];
-        }
-
-        return '';
-    }
 
     /// Set a custom keyboard
-
-    /** This object represents a custom keyboard with reply options
-     * \param $options Array of Array of String; Array of button rows, each represented by an Array of Strings
-     * \param $onetime Boolean Requests clients to hide the keyboard as soon as it's been used. Defaults to false.
-     * \param $resize Boolean Requests clients to resize the keyboard vertically for optimal fit (e.g., make the keyboard smaller if there are just two rows of buttons). Defaults to false, in which case the custom keyboard is always of the same height as the app's standard keyboard.
-     * \param $selective Boolean Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply (has reply_to_message_id), sender of the original message.
-     * \return the requested keyboard as Json.
-     */
-    public function buildKeyBoard(array $options, $onetime = false, $resize = false, $selective = true)
-    {
-        $replyMarkup = [
+    public function buildKeyBoard(array $options, $onetime = false, $resize = false, $selective = true): string {
+        return json_encode([
             'keyboard'          => $options,
             'one_time_keyboard' => $onetime,
             'resize_keyboard'   => $resize,
             'selective'         => $selective,
-        ];
-        $encodedMarkup = json_encode($replyMarkup, true);
-
-        return $encodedMarkup;
+        ]);
     }
 
-    /// Set an InlineKeyBoard
-
-    /** This object represents an inline keyboard that appears right next to the message it belongs to.
-     * \param $options Array of Array of InlineKeyboardButton; Array of button rows, each represented by an Array of InlineKeyboardButton
-     * \return the requested keyboard as Json.
-     */
-    public function buildInlineKeyBoard(array $options)
-    {
-        $replyMarkup = [
-            'inline_keyboard' => $options,
-        ];
-        $encodedMarkup = json_encode($replyMarkup, true);
-
-        return $encodedMarkup;
+    public function buildInlineKeyBoard(array $options): string {
+        return json_encode(['inline_keyboard' => $options]);
     }
 
-    /// Create an InlineKeyboardButton
-
-    /** This object represents one button of an inline keyboard. You must use exactly one of the optional fields.
-     * \param $text String; Array of button rows, each represented by an Array of Strings
-     * \param $url String Optional. HTTP url to be opened when button is pressed
-     * \param $callback_data String Optional. Data to be sent in a callback query to the bot when button is pressed
-     * \param $switch_inline_query String Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot‘s username and the specified inline query in the input field. Can be empty, in which case just the bot’s username will be inserted.
-     * \param $switch_inline_query_current_chat String Optional. Optional. If set, pressing the button will insert the bot‘s username and the specified inline query in the current chat's input field. Can be empty, in which case only the bot’s username will be inserted.
-     * \param $callback_game  String Optional. Description of the game that will be launched when the user presses the button.
-     * \param $pay  Boolean Optional. Specify True, to send a <a href="https://core.telegram.org/bots/api#payments">Pay button</a>.
-     * \return the requested button as Array.
-     */
     public function buildInlineKeyboardButton(
-        $text,
-        $url = '',
-        $callback_data = '',
-        $switch_inline_query = null,
-        $switch_inline_query_current_chat = null,
-        $callback_game = '',
-        $pay = ''
-    ) {
-        $replyMarkup = [
+        string $text,
+        ?string $url = null,
+        ?string $callback_data = null,
+        ?string $switch_inline_query = null,
+        ?string $switch_inline_query_current_chat = null,
+        ?string $callback_game = null,
+        ?string $pay = null
+    ): array {
+        return array_filter([
             'text' => $text,
-        ];
-        if ($url != '') {
-            $replyMarkup['url'] = $url;
-        } elseif ($callback_data != '') {
-            $replyMarkup['callback_data'] = $callback_data;
-        } elseif (!is_null($switch_inline_query)) {
-            $replyMarkup['switch_inline_query'] = $switch_inline_query;
-        } elseif (!is_null($switch_inline_query_current_chat)) {
-            $replyMarkup['switch_inline_query_current_chat'] = $switch_inline_query_current_chat;
-        } elseif ($callback_game != '') {
-            $replyMarkup['callback_game'] = $callback_game;
-        } elseif ($pay != '') {
-            $replyMarkup['pay'] = $pay;
-        }
-
-        return $replyMarkup;
+            'url' => $url,
+            'callback_data' => $callback_data,
+            'switch_inline_query' => $switch_inline_query,
+            'switch_inline_query_current_chat' => $switch_inline_query_current_chat,
+            'callback_game' => $callback_game,
+            'pay' => $pay,
+        ]);
     }
 
-    /// Create a KeyboardButton
-
-    /** This object represents one button of an inline keyboard. You must use exactly one of the optional fields.
-     * \param $text String; Array of button rows, each represented by an Array of Strings
-     * \param $request_contact Boolean Optional. If True, the user's phone number will be sent as a contact when the button is pressed. Available in private chats only
-     * \param $request_location Boolean Optional. If True, the user's current location will be sent when the button is pressed. Available in private chats only
-     * \return the requested button as Array.
-     */
-    public function buildKeyboardButton($text, $request_contact = false, $request_location = false)
-    {
-        $replyMarkup = [
+    public function buildKeyboardButton(string $text, bool $request_contact = false, bool $request_location = false): array {
+        return [
             'text'             => $text,
             'request_contact'  => $request_contact,
             'request_location' => $request_location,
         ];
-
-        return $replyMarkup;
     }
 
-    /// Hide a custom keyboard
-
-    /** Upon receiving a message with this object, Telegram clients will hide the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button.
-     * \param $selective Boolean Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply (has reply_to_message_id), sender of the original message.
-     * \return the requested keyboard hide as Array.
-     */
-    public function buildKeyBoardHide($selective = true)
-    {
-        $replyMarkup = [
+    public function buildKeyBoardHide($selective = true): string {
+        return json_encode([
             'remove_keyboard' => true,
             'selective'       => $selective,
-        ];
-        $encodedMarkup = json_encode($replyMarkup, true);
-
-        return $encodedMarkup;
+        ]);
     }
 
-    /// Display a reply interface to the user
-    /* Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot‘s message and tapped ’Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode.
-     * \param $selective Boolean Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply (has reply_to_message_id), sender of the original message.
-     * \return the requested force reply as Array
-     */
-    public function buildForceReply($selective = true)
-    {
-        $replyMarkup = [
+    public function buildForceReply($selective = true): string {
+        return json_encode([
             'force_reply' => true,
             'selective'   => $selective,
-        ];
-        $encodedMarkup = json_encode($replyMarkup, true);
-
-        return $encodedMarkup;
+        ]);
     }
 
-    // Payments
-    /// Send an invoice
+    /// Payments
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendinvoice">sendInvoice</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendInvoice(array $content)
-    {
-        return $this->endpoint('sendInvoice', $content);
-    }
+    // https://core.telegram.org/bots/api#sendinvoice
+    public function sendInvoice(array $content) { return $this->endpoint('sendInvoice', $content); }
 
-    /// Answer a shipping query
+    // https://core.telegram.org/bots/api#answershippingquery
+    public function answerShippingQuery(array $content) { return $this->endpoint('answerShippingQuery', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#answershippingquery">answerShippingQuery</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function answerShippingQuery(array $content)
-    {
-        return $this->endpoint('answerShippingQuery', $content);
-    }
+    // https://core.telegram.org/bots/api#answerprecheckoutquery
+    public function answerPreCheckoutQuery(array $content) { return $this->endpoint('answerPreCheckoutQuery', $content); }
 
-    /// Answer a PreCheckout query
+    // https://core.telegram.org/bots/api#setpassportdataerrors
+    public function setPassportDataErrors(array $content) { return $this->endpoint('setPassportDataErrors', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#answerprecheckoutquery">answerPreCheckoutQuery</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function answerPreCheckoutQuery(array $content)
-    {
-        return $this->endpoint('answerPreCheckoutQuery', $content);
-    }
+    // https://core.telegram.org/bots/api#sendgame
+    public function sendGame(array $content) { return $this->endpoint('sendGame', $content); }
 
-    /// Set Passport data errors
+    // https://core.telegram.org/bots/api#sendvideonote
+    public function sendVideoNote(array $content) { return $this->endpoint('sendVideoNote', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setpassportdataerrors">setPassportDataErrors</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setPassportDataErrors(array $content)
-    {
-        return $this->endpoint('setPassportDataErrors', $content);
-    }
+    // https://core.telegram.org/bots/api#restrictchatmember
+    public function restrictChatMember(array $content) { return $this->endpoint('restrictChatMember', $content); }
 
-    /// Send a Game
+    // https://core.telegram.org/bots/api#promotechatmember
+    public function promoteChatMember(array $content) { return $this->endpoint('promoteChatMember', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendgame">sendGame</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendGame(array $content)
-    {
-        return $this->endpoint('sendGame', $content);
-    }
-
-    /// Send a video note
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#sendvideonote">sendVideoNote</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function sendVideoNote(array $content)
-    {
-        return $this->endpoint('sendVideoNote', $content);
-    }
-
-    /// Restrict Chat Member
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#restrictchatmember">restrictChatMember</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function restrictChatMember(array $content)
-    {
-        return $this->endpoint('restrictChatMember', $content);
-    }
-
-    /// Promote Chat Member
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#promotechatmember">promoteChatMember</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function promoteChatMember(array $content)
-    {
-        return $this->endpoint('promoteChatMember', $content);
-    }
-
-    /// Set chat Administrator custom title
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setchatadministratorcustomtitle">setChatAdministratorCustomTitle</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setChatAdministratorCustomTitle(array $content)
-    {
-        return $this->endpoint('setChatAdministratorCustomTitle', $content);
-    }
+    // https://core.telegram.org/bots/api#setchatadministratorcustomtitle
+    public function setChatAdministratorCustomTitle(array $content) { return $this->endpoint('setChatAdministratorCustomTitle', $content); }
 
     /// Ban a channel chat in a super group or channel
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#banchatsenderchat">banChatSenderChat</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function banChatSenderChat(array $content)
-    {
-        return $this->endpoint('banChatSenderChat', $content);
-    }
+    // https://core.telegram.org/bots/api#banchatsenderchat
+    public function banChatSenderChat(array $content) { return $this->endpoint('banChatSenderChat', $content); }
 
     /// Unban a channel chat in a super group or channel
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#unbanchatsenderchat">unbanChatSenderChat</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function unbanChatSenderChat(array $content)
-    {
-        return $this->endpoint('unbanChatSenderChat', $content);
-    }
+    // https://core.telegram.org/bots/api#unbanchatsenderchat
+    public function unbanChatSenderChat(array $content) { return $this->endpoint('unbanChatSenderChat', $content); }
 
     /// Set default chat permission for all members
+    // https://core.telegram.org/bots/api#setchatpermissions
+    public function setChatPermissions(array $content) { return $this->endpoint('setChatPermissions', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setchatpermissions">setChatPermissions</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setChatPermissions(array $content)
-    {
-        return $this->endpoint('setChatPermissions', $content);
-    }
+    // https://core.telegram.org/bots/api#exportchatinvitelink
+    public function exportChatInviteLink(array $content) { return $this->endpoint('exportChatInviteLink', $content); }
 
-    //// Export Chat Invite Link
+    // https://core.telegram.org/bots/api#createchatinvitelink
+    public function createChatInviteLink(array $content) { return $this->endpoint('createChatInviteLink', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#exportchatinvitelink">exportChatInviteLink</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function exportChatInviteLink(array $content)
-    {
-        return $this->endpoint('exportChatInviteLink', $content);
-    }
+    // https://core.telegram.org/bots/api#editchatinvitelink
+    public function editChatInviteLink(array $content) { return $this->endpoint('editChatInviteLink', $content); }
 
-    //// Create Chat Invite Link
+    // https://core.telegram.org/bots/api#revokechatinvitelink
+    public function revokeChatInviteLink(array $content) { return $this->endpoint('revokeChatInviteLink', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#createchatinvitelink">createChatInviteLink</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function createChatInviteLink(array $content)
-    {
-        return $this->endpoint('createChatInviteLink', $content);
-    }
+    // https://core.telegram.org/bots/api#approvechatjoinrequest
+    public function approveChatJoinRequest(array $content) { return $this->endpoint('approveChatJoinRequest', $content); }
 
-    //// Edit Chat Invite Link
+    // https://core.telegram.org/bots/api#declinechatjoinrequest
+    public function declineChatJoinRequest(array $content) { return $this->endpoint('declineChatJoinRequest', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#editchatinvitelink">editChatInviteLink</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function editChatInviteLink(array $content)
-    {
-        return $this->endpoint('editChatInviteLink', $content);
-    }
+    // https://core.telegram.org/bots/api#setchatphoto
+    public function setChatPhoto(array $content) { return $this->endpoint('setChatPhoto', $content); }
 
-    //// Revoke Chat Invite Link
+    // https://core.telegram.org/bots/api#deletechatphoto
+    public function deleteChatPhoto(array $content) { return $this->endpoint('deleteChatPhoto', $content); }
+    
+    // https://core.telegram.org/bots/api#setchattitle
+    public function setChatTitle(array $content) { return $this->endpoint('setChatTitle', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#revokechatinvitelink">revokeChatInviteLink</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function revokeChatInviteLink(array $content)
-    {
-        return $this->endpoint('revokeChatInviteLink', $content);
-    }
+    // https://core.telegram.org/bots/api#setchatdescription
+    public function setChatDescription(array $content) { return $this->endpoint('setChatDescription', $content); }
 
-    //// Approve chat join request
+    // https://core.telegram.org/bots/api#pinchatmessage
+    public function pinChatMessage(array $content) { return $this->endpoint('pinChatMessage', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#approvechatjoinrequest">approveChatJoinRequest</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function approveChatJoinRequest(array $content)
-    {
-        return $this->endpoint('approveChatJoinRequest', $content);
-    }
+    // https://core.telegram.org/bots/api#unpinchatmessage
+    public function unpinChatMessage(array $content) { return $this->endpoint('unpinChatMessage', $content); }
 
-    //// Decline chat join request
+    // https://core.telegram.org/bots/api#unpinallchatmessages
+    public function unpinAllChatMessages(array $content) { return $this->endpoint('unpinAllChatMessages', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#declinechatjoinrequest">declineChatJoinRequest</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function declineChatJoinRequest(array $content)
-    {
-        return $this->endpoint('declineChatJoinRequest', $content);
-    }
+    // https://core.telegram.org/bots/api#getstickerset
+    public function getStickerSet(array $content) { return $this->endpoint('getStickerSet', $content); }
 
-    /// Set Chat Photo
+    // https://core.telegram.org/bots/api#uploadstickerfile
+    public function uploadStickerFile(array $content) { return $this->endpoint('uploadStickerFile', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setchatphoto">setChatPhoto</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setChatPhoto(array $content)
-    {
-        return $this->endpoint('setChatPhoto', $content);
-    }
+    // https://core.telegram.org/bots/api#createnewstickerset
+    public function createNewStickerSet(array $content) { return $this->endpoint('createNewStickerSet', $content); }
 
-    /// Delete Chat Photo
+    // https://core.telegram.org/bots/api#addstickertoset
+    public function addStickerToSet(array $content) { return $this->endpoint('addStickerToSet', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#deletechatphoto">deleteChatPhoto</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function deleteChatPhoto(array $content)
-    {
-        return $this->endpoint('deleteChatPhoto', $content);
-    }
+    // https://core.telegram.org/bots/api#setstickerpositioninset
+    public function setStickerPositionInSet(array $content) { return $this->endpoint('setStickerPositionInSet', $content); }
 
-    /// Set Chat Title
+    // https://core.telegram.org/bots/api#deletestickerfromset
+    public function deleteStickerFromSet(array $content) { return $this->endpoint('deleteStickerFromSet', $content); }
 
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setchattitle">setChatTitle</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setChatTitle(array $content)
-    {
-        return $this->endpoint('setChatTitle', $content);
-    }
+    // https://core.telegram.org/bots/api#setstickersetthumb
+    public function setStickerSetThumb(array $content) { return $this->endpoint('setStickerSetThumb', $content); }
 
-    /// Set Chat Description
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setchatdescription">setChatDescription</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setChatDescription(array $content)
-    {
-        return $this->endpoint('setChatDescription', $content);
-    }
-
-    /// Pin Chat Message
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#pinchatmessage">pinChatMessage</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function pinChatMessage(array $content)
-    {
-        return $this->endpoint('pinChatMessage', $content);
-    }
-
-    /// Unpin Chat Message
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#unpinchatmessage">unpinChatMessage</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function unpinChatMessage(array $content)
-    {
-        return $this->endpoint('unpinChatMessage', $content);
-    }
-
-    /// Unpin All Chat Messages
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#unpinallchatmessages">unpinAllChatMessages</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function unpinAllChatMessages(array $content)
-    {
-        return $this->endpoint('unpinAllChatMessages', $content);
-    }
-
-    /// Get Sticker Set
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#getstickerset">getStickerSet</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function getStickerSet(array $content)
-    {
-        return $this->endpoint('getStickerSet', $content);
-    }
-
-    /// Upload Sticker File
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#uploadstickerfile">uploadStickerFile</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function uploadStickerFile(array $content)
-    {
-        return $this->endpoint('uploadStickerFile', $content);
-    }
-
-    /// Create New Sticker Set
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#createnewstickerset">createNewStickerSet</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function createNewStickerSet(array $content)
-    {
-        return $this->endpoint('createNewStickerSet', $content);
-    }
-
-    /// Add Sticker To Set
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#addstickertoset">addStickerToSet</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function addStickerToSet(array $content)
-    {
-        return $this->endpoint('addStickerToSet', $content);
-    }
-
-    /// Set Sticker Position In Set
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setstickerpositioninset">setStickerPositionInSet</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setStickerPositionInSet(array $content)
-    {
-        return $this->endpoint('setStickerPositionInSet', $content);
-    }
-
-    /// Delete Sticker From Set
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#deletestickerfromset">deleteStickerFromSet</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function deleteStickerFromSet(array $content)
-    {
-        return $this->endpoint('deleteStickerFromSet', $content);
-    }
-
-    /// Set Sticker Thumb From Set
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#setstickersetthumb">setStickerSetThumb</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function setStickerSetThumb(array $content)
-    {
-        return $this->endpoint('setStickerSetThumb', $content);
-    }
-
-    /// Delete a message
-
-    /**
-     * See <a href="https://core.telegram.org/bots/api#deletemessage">deleteMessage</a> for the input values
-     * \param $content the request parameters as array
-     * \return the JSON Telegram's reply.
-     */
-    public function deleteMessage(array $content)
-    {
-        return $this->endpoint('deleteMessage', $content);
-    }
+    // https://core.telegram.org/bots/api#deletemessage
+    public function deleteMessage(array $content) { return $this->endpoint('deleteMessage', $content); }
 
     /// Receive incoming messages using polling
-
-    /** Use this method to receive incoming updates using long polling.
-     * \param $offset Integer Identifier of the first update to be returned. Must be greater by one than the highest among the identifiers of previously received updates. By default, updates starting with the earliest unconfirmed update are returned. An update is considered confirmed as soon as getUpdates is called with an offset higher than its update_id.
-     * \param $limit Integer Limits the number of updates to be retrieved. Values between 1—100 are accepted. Defaults to 100
-     * \param $timeout Integer Timeout in seconds for long polling. Defaults to 0, i.e. usual short polling
-     * \param $update Boolean If true updates the pending message list to the last update received. Default to true.
-     * \return the updates as Array.
+    /**
+     * Use this method to receive incoming updates using long polling.
+     * @param int $offset Identifier of the first update to be returned.
+     * @param int $limit Limits the number of updates to be retrieved (1-100).
+     * @param int $timeout Timeout in seconds for long polling.
+     * @param bool $update If true, updates the pending message list.
+     * @return array The updates.
      */
-    public function getUpdates($offset = 0, $limit = 100, $timeout = 0, $update = true)
-    {
-        $content = ['offset' => $offset, 'limit' => $limit, 'timeout' => $timeout];
+    public function getUpdates(int $offset = 0, int $limit = 100, int $timeout = 0, bool $update = true): array {
+        $content = compact('offset', 'limit', 'timeout');
         $this->updates = $this->endpoint('getUpdates', $content);
-        if ($update) {
-            if (array_key_exists('result', $this->updates) && is_array($this->updates['result']) && count($this->updates['result']) >= 1) { //for CLI working.
-                $last_element_id = $this->updates['result'][count($this->updates['result']) - 1]['update_id'] + 1;
-                $content = ['offset' => $last_element_id, 'limit' => '1', 'timeout' => $timeout];
-                $this->endpoint('getUpdates', $content);
-            }
+        if ($update && !empty($this->updates['result'])) {
+            $lastUpdateId = end($this->updates['result'])['update_id'] + 1;
+            $this->endpoint('getUpdates', compact('lastUpdateId', 'timeout'));
         }
-
         return $this->updates;
     }
 
     /// Serve an update
+    //  Use this method to use the bultin function like Text() or Username() on a specific update.
+    public function serveUpdate($update) { $this->data = $this->updates['result'][$update]; } // param $update Integer The index of the update in the updates array.
 
-    /** Use this method to use the bultin function like Text() or Username() on a specific update.
-     * \param $update Integer The index of the update in the updates array.
-     */
-    public function serveUpdate($update)
-    {
-        $this->data = $this->updates['result'][$update];
-    }
-
-    /// Return current update type
-
-    /**
-     * Return current update type `False` on failure.
-     *
-     * @return bool|string
-     */
-    public function getUpdateType()
-    {
-        if ($this->update_type) {
-            return $this->update_type;
-        }
-
+    public function getUpdateType() { // 
+        if ($this->update_type) return $this->update_type;
         $update = $this->data;
-        if (isset($update['inline_query'])) {
-            $this->update_type = self::INLINE_QUERY;
-
-            return $this->update_type;
+        $updateTypes = [
+            'inline_query' => self::INLINE_QUERY,
+            'callback_query' => self::CALLBACK_QUERY,
+            'edited_message' => self::EDITED_MESSAGE,
+            'message' => [
+                'text' => self::MESSAGE,
+                'photo' => self::PHOTO,
+                'video' => self::VIDEO,
+                'audio' => self::AUDIO,
+                'voice' => self::VOICE,
+                'contact' => self::CONTACT,
+                'location' => self::LOCATION,
+                'reply_to_message' => self::REPLY,
+                'animation' => self::ANIMATION,
+                'sticker' => self::STICKER,
+                'document' => self::DOCUMENT,
+                'new_chat_member' => self::NEW_CHAT_MEMBER,
+                'left_chat_member' => self::LEFT_CHAT_MEMBER,
+            ],
+            'my_chat_member' => self::MY_CHAT_MEMBER,
+            'channel_post' => self::CHANNEL_POST,
+        ];
+        foreach ($updateTypes as $key => $type) {
+            if (isset($update[$key])) {
+                $this->update_type = is_array($type) ? $type[array_keys(array_filter($update[$key]))[0]] : $type;
+                return $this->update_type;
+            }
         }
-        if (isset($update['callback_query'])) {
-            $this->update_type = self::CALLBACK_QUERY;
-
-            return $this->update_type;
-        }
-        if (isset($update['edited_message'])) {
-            $this->update_type = self::EDITED_MESSAGE;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['text'])) {
-            $this->update_type = self::MESSAGE;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['photo'])) {
-            $this->update_type = self::PHOTO;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['video'])) {
-            $this->update_type = self::VIDEO;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['audio'])) {
-            $this->update_type = self::AUDIO;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['voice'])) {
-            $this->update_type = self::VOICE;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['contact'])) {
-            $this->update_type = self::CONTACT;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['location'])) {
-            $this->update_type = self::LOCATION;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['reply_to_message'])) {
-            $this->update_type = self::REPLY;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['animation'])) {
-            $this->update_type = self::ANIMATION;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['sticker'])) {
-            $this->update_type = self::STICKER;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['document'])) {
-            $this->update_type = self::DOCUMENT;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['new_chat_member'])) {
-            $this->update_type = self::NEW_CHAT_MEMBER;
-
-            return $this->update_type;
-        }
-        if (isset($update['message']['left_chat_member'])) {
-            $this->update_type = self::LEFT_CHAT_MEMBER;
-
-            return $this->update_type;
-        }
-        if (isset($update['my_chat_member'])) {
-            $this->update_type = self::MY_CHAT_MEMBER;
-
-            return $this->update_type;
-        }
-        if (isset($update['channel_post'])) {
-            $this->update_type = self::CHANNEL_POST;
-
-            return $this->update_type;
-        }
-
-        return false;
+        return false; // `false` on failure.
     }
 
-    private function sendAPIRequest($url, array $content, $post = true)
-    {
-        if (isset($content['chat_id'])) {
-            $url = $url.'?chat_id='.$content['chat_id'];
-            unset($content['chat_id']);
-        }
+    private function sendAPIRequest($url, array $content, $post = true) {
+        $url .= isset($content['chat_id']) ? '?chat_id=' . urlencode($content['chat_id']) : '';
+        unset($content['chat_id']);
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        if ($post) {
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
-        }
-        // 		echo "inside curl if";
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_HEADER => false,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_POST => $post,
+            CURLOPT_POSTFIELDS => $post ? $content : null,
+        ]);
         if (!empty($this->proxy)) {
-            // 			echo "inside proxy if";
-            if (array_key_exists('type', $this->proxy)) {
-                curl_setopt($ch, CURLOPT_PROXYTYPE, $this->proxy['type']);
-            }
-
-            if (array_key_exists('auth', $this->proxy)) {
-                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxy['auth']);
-            }
-
-            if (array_key_exists('url', $this->proxy)) {
-                // 				echo "Proxy Url";
-                curl_setopt($ch, CURLOPT_PROXY, $this->proxy['url']);
-            }
-
-            if (array_key_exists('port', $this->proxy)) {
-                // 				echo "Proxy port";
-                curl_setopt($ch, CURLOPT_PROXYPORT, $this->proxy['port']);
+            foreach (['type' => CURLOPT_PROXYTYPE, 'auth' => CURLOPT_PROXYUSERPWD, 'url' => CURLOPT_PROXY, 'port' => CURLOPT_PROXYPORT] as $key => $option) {
+                if (isset($this->proxy[$key])) { curl_setopt($ch, $option, $this->proxy[$key]); }
             }
         }
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        $result = curl_exec($ch);
-        if ($result === false) {
-            $result = json_encode(
-                ['ok' => false, 'curl_error_code' => curl_errno($ch), 'curl_error' => curl_error($ch)]
-            );
-        }
+        $result = curl_exec($ch) ?: json_encode([
+            'ok' => false,
+            'curl_error_code' => curl_errno($ch),
+            'curl_error' => curl_error($ch),
+        ]);
         curl_close($ch);
-        if ($this->log_errors) {
-            if (class_exists('TelegramErrorLogger')) {
-                $loggerArray = ($this->getData() == null) ? [$content] : [$this->getData(), $content];
-                TelegramErrorLogger::log(json_decode($result, true), $loggerArray);
-            }
+        if ($this->log_errors && class_exists('TelegramErrorLogger')) {
+            $loggerArray = [$this->getData() ?: $content];
+            TelegramErrorLogger::log(json_decode($result, true), $loggerArray);
         }
-
         return $result;
     }
+
 }
 
 // Helper for Uploading file using CURL
