@@ -6,12 +6,12 @@ include 'DatabaseConnection.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$config = require __DIR__ . '/config.php';
+$config_file = require __DIR__ . '/config.php';
 
-if (!isset($config['db'])) { die("# db key error - Database configuration not found."); }
-var_dump($config); // debugging junk 
+if (!isset($config_file['db'])) { die("# db key error - Database configuration not found."); }
+var_dump($$config_file); // debugging junk 
 
-$bot_token = $config['bot_token'];
+$bot_token = $$config_file['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
 $text = $telegram->Text();
@@ -53,7 +53,7 @@ function isTextMatchingButtons($text) {
 	return false;
 }
 
-$db = new DatabaseConnection($config['db']);
+$db = new DatabaseConnection($config_file['db']);
 
 $telegram->sendMessage([
 	'chat_id' => $chat_id,
