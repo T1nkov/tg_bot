@@ -24,7 +24,6 @@ $title = "T1nkov/tg_bot";
     </style>
 </head>
 <body>
-    <h1><?php echo $title; ?></h1>
-    <p>Hello, World!</p>
+    <h1>Hello, World!</h1>
 </body>
 </html>
