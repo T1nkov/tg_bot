@@ -274,7 +274,14 @@ class Telegram {
             self::INLINE_QUERY => 'inline_query.from',
             self::MY_CHAT_MEMBER => 'my_chat_member.chat',
         ];
-        return isset($keys[$type]) ? @$this->data[$keys[$type]] : $this->data['message']['chat'];
+        if (!isset($keys[$type])) {
+            return isset($this->data['message']['chat']) ? $this->data['message']['chat'] : null;
+        } else {
+            $keyPath = $keys[$type];
+            $chat = $this->data;
+            foreach (explode('.', $keyPath) as $key) { $chat = $chat[$key] ?? return null; }
+            return $chat;
+        }
     }
 
     public function MessageID() { // Get the message_id of the current message
