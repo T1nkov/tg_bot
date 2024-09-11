@@ -56,10 +56,10 @@ class DatabaseConnection {
             die("Database configuration not found.");
         }
 
-		$this->host = $config['db']['host'];
-        $this->database = $config['db']['database'];
-        $this->username = $config['db']['username'];
-        $this->password = $config['db']['password'];
+		$this->host = $db['host'];
+        $this->database = $db['database'];
+        $this->username = $db['username'];
+        $this->password = $db['password'];
         $this->conn = new mysqli($this->host, $this->username, $this->password, $this->database);
         $this->conn->set_charset("utf8mb4");
 
@@ -1539,7 +1539,7 @@ function isTextMatchingButtons($text) {
 }
 sendMessageToChat($telegram, $chat_id); */
 
-$db = new DatabaseConnection();
+$db = new DatabaseConnection($config['db']);
 
 
 /* $telegram->sendMessage([
