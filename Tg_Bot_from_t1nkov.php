@@ -49,17 +49,17 @@ class DatabaseConnection {
     private $password;
     private $conn;
 
-    public function __construct() {
+    public function __construct($dbConfig) {
         global $config;
 
         if (!isset($config['db'])) {
             die("Database configuration not found.");
         }
 
-		$this->host = $db['host'];
-        $this->database = $db['database'];
-        $this->username = $db['username'];
-        $this->password = $db['password'];
+		$this->host = $dbConfig['host'];
+        $this->database = $dbConfig['database'];
+        $this->username = $dbConfig['username'];
+        $this->password = $dbConfig['password'];
         $this->conn = new mysqli($this->host, $this->username, $this->password, $this->database);
         $this->conn->set_charset("utf8mb4");
 
