@@ -6,9 +6,9 @@ class DatabaseConnection extends AdminPanel {
     private $database;
     private $username;
     private $password;
-    private $conn;
 	private $botToken;
-
+	protected $conn;
+	
     public function __construct($dbConfig) {
         if (!isset($dbConfig)) { die("Please provide db config"); }
         $this->host = $dbConfig['db']['host'];
