@@ -101,7 +101,7 @@ class Telegram {
 
     public function getUserProfilePhotos(array $content) { return $this->endpoint('getUserProfilePhotos', $content); }
 
-    public function getFile($file_id) { return $this->endpoint('getFile', ['file_id' => $file_id];); }
+    public function getFile($file_id) { return $this->endpoint('getFile', ['file_id' => $file_id]); }
 
     public function kickChatMember(array $content) { return $this->endpoint('kickChatMember', $content); }
 
