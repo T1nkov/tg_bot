@@ -598,35 +598,38 @@ class Telegram {
     }
 
     private function sendAPIRequest($url, array $content, $post = true) {
-        $url .= isset($content['chat_id']) ? '?chat_id=' . urlencode($content['chat_id']) : '';
-        unset($content['chat_id']);
-        $ch = curl_init();
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
-            CURLOPT_HEADER => false,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_POST => $post,
-            CURLOPT_POSTFIELDS => $post ? $content : null,
-        ]);
-        if (!empty($this->proxy)) {
-            foreach (['type' => CURLOPT_PROXYTYPE, 'auth' => CURLOPT_PROXYUSERPWD, 'url' => CURLOPT_PROXY, 'port' => CURLOPT_PROXYPORT] as $key => $option) {
-                if (isset($this->proxy[$key])) { curl_setopt($ch, $option, $this->proxy[$key]); }
-            }
+        if (isset($content['chat_id'])) {
+            $url = $url.'?chat_id='.$content['chat_id'];
+            unset($content['chat_id']);
         }
-        $result = curl_exec($ch) ?: json_encode([
-            'ok' => false,
-            'curl_error_code' => curl_errno($ch),
-            'curl_error' => curl_error($ch),
-        ]);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        if ($post) {
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
+        }
+        if (!empty($this->proxy)) {
+            if (array_key_exists('type', $this->proxy)) { curl_setopt($ch, CURLOPT_PROXYTYPE, $this->proxy['type']); }
+            if (array_key_exists('auth', $this->proxy)) { curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->proxy['auth']); }
+            if (array_key_exists('url', $this->proxy)) { curl_setopt($ch, CURLOPT_PROXY, $this->proxy['url']); }
+            if (array_key_exists('port', $this->proxy)) { curl_setopt($ch, CURLOPT_PROXYPORT, $this->proxy['port']); }
+        }
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $result = curl_exec($ch);
+        if ($result === false) {
+            $result = json_encode( ['ok' => false, 'curl_error_code' => curl_errno($ch), 'curl_error' => curl_error($ch)] );
+        }
         curl_close($ch);
-        if ($this->log_errors && class_exists('TelegramErrorLogger')) {
-            $loggerArray = [$this->getData() ?: $content];
-            TelegramErrorLogger::log(json_decode($result, true), $loggerArray);
+        if ($this->log_errors) {
+            if (class_exists('TelegramErrorLogger')) {
+                $loggerArray = ($this->getData() == null) ? [$content] : [$this->getData(), $content];
+                TelegramErrorLogger::log(json_decode($result, true), $loggerArray);
+            }
         }
         return $result;
     }
-
 }
 
 // Helper for Uploading file using CURL
