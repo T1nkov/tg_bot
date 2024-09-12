@@ -230,14 +230,16 @@ class DatabaseConnection extends AdminPanel {
 	// Start
 	public function handleStartCommand($telegram, $chat_id, $update) {
 		$referral_id  = null;
-		$message_text = $update['message']['text'];
+		$message_text = $update['message']['text'] ?? ''; // Ensure it's not null
 		if (strpos($message_text, '/start') !== false) {
 			$arguments = explode(' ', $message_text);
 			if (count($arguments) > 1) {
 				$referral_id = intval($arguments[1]);
 			} else {
 				$matches = [];
-				if (preg_match('/start=([0-9a-z]+)/i', $message_text, $matches)) { $referral_id = intval($matches[1]); }
+				if (preg_match('/start=([0-9a-z]+)/i', $message_text, $matches)) {
+					$referral_id = intval($matches[1]);
+				}
 			}
 		} elseif (isset($update['message']['entities'])) {
 			$url = null;
@@ -249,7 +251,9 @@ class DatabaseConnection extends AdminPanel {
 			}
 			if ($url) {
 				$matches = [];
-				if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) { $referral_id = intval($matches[1]); }
+				if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) {
+					$referral_id = intval($matches[1]);
+				}
 			}
 		}
 		$telegram->sendMessage([
@@ -293,7 +297,7 @@ class DatabaseConnection extends AdminPanel {
 			'reply_markup' => $reply_markup
 		];
 		$telegram->sendMessage($content);
-	}
+	}	
 
 	// Start message after language selection
 	public function handleLanguage($telegram, $chat_id) {
