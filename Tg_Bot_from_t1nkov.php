@@ -13,7 +13,7 @@ if (!isset($config_file['db'])) { die("# db key error - Database configuration n
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
-$text = $telegram->Text();
+$command = $telegram->command();
 $chat_id = $telegram->ChatID();
 $data = $telegram->getData();
 
@@ -42,9 +42,9 @@ $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
-function isTextMatchingButtons($text) {
+function isTextMatchingButtons($command) {
 	foreach ($GLOBALS['buttons'] as $buttonValues) {
-		if (in_array($text, $buttonValues)) return true;
+		if (in_array($command, $buttonValues)) return true;
 	}
 	return false;
 }
@@ -53,7 +53,7 @@ $db = new DatabaseConnection($config_file);
 
 $telegram->sendMessage([
     'chat_id' => $chat_id,
-    'text'    => 'Callback data: ' . $callback_data,
+    'command'    => 'Callback data: ' . $callback_data,
 ]);
 
 $commands = [
@@ -85,17 +85,17 @@ if (isset($commands[$callback_data])) {
 
 $telegram->sendMessage([
 	'chat_id' => $chat_id,
-	'text'    => 'Text: ' . $text,
+	'command'    => 'command: ' . $command,
 ]);
 
-switch ($text) {
-	case strpos($text, '/start') === 0:
+switch ($command) {
+	case strpos($command, '/start') === 0:
 		$db->handleStartCommand($telegram, $chat_id, $update);
 		break;
-	case isTextMatchingButtons($text):
+	case isTextMatchingButtons($command): // Language set
 		$hhh = null;
 		foreach ($GLOBALS['buttons'] as $key => $values) {
-			if (in_array($text, $values)) {
+			if (in_array($command, $values)) {
 				$hhh = $key;
 				break;
 			}
@@ -120,14 +120,14 @@ switch ($text) {
 	case $db->getPhraseText("button_Help", $chat_id):
 		$db->handleHelpCommand($telegram, $chat_id);
 		break;
-	case ($text != null):
+	case ($command != null):
 		if ($db->isInputMode($chat_id) == 'input_mode') {
 			$params = [
 				'chat_id' => $chat_id,
-				'text'    => 'вошло'
+				'command'    => 'вошло'
 			];
 			$telegram->sendMessage($params);
-			$db->saveUserText($chat_id, $telegram, $text);
+			$db->saveUserText($chat_id, $telegram, $command);
 		}
 		break;
 	case $db->getPhraseText('download_button', $chat_id):
