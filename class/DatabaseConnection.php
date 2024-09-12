@@ -148,7 +148,7 @@ class DatabaseConnection {
 		$telegram->sendMessage([
 			'chat_id' => $chat_id,
 			'text'    => 'Before execute',
-		});
+		]);
 		if (!$stmt->execute()) {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
