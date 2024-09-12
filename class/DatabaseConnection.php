@@ -435,17 +435,30 @@ class DatabaseConnection {
 	// To invite a friend
 	public function handlePartnerCommand($telegram, $chat_id) {
 		$ref_link = $this->generateReferralLink($chat_id);
-		$referal = $this->getReferralsCount($chat_id);
-		$balance = $GLOBALS['bonus'] * $referal . $GLOBALS['currency'];
-		$message = str_replace(
-			['{$ref_link}', '{$bonus}', '{$referal}', '{$balance}'],
-			[$ref_link, $GLOBALS['bonus'], $referal, $balance],
-			$this->getPhraseText("partner_text", $chat_id)
+	
+		$referal        = $this->getReferralsCount($chat_id);
+		$balance        = $GLOBALS['bonus'] * $referal . $GLOBALS['valuta'];
+		$partnerMessage = $this->getPhraseText("partner_text", $chat_id);
+		$message        = str_replace(
+			[
+				'{$ref_link}',
+				'{$bonus}',
+				'{$referal}',
+				'{$balance}'
+			],
+			[
+				$ref_link,
+				$GLOBALS['bonus'],
+				$referal,
+				$balance
+			],
+			$partnerMessage
 		);
-		$telegram->sendMessage([
+		$content = [
 			'chat_id' => $chat_id,
 			'text'    => $message,
-		]);
+		];
+		$telegram->sendMessage($content);
 	}
 	
 	// Account
@@ -669,7 +682,7 @@ class DatabaseConnection {
 		];
 		$telegram->editMessageText($content);
 	}
-	
+
 	// Spam
 	public function handleSpamCommand($telegram, $chat_id, $message_id) {
 		$message = $this->getPhraseText("report_text", $chat_id);
