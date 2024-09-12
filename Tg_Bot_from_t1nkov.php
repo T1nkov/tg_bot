@@ -183,7 +183,7 @@ switch ($text) {
 		$db->setInputMode($chat_id, 'def');
 		$db->handleMainMenu($telegram, $chat_id);
 		break;
-	case ($text != null): // Проверяем, что текст не null
+	case ($text != null):
 		if ($db->isInputMode($chat_id) == 'input_mode') {
 			$params = [
 				'chat_id' => $chat_id,
