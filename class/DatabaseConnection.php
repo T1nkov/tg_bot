@@ -214,7 +214,7 @@ class DatabaseConnection {
 
 	// Start
 	public function handleStartCommand($telegram, $chat_id, $update) {
-		$referral_id  = null;
+		$referral_id = null;
 		$message_text = $update['message']['text'];
 		if (strpos($message_text, '/start') !== false) {
 			$arguments = explode(' ', $message_text);
@@ -222,39 +222,38 @@ class DatabaseConnection {
 				$referral_id = intval($arguments[1]);
 			} else {
 				$matches = [];
-				if (preg_match('/start=([0-9a-z]+)/i', $message_text, $matches)) { $referral_id = intval($matches[1]); }
+				if (preg_match('/start=([0-9a-z]+)/i', $message_text, $matches)) {
+					$referral_id = intval($matches[1]);
+				}
 			}
 		} elseif (isset($update['message']['entities'])) {
-			$url = null;
 			foreach ($update['message']['entities'] as $entity) {
 				if ($entity['type'] === 'text_link') {
 					$url = $entity['url'];
+					if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) {
+						$referral_id = intval($matches[1]);
+					}
 					break;
 				}
 			}
-			if ($url) {
-				$matches = [];
-				if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) { $referral_id = intval($matches[1]); }
-			}
 		}
-		$telegram->sendMessage([
-			'chat_id' => $chat_id,
-			'text'    => 'Chat id: ' . $chat_id,
-		]);
 		if ($this->userExists($chat_id)) {
-			// update referral_id 
 			if ($referral_id && $referral_id != $chat_id) {
 				$this->updateReferralId($chat_id, $referral_id);
 			}
+			$telegram->sendMessage([
+				'chat_id' => $chat_id,
+				'text'    => 'Welcome back! Your referral ID has been updated if necessary.',
+			]);
 		} else {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
-				'text'    => 'Start register new user',
+				'text'    => 'Start registering a new user.',
 			]);
 			$new_user_id = $this->registerUser($telegram, $chat_id, $referral_id ?? 0);
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
-				'text'    => 'New user id: ' . $new_user_id,
+				'text'    => 'New user ID: ' . $new_user_id,
 			]);
 			if ($referral_id && $referral_id != $chat_id) {
 				$message = $this->getPhraseText("bonus_text", $referral_id);
@@ -269,8 +268,8 @@ class DatabaseConnection {
 		}
 		$reply_markup = $telegram->buildKeyboard(
 			array_values($GLOBALS['buttons']),
-			$oneTimeKeyboard = true,
-			$resizeKeyboard = true
+			true, // oneTimeKeyboard
+			true  // resizeKeyboard
 		);
 		$content = [
 			'chat_id'      => $chat_id,
