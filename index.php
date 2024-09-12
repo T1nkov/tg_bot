@@ -36,6 +36,6 @@ $title = "T1nkov/tg_bot";
     </style>
 </head>
 <body>
-    <a class="button" href="https://t.me/testest0001_bot">Go to Telegram Bot</a>
+    <a class="button" href="https://t.me/testest0001_bot" target="_blank">Go to Telegram Bot</a>
 </body>
 </html>
