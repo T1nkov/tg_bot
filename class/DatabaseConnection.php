@@ -222,9 +222,7 @@ class DatabaseConnection {
 				$referral_id = intval($arguments[1]);
 			} else {
 				$matches = [];
-				if (preg_match('/start=([0-9a-z]+)/i', $message_text, $matches)) {
-					$referral_id = intval($matches[1]);
-				}
+				if (preg_match('/start=([0-9a-z]+)/i', $message_text, $matches)) { $referral_id = intval($matches[1]); }
 			}
 		} elseif (isset($update['message']['entities'])) {
 			$url = null;
@@ -236,9 +234,7 @@ class DatabaseConnection {
 			}
 			if ($url) {
 				$matches = [];
-				if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) {
-					$referral_id = intval($matches[1]);
-				}
+				if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) { $referral_id = intval($matches[1]); }
 			}
 		}
 		$telegram->sendMessage([
@@ -246,7 +242,7 @@ class DatabaseConnection {
 			'text'    => 'Chat id: ' . $chat_id,
 		]);
 		if ($this->userExists($chat_id)) {
-			// Обновляем id_referal, если он был передан
+			// update referral_id 
 			if ($referral_id && $referral_id != $chat_id) {
 				$this->updateReferralId($chat_id, $referral_id);
 			}
@@ -355,7 +351,7 @@ class DatabaseConnection {
 		$result = $stmt->get_result();
 		return $result->fetch_assoc()['role'] === 'admin';
 	}
-	//Главное меню
+	// Main menu
 	public function handleMainMenu($telegram, $chat_id) {
 		$isAdmin = $this->isAdmin($telegram, $chat_id);
 		$message = $isAdmin 
@@ -934,8 +930,6 @@ class DatabaseConnection {
 		$this->setInputMode($chatId, 'input_mode');
 	}
 	
-	public function __destruct() {
-		$this->conn && $this->conn->close();
-	}
+	public function __destruct() { $this->conn && $this->conn->close(); }
 	
 }
