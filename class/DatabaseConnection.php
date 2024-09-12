@@ -595,7 +595,7 @@ class DatabaseConnection {
 		]);
 	}
 	
-	public function handleDwnloadCommand($telegram, $chat_id) {
+	public function handleDownloadCommand($telegram, $chat_id) {
 		$lang = $this->getLanguage($chat_id);
 		$message = $this->getPhraseText("download_button", $chat_id);
 		$keyboard = json_encode([

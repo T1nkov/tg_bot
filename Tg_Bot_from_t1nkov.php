@@ -153,7 +153,7 @@ switch ($text) {
 		}
 		break;
 	case $db->getPhraseText('download_button', $chat_id):
-		$db->handleDwnloadCommand($telegram, $chat_id);
+		$db->handleDownloadCommand($telegram, $chat_id);
 		break;
 	default:
 		// Handle any other cases or provide a default response
