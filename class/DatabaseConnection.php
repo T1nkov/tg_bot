@@ -122,20 +122,25 @@ class DatabaseConnection {
 	
 	public function registerUser($telegram, $chat_id, $id_referal, $balance = 0.0, $role = 'user') {
 		$username = $GLOBALS['username1'];
-		$status = 'def'; // Value for the status field
-		$sql = "INSERT INTO users (usernameTg, role, id_tg, id_referal, balance, referals, status) VALUES (?, ?, ?, ?, ?, 0, ?)";
+		$sql  = "INSERT INTO users (usernameTg, role, id_tg, id_referal, balance, referals, status) VALUES (?, ?, ?, ?, ?, 0, ?)";
 		$stmt = $this->conn->prepare($sql);
-		// Send SQL debug message
-		$telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'New user sql: ' . $sql]);
+		$telegram->sendMessage([
+			'chat_id' => $chat_id,
+			'text'    => 'New user sql: ' . $sql,
+		]);
 		try {
-			// Bind parameters
+			$status = 'def'; // field status
 			$stmt->bind_param("ssiids", $username, $role, $chat_id, $id_referal, $balance, $status);
 		} catch (\Exception $e) {
-			$telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Error with new user stmt: ' . $e->getMessage()]);
-			return null; // Early return in case of error
+			$telegram->sendMessage([
+				'chat_id' => $chat_id,
+				'text'    => 'Error with new user stmt: ' . json_encode($stmt),
+			]);
 		}
-		// Send message before execution
-		$telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Before execute']);
+		$telegram->sendMessage([
+			'chat_id' => $chat_id,
+			'text'    => 'Before execute',
+		]);
 		$stmt->execute();
 		return $this->conn->insert_id;
 	}
@@ -209,22 +214,19 @@ class DatabaseConnection {
 
 	// Start
 	public function handleStartCommand($telegram, $chat_id, $update) {
-		// Get referral id from the link parameter
 		$referral_id  = null;
 		$message_text = $update['message']['text'];
 		if (strpos($message_text, '/start') !== false) {
 			$arguments = explode(' ', $message_text);
 			if (count($arguments) > 1) {
-				$referral_id = intval($arguments[1]); // Remove the call to parseRefLink()
+				$referral_id = intval($arguments[1]);
 			} else {
-				// Extract id_referal from /start command arguments
 				$matches = [];
 				if (preg_match('/start=([0-9a-z]+)/i', $message_text, $matches)) {
-					$referral_id = intval($matches[1]); // Remove the call to parseRefLink()
+					$referral_id = intval($matches[1]);
 				}
 			}
 		} elseif (isset($update['message']['entities'])) {
-			// Extract the URL from the message using a regular expression
 			$url = null;
 			foreach ($update['message']['entities'] as $entity) {
 				if ($entity['type'] === 'text_link') {
@@ -235,7 +237,7 @@ class DatabaseConnection {
 			if ($url) {
 				$matches = [];
 				if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) {
-					$referral_id = intval($matches[1]); // Remove the call to parseRefLink()
+					$referral_id = intval($matches[1]);
 				}
 			}
 		}
@@ -244,6 +246,7 @@ class DatabaseConnection {
 			'text'    => 'Chat id: ' . $chat_id,
 		]);
 		if ($this->userExists($chat_id)) {
+			// Обновляем id_referal, если он был передан
 			if ($referral_id && $referral_id != $chat_id) {
 				$this->updateReferralId($chat_id, $referral_id);
 			}
@@ -280,6 +283,7 @@ class DatabaseConnection {
 		];
 		$telegram->sendMessage($content);
 	}
+
 	// Start message after language selection
 	public function handleLanguage($telegram, $chat_id) {
 		$message1     = $this->getPhraseText('welcome_message', $chat_id);
