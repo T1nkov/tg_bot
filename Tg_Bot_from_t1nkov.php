@@ -44,9 +44,7 @@ $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
 function isTextMatchingButtons($text) {
 	foreach ($GLOBALS['buttons'] as $buttonValues) {
-		if (in_array($text, $buttonValues)) {
-			return true;
-		}
+		if (in_array($text, $buttonValues)) return true;
 	}
 	return false;
 }
