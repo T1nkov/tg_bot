@@ -18,7 +18,7 @@ $chat_id = $telegram->ChatID();
 $data = $telegram->getData();
 
 $GLOBALS['adminHREF']         = 'https://t.me/t1nkov';
-$GLOBALS['summ']              = 500;
+$GLOBALS['amount']              = 500;
 $GLOBALS['inviteSumValue']    = 200;
 $GLOBALS['offTgChannel']      = 'https://t.me/fgjhaksdlf'; // do you need this here?
 $GLOBALS['cards']             = 10;

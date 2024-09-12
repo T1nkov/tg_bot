@@ -299,7 +299,7 @@ class DatabaseConnection extends AdminPanel {
 	public function handleLanguage($telegram, $chat_id) {
 		$message1     = $this->getPhraseText('welcome_message', $chat_id);
 		$message      = str_replace(
-			[ '{cards}', '{summ}', '{currency}' ], [ $GLOBALS['cards'], $GLOBALS['summ'], $GLOBALS['currency'] ],
+			[ '{cards}', '{amount}', '{currency}' ], [ $GLOBALS['cards'], $GLOBALS['amount'], $GLOBALS['currency'] ],
 			$message1
 		);
 		$button_text  = $this->getPhraseText('welcome_button', $chat_id);
@@ -384,66 +384,133 @@ class DatabaseConnection extends AdminPanel {
 		];
 		$telegram->sendMessage($content);
 	}	
-	
+
 	public function checkTrue($telegram, $chat_id, $bot_token, $message_id) {
 		$balance    = $this->getUserBalance($chat_id);
 		$referals   = $this->getReferralsCount($chat_id);
 		$joined     = $this->isUserSubscribed($chat_id, $telegram, $bot_token);
 		$conditions = $this->getPhraseText("conditions_text", $chat_id);
-		$joined
-			? $this->handleSubscribedUser($telegram, $chat_id, $message_id, $referals, $conditions)
-			: $this->sendNotSubscribedResponse($telegram, $chat_id, $message_id);
-	}
-	
-	private function sendNotSubscribedResponse($telegram, $chat_id, $message_id) {
-		$notSub       = $this->getPhraseText("doesntSub_text", $chat_id);
-		$keyboard     = [
-			'inline_keyboard' => [
-				[
-					[['text' => $this->getPhraseText('subscribe_button', $chat_id), 'url' => $GLOBALS['offTgChannel']]],
-				],
-				[
-					[['text' => $this->getPhraseText('checkChannel_button', $chat_id), 'callback_data' => 'checkSub']],
-				],
-			],
-		];
-		$content = [
-			'chat_id'      => $chat_id,
-			'message_id'   => $message_id,
-			'text'         => $notSub,
-			'reply_markup' => json_encode($keyboard),
-		];
-		$telegram->editMessageText($content);
-	}
-	
-	private function handleSubscribedUser($telegram, $chat_id, $message_id, $referals, $conditions) {
-		$joinedTG = $this->getPhraseText("joined_text", $chat_id);
-		$message = str_replace(
-			['{summ}', '{valuta}', '{inviteSumValue}', '{referals}', '{joined}'],
-			[$GLOBALS['summ'], $GLOBALS['valuta'], $GLOBALS['inviteSumValue'], $referals, $joinedTG],
-			$conditions
-		);
-		if ($referals > $GLOBALS['inviteSumValue'] - 1) {
-			$getGiftButton = str_replace(
-				['{summ}', '{valuta}'],
-				[$GLOBALS['summ'], $GLOBALS['valuta']],
-				$this->getPhraseText("getGift_button", $chat_id)
-			);
-			$keyboard = [['text' => $getGiftButton, 'callback_data' => 'withdraw']];
-		} else {
-			$mustBe        = $GLOBALS['inviteSumValue'] - $referals;
-			$remindFriendBTN = str_replace(['{remained}'], [$mustBe], $this->getPhraseText("inviteFriends_button", $chat_id));
-			$keyboard = [['text' => $remindFriendBTN, 'callback_data' => 'invite_friend']];
+		if (!$joined) {
+			$notSub       = $this->getPhraseText("doesntSub_text", $chat_id);
+			$checkChannel = $this->getPhraseText('checkChannel_button', $chat_id);
+			$subscribe = $this->getPhraseText('subscribe_button', $chat_id);
+			$keyboard = [
+				'inline_keyboard' => [
+					[
+						[
+							'text' => $subscribe,
+							'url'  => $GLOBALS['offTgChannel']
+						]
+					],
+					[
+						[
+							'text'          => $checkChannel,
+							'callback_data' => 'checkSub'
+						]
+					]
+				]
+			];
+			$content  = [
+				'chat_id'      => $chat_id,
+				'message_id'   => $message_id,
+				'text'         => $notSub,
+				'reply_markup' => json_encode($keyboard)
+			];
+			$telegram->editMessageText($content);
+		} elseif ($joined) {
+			if ($referals > $GLOBALS['inviteSumValue'] - 1) {
+				$joinedTG      = $this->getPhraseText("joined_text ", $chat_id);
+				$message       = str_replace(
+					[
+						'{amount}',
+						'{currency}',
+						'{inviteSumValue}',
+						'{referals}',
+						'{joined}'
+					],
+					[
+						$GLOBALS['amount'],
+						$GLOBALS['currency'],
+						$GLOBALS['inviteSumValue'],
+						$referals,
+						$joinedTG
+					],
+					$conditions
+				);
+				$getGift       = $this->getPhraseText("getGift_button", $chat_id);
+				$getGiftButton = str_replace(
+					[
+						'{amount}',
+						'{currency}'
+					],
+					[
+						$GLOBALS['amount'],
+						$GLOBALS['currency']
+					],
+					$getGift
+				);
+				$keyboard      = [
+					'inline_keyboard' => [
+						[
+							[
+								'text'          => $getGiftButton,
+								'callback_data' => 'withdraw'
+							]
+						]
+					]
+				];
+				$content       = [
+					'chat_id'      => $chat_id,
+					'text'         => $message,
+					'message_id'   => $message_id,
+					'reply_markup' => json_encode($keyboard)
+				];
+			} else {
+				$joinedTG        = $this->getPhraseText("joined_text ", $chat_id);
+				$message         = str_replace(
+					[
+						'{amount}',
+						'{currency}',
+						'{inviteSumValue}',
+						'{referals}',
+						'{joined}'
+					],
+					[
+						$GLOBALS['amount'],
+						$GLOBALS['currency'],
+						$GLOBALS['inviteSumValue'],
+						$referals,
+						$joinedTG
+					],
+					$conditions
+				);
+				$mustBe          = $GLOBALS['inviteSumValue'] - $referals;
+				$remindFriend    = $this->getPhraseText("inviteFriends_button", $chat_id);
+				$remindFriendBTN = str_replace(
+					['{remained}'],
+					[$mustBe],
+					$remindFriend
+				);
+				$keyboard        = [
+					'inline_keyboard' => [
+						[
+							[
+								'text'          => $remindFriendBTN,
+								'callback_data' => 'invite_friend'
+							]
+						]
+					]
+				];
+				$content         = [
+					'chat_id'      => $chat_id,
+					'message_id'   => $message_id,
+					'text'         => $message,
+					'reply_markup' => json_encode($keyboard)
+				];
+			}
+			$telegram->editMessageText($content);
 		}
-		$content = [
-			'chat_id'      => $chat_id,
-			'message_id'   => $message_id,
-			'text'         => $message,
-			'reply_markup' => json_encode(['inline_keyboard' => [$keyboard]]),
-		];
-		$telegram->editMessageText($content);
 	}
-	
 
 	// To invite a friend
 	public function handlePartnerCommand($telegram, $chat_id) {
@@ -539,8 +606,8 @@ class DatabaseConnection extends AdminPanel {
 
 	public function handleHelpCommand($telegram, $chat_id) {
 		$message = str_replace(
-			['{summ}', '{currency}'],
-			[$GLOBALS['summ'], $GLOBALS['currency']],
+			['{amount}', '{currency}'],
+			[$GLOBALS['amount'], $GLOBALS['currency']],
 			$this->getPhraseText("help_text", $chat_id)
 		);
 		$telegram->sendMessage([
