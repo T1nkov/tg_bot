@@ -26,7 +26,7 @@ $GLOBALS['ChannelID']         = 2248476665;
 $GLOBALS['subscribeSumValue'] = 1000 . $GLOBALS['currency'];
 $GLOBALS['watchSumValue']     = 8;
 $GLOBALS['valueTg']           = 1;
-$GLOBALS['currency']            = 'INR';
+$GLOBALS['currency']          = 'INR';
 $GLOBALS['joinChannelPay']    = 1000 . $GLOBALS['currency'];
 $GLOBALS['adminID']           = 403480319;
 $GLOBALS['minWithdraw']       = number_format(10, 2, '.', '') . $GLOBALS['currency'];
@@ -54,74 +54,35 @@ function isTextMatchingButtons($text) {
 $db = new DatabaseConnection($config_file);
 
 $telegram->sendMessage([
-	'chat_id' => $chat_id,
-	'text'    => 'Callback data: ' . $callback_data,
+    'chat_id' => $chat_id,
+    'text'    => 'Callback data: ' . $callback_data,
 ]);
 
-switch ($callback_data) {
-	case 'withdraw':
-		$db->handleWithdrawCommand($telegram, $chat_id, $message_id);
-		break;
-	case 'rep_ru':
-		$db->handleReportCommand($telegram, $chat_id, $message_id);
-		break;
-	case'fraud':
-		$db->handleFraudCommand($telegram, $chat_id, $message_id);
-		break;
-	case'(fraud)':
-		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-		break;
-	case 'spam':
-		$db->handleSpamCommand($telegram, $chat_id, $message_id);
-		break;
-	case '(spam)':
-		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-		break;
-	case'violence':
-		$db->handleViolenceCommand($telegram, $chat_id, $message_id);
-		break;
-	case'(violence)':
-		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-		break;
-	case'copyright':
-		$db->handleCopyrightCommand($telegram, $chat_id, $message_id);
-		break;
-	case'(copyright)':
-		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-		break;
-	case'other':
-		$db->handleOtherCommand($telegram, $chat_id, $message_id);
-		break;
-	case'(other)':
-		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-		break;
-	case 'yes':
-		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-		break;
-	case 'invite_friend':
-		$db->handlePartnerCommand($telegram, $chat_id);
-		break;
-	case 'join_channel':
-		$db->handleJoinChannelCommand($telegram, $chat_id, $message_id);
-		break;
-	case 'skip':
-		$db->handleJoinChannelCommand($telegram, $chat_id, $message_id);
-		break;
-	case 'view_post':
-		$db->count_to_ten($telegram, $chat_id, $message_id);
-		break;
-	case 'check':
-		$db->handleSubscribeCheckCommand($chat_id, $telegram, $bot_token, $message_id);
-		break;
-	case 'checkSub':
-		$db->handleBalanceCommand($telegram, $chat_id, $bot_token);
-		break;
-	case 'no':
-		$db->handleCanceledCommand($telegram, $chat_id, $message_id);
-		break;
-	default:
-		// Handle any other cases or provide a default response
-		break;
+$commands = [
+    'withdraw' => 'handleWithdrawCommand',
+    'rep_ru' => 'handleReportCommand',
+    'fraud' => 'handleFraudCommand',
+    'spam' => 'handleSpamCommand',
+    'violence' => 'handleViolenceCommand',
+    'copyright' => 'handleCopyrightCommand',
+    'other' => 'handleOtherCommand',
+    'invite_friend' => 'handlePartnerCommand',
+    'join_channel' => 'handleJoinChannelCommand',
+    'skip' => 'handleJoinChannelCommand',
+    'view_post' => 'count_to_ten',
+    'check' => 'handleSubscribeCheckCommand',
+    'checkSub' => 'handleBalanceCommand',
+    'no' => 'handleCanceledCommand',
+];
+
+if (isset($commands[$callback_data])) {
+    $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
+} elseif (preg_match('/^$(fraud|spam|violence|copyright|other)$$/', $callback_data, $matches)) {
+    $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
+} elseif ($callback_data === 'yes') {
+    $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
+} else {
+
 }
 
 $telegram->sendMessage([
