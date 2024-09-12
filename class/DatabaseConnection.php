@@ -530,25 +530,38 @@ class DatabaseConnection {
 	
 	// Earn
 	public function handleEarnCommand($telegram, $chat_id) {
-		$message = $this->getPhraseText("income_text", $chat_id);
-		$options = [
-			'invite_friend' => 'invite_friend',
-			'join_channel'  => 'join_channel',
-			'view_post'     => 'view_post'
-		];
+		$message      = $this->getPhraseText("income_text", $chat_id);
+		$inviteSum    = str_replace('{$inviteSum}', $GLOBALS['inviteSumValue'], $this->getPhraseText("invite_friend", $chat_id));
+		$subscribeSum = str_replace('{$subscribeSum}', $GLOBALS['subscribeSumValue'], $this->getPhraseText("join_channel", $chat_id));
+		$watchSum     = str_replace('{$wachSum}', $GLOBALS['watchSumValue'], $this->getPhraseText("view_post", $chat_id));
 		$keyboard = [
-			'inline_keyboard' => array_map(function($key) use ($chat_id) {
-				return [[
-					'text' => str_replace('{$' . $key . '}', $GLOBALS[$key . 'Value'], $this->getPhraseText($key, $chat_id)),
-					'callback_data' => $key
-				]];
-			}, array_keys($options))
+			'inline_keyboard' => [
+				[
+					[
+						'text'          => $inviteSum,
+						'callback_data' => 'invite_friend'
+					]
+				],
+				[
+					[
+						'text'          => $subscribeSum,
+						'callback_data' => 'join_channel'
+					]
+				],
+				[
+					[
+						'text'          => $watchSum,
+						'callback_data' => 'view_post'
+					]
+				]
+			]
 		];
-		$telegram->sendMessage([
+		$content  = [
 			'chat_id'      => $chat_id,
 			'text'         => $message,
 			'reply_markup' => json_encode($keyboard)
-		]);
+		];
+		$telegram->sendMessage($content);
 	}
 
 	// Subscription check + charge to balance
