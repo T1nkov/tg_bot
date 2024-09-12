@@ -423,14 +423,14 @@ class DatabaseConnection extends AdminPanel {
 	
 	private function prepareMessage($conditions, $referals, $joinedTG) {
 		return str_replace(
-			['{summ}', '{valuta}', '{inviteSumValue}', '{referals}', '{joined}'],
-			[$GLOBALS['summ'], $GLOBALS['valuta'], $GLOBALS['inviteSumValue'], $referals, $joinedTG],
+			['{summ}', '{currency}', '{inviteSumValue}', '{referals}', '{joined}'],
+			[$GLOBALS['summ'], $GLOBALS['currency'], $GLOBALS['inviteSumValue'], $referals, $joinedTG],
 			$conditions
 		);
 	}
 	
 	private function sendGiftMessage($telegram, $chat_id, $message_id, $message) {
-		$getGiftButton = str_replace(['{summ}', '{valuta}'], [$GLOBALS['summ'], $GLOBALS['valuta']], $this->getPhraseText("getGift_button", $chat_id));
+		$getGiftButton = str_replace(['{summ}', '{currency}'], [$GLOBALS['summ'], $GLOBALS['currency']], $this->getPhraseText("getGift_button", $chat_id));
 		$keyboard = ['inline_keyboard' => [[['text' => $getGiftButton, 'callback_data' => 'withdraw']]]];
 		$content = [
 			'chat_id'      => $chat_id,
@@ -458,7 +458,7 @@ class DatabaseConnection extends AdminPanel {
 		$ref_link = $this->generateReferralLink($chat_id);
 	
 		$referal        = $this->getReferralsCount($chat_id);
-		$balance        = $GLOBALS['bonus'] * $referal . $GLOBALS['valuta'];
+		$balance        = $GLOBALS['bonus'] * $referal . $GLOBALS['currency'];
 		$partnerMessage = $this->getPhraseText("partner_text", $chat_id);
 		$message        = str_replace(
 			[
