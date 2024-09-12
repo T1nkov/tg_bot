@@ -362,23 +362,28 @@ class DatabaseConnection extends AdminPanel {
 	// Main menu
 	public function handleMainMenu($telegram, $chat_id) {
 		$isAdmin = $this->isAdmin($telegram, $chat_id);
-		$message = $this->createMainMenuMessage($isAdmin, $chat_id);
-		$buttons = $this->getMainMenuButtons($chat_id);
+		$message = $isAdmin 
+			? '👤Admin панель👤' . PHP_EOL . PHP_EOL . PHP_EOL . $this->getPhraseText('main_menu', $chat_id)
+			: $this->getPhraseText('main_menu', $chat_id);
+		$buttons = [
+			[
+				$this->getPhraseText('button_earn', $chat_id),
+				$this->getPhraseText('button_partners', $chat_id),
+				$this->getPhraseText('button_balance', $chat_id)
+			],
+			[
+				$this->getPhraseText('button_help', $chat_id),
+				$this->getPhraseText('button_changeLang', $chat_id)
+			]
+		];
 		$reply_markup = $telegram->buildKeyboard($buttons, false, true, true);
-		
 		$content = [
 			'chat_id'      => $chat_id,
 			'text'         => $message,
 			'reply_markup' => $reply_markup
 		];
 		$telegram->sendMessage($content);
-	}
-	
-	private function createMainMenuMessage($isAdmin, $chat_id) {
-		return $isAdmin 
-			? '👤Admin панель👤' . PHP_EOL . PHP_EOL . PHP_EOL . $this->getPhraseText('main_menu', $chat_id) 
-			: $this->getPhraseText('main_menu', $chat_id);
-	}
+	}	
 	
 	private function getMainMenuButtons($chat_id) {
 		return [
