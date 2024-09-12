@@ -46,7 +46,7 @@ $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
-$db = new DatabaseConnection($config_file['db']);
+$db = new DatabaseConnection($config_file);
 
 processCallback($db, $telegram, $chat_id, $message_id, $callback_data);
 
