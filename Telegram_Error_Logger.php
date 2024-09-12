@@ -58,19 +58,25 @@ class TelegramErrorLogger
         try {
             $dir_name = 'logs';
             if (!is_dir($dir_name)) {
-                mkdir($dir_name);
+                mkdir($dir_name, 0775, true);
             }
             $fileName = $dir_name.'/'.__CLASS__.'-'.date('Y-m-d').'.txt';
             $myFile = fopen($fileName, 'a+');
+    
+            if ($myFile === false) {
+                throw new \Exception('Could not open log file for writing.');
+            }
+    
             $date = '============[Date]============';
             $date .= "\n";
             $date .= '[ '.date('Y-m-d H:i:s  e').' ] ';
             fwrite($myFile, $date.$error_text."\n\n");
             fclose($myFile);
         } catch (\Exception $e) {
-            echo $e->getMessage();
+            echo 'Logging error: ' . $e->getMessage();
         }
     }
+    
 
     private function rt($array, $title = null, $head = true)
     {
