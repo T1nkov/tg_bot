@@ -38,12 +38,9 @@ class Telegram {
 
     public function endpoint($api, array $content, $post = true) {
         $url = 'https://api.telegram.org/bot'.$this->bot_token.'/'.$api;
-        if ($post) {
-            $reply = $this->sendAPIRequest($url, $content);
-        } else {
-            $reply = $this->sendAPIRequest($url, [], false);
-        }
-
+        $reply = ($post)
+            ? $this->sendAPIRequest($url, $content)
+            : $this->sendAPIRequest($url, [], false);
         return json_decode($reply, true);
     }
 
@@ -57,6 +54,7 @@ class Telegram {
         http_response_code(200);
         return json_encode(['status' => 'success']);
     }
+
     public function sendMessage(array $content) { return $this->endpoint('sendMessage', $content); }
 
     public function copyMessage(array $content) { return $this->endpoint('copyMessage', $content); }
@@ -157,19 +155,15 @@ class Telegram {
         $file_url = 'https://api.telegram.org/file/bot'.$this->bot_token.'/'.$telegram_file_path;
         $in = fopen($file_url, 'rb');
         $out = fopen($local_file_path, 'wb');
-        while ($chunk = fread($in, 8192)) {
-            fwrite($out, $chunk, 8192);
-        }
+        while ($chunk = fread($in, 8192)) { fwrite($out, $chunk, 8192); }
         fclose($in);
         fclose($out);
     }
 
     public function setWebhook($url, $certificate = '') {
-        if ($certificate == '') {
-            $requestBody = ['url' => $url];
-        } else {
-            $requestBody = ['url' => $url, 'certificate' => "@$certificate"];
-        }
+        $requestBody = ($certificate == '')
+            ? ['url' => $url]
+            : ['url' => $url, 'certificate' => "@$certificate"];
         return $this->endpoint('setWebhook', $requestBody, true);
     }
 
@@ -202,11 +196,7 @@ class Telegram {
 
     public function ChatID() {
         $chat = $this->Chat();
-        if ($chat !== null && isset($chat['id'])) {
-            return $chat['id'];
-        } else {
-            return null;
-        }
+        return ($chat !== null && isset($chat['id'])) ? $chat['id'] : null;
     }
 
     public function Chat() {
@@ -247,7 +237,6 @@ class Telegram {
 
     public function Date() { return $this->data['message']['date']; }
 
-    /// Get the first name of the user
     public function FirstName() {
         $type = $this->getUpdateType();
         if ($type == self::CALLBACK_QUERY) { return @$this->data['callback_query']['from']['first_name']; }
@@ -256,7 +245,6 @@ class Telegram {
         return @$this->data['message']['from']['first_name'];
     }
 
-    /// Get the last name of the user
     public function LastName() {
         $type = $this->getUpdateType();
         if ($type == self::CALLBACK_QUERY) { return @$this->data['callback_query']['from']['last_name']; }
@@ -266,7 +254,6 @@ class Telegram {
         return '';
     }
 
-    /// Get the username of the user
     public function Username() {
         $type = $this->getUpdateType();
         if ($type == self::CALLBACK_QUERY) { return @$this->data['callback_query']['from']['username']; }
@@ -327,31 +314,30 @@ class Telegram {
     }
 
     public function buildInlineKeyboardButton(
-        $text,
-        $url = '',
-        $callback_data = '',
-        $switch_inline_query = null,
-        $switch_inline_query_current_chat = null,
-        $callback_game = '',
-        $pay = ''
-    ) {
-        $replyMarkup = [
-            'text' => $text,
-        ];
-        if ($url != '') {
-            $replyMarkup['url'] = $url;
-        } elseif ($callback_data != '') {
-            $replyMarkup['callback_data'] = $callback_data;
-        } elseif (!is_null($switch_inline_query)) {
-            $replyMarkup['switch_inline_query'] = $switch_inline_query;
-        } elseif (!is_null($switch_inline_query_current_chat)) {
-            $replyMarkup['switch_inline_query_current_chat'] = $switch_inline_query_current_chat;
-        } elseif ($callback_game != '') {
-            $replyMarkup['callback_game'] = $callback_game;
-        } elseif ($pay != '') {
-            $replyMarkup['pay'] = $pay;
-        }
-        return $replyMarkup;
+                                                $text,
+                                                $url = '',
+                                                $callback_data = '',
+                                                $switch_inline_query = null,
+                                                $switch_inline_query_current_chat = null,
+                                                $callback_game = '',
+                                                $pay = ''
+                                            ) 
+    {
+            $replyMarkup = [ 'text' => $text ];
+            if ($url != '') {
+                $replyMarkup['url'] = $url;
+            } elseif ($callback_data != '') {
+                $replyMarkup['callback_data'] = $callback_data;
+            } elseif (!is_null($switch_inline_query)) {
+                $replyMarkup['switch_inline_query'] = $switch_inline_query;
+            } elseif (!is_null($switch_inline_query_current_chat)) {
+                $replyMarkup['switch_inline_query_current_chat'] = $switch_inline_query_current_chat;
+            } elseif ($callback_game != '') {
+                $replyMarkup['callback_game'] = $callback_game;
+            } elseif ($pay != '') {
+                $replyMarkup['pay'] = $pay;
+            }
+            return $replyMarkup;
     }
 
     public function buildKeyboardButton($text, $request_contact = false, $request_location = false) {
