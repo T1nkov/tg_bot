@@ -36,9 +36,11 @@ class Telegram {
         $this->proxy = $proxy;
     }
 
-    public function endpoint($api, array $content = [], $post = true) { // requests to Telegram Bot API
-        $url = 'https://api.telegram.org/bot' . $this->bot_token . '/' . $api;
-        $reply = $this->sendAPIRequest($url, $post ? $content : [], !$post);
+    public function endpoint($api, array $content, $post = true) {
+        $url = 'https://api.telegram.org/bot'.$this->bot_token.'/'.$api;
+        $reply = ($post) 
+            ?  $this->sendAPIRequest($url, $content);
+            : $this->sendAPIRequest($url, [], false);
         return json_decode($reply, true);
     }
 
