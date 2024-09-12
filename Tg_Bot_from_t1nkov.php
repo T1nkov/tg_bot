@@ -9,7 +9,6 @@ ini_set('display_errors', 1);
 $config_file = require __DIR__ . '/config.php';
 
 if (!isset($config_file['db'])) { die("# db key error - Database configuration not found."); }
-var_dump($config_file); // debugging junk 
 
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
@@ -18,7 +17,25 @@ $text = $telegram->Text();
 $chat_id = $telegram->ChatID();
 $data = $telegram->getData();
 
-
+$GLOBALS['adminHREF']         = 'https://t.me/t1nkov';
+$GLOBALS['summ']              = 500;
+$GLOBALS['inviteSumValue']    = 200;
+$GLOBALS['offTgChannel']      = 'https://t.me/fgjhaksdlf';
+$GLOBALS['cards']             = 10;
+$GLOBALS['ChannelID']         = 2248476665;
+$GLOBALS['subscribeSumValue'] = 1000 . $GLOBALS['currency'];
+$GLOBALS['watchSumValue']     = 8;
+$GLOBALS['valueTg']           = 1;
+$GLOBALS['currency']            = 'INR';
+$GLOBALS['joinChannelPay']    = 1000 . $GLOBALS['currency'];
+$GLOBALS['adminID']           = 403480319;
+$GLOBALS['minWithdraw']       = number_format(10, 2, '.', '') . $GLOBALS['currency'];
+$GLOBALS['bonus']             = 10 . $GLOBALS['currency'];
+$GLOBALS['buttons']           = [
+	"ru" => ["Русский"],
+	"en" => ["English"],
+	"kz" => ["Қазақша"]
+];
 
 $update = json_decode(file_get_contents('php://input'), true);
 $callback_data = $update['callback_query']['data'] ?? null;
