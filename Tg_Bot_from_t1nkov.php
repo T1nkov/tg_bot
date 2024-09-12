@@ -2,7 +2,7 @@
 
 include 'class/Telegram.php';
 include 'class/DatabaseConnection.php';
-include 'handlers.php'; // Include the handlers file
+include 'src/handlers.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -10,7 +10,6 @@ ini_set('display_errors', 1);
 $config_file = require __DIR__ . '/config.php';
 
 if (!isset($config_file['db'])) { die("# db key error - Database configuration not found."); }
-var_dump($config_file); // debugging junk 
 
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
