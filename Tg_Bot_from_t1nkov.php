@@ -13,7 +13,7 @@ if (!isset($config_file['db'])) { die("# db key error - Database configuration n
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
-$command = $telegram->command();
+$command = $telegram->Text();
 $chat_id = $telegram->ChatID();
 $data = $telegram->getData();
 
@@ -53,7 +53,7 @@ $db = new DatabaseConnection($config_file);
 
 $telegram->sendMessage([
     'chat_id' => $chat_id,
-    'command'    => 'Callback data: ' . $callback_data,
+    'text'    => 'Callback data: ' . $callback_data,
 ]);
 
 $commands = [
@@ -85,7 +85,7 @@ if (isset($commands[$callback_data])) {
 
 $telegram->sendMessage([
 	'chat_id' => $chat_id,
-	'command'    => 'command: ' . $command,
+	'text'    => 'Text: ' . $command,
 ]);
 
 switch ($command) {
@@ -124,7 +124,7 @@ switch ($command) {
 		if ($db->isInputMode($chat_id) == 'input_mode') {
 			$params = [
 				'chat_id' => $chat_id,
-				'command'    => 'вошло'
+				'text'    => 'вошло'
 			];
 			$telegram->sendMessage($params);
 			$db->saveUserText($chat_id, $telegram, $command);
