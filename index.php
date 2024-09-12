@@ -18,12 +18,24 @@ $title = "T1nkov/tg_bot";
             background-color: #f0f0f0;
             color: #333;
         }
-        h1 {
-            font-size: 2em;
+        .button {
+            display: inline-block;
+            padding: 20px 40px;
+            font-size: 1.5em;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <h1>Hello, World!</h1>
+    <a class="button" href="https://t.me/testest0001_bot">Go to Telegram Bot</a>
 </body>
 </html>
