@@ -105,6 +105,9 @@ switch ($command) {
 		}
 		$db->handleLanguage($telegram, $chat_id);
 		break;
+	case $db->getPhraseText("button_earn", $chat_id):
+		$db->handleEarnCommand($telegram, $chat_id);
+		break;
 	case $db->getPhraseText("welcome_button", $chat_id):
 		$db->handleMainMenu($telegram, $chat_id);
 		break;
