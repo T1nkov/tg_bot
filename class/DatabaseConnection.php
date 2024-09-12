@@ -382,13 +382,6 @@ class DatabaseConnection {
 				$this->getPhraseText('button_changeLang', $chat_id)
 			]
 		];
-		if ($isAdmin) {
-			$buttons[] = [
-				"Рассылка",
-				"Админ кнопка",
-				"Админ кнопка"
-			];
-		}
 		$reply_markup = $telegram->buildKeyboard($buttons, false, true, true);
 		$content = [
 			'chat_id'      => $chat_id,
