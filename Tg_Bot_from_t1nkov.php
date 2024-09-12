@@ -13,73 +13,191 @@ if (!isset($config_file['db'])) { die("# db key error - Database configuration n
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
+$text = $telegram->Text();
+$chat_id = $telegram->ChatID();
+$data = $telegram->getData();
 
-$GLOBALS['adminHREF'] = 'https://t.me/t1nkov';
-$GLOBALS['summ'] = 500;
-$GLOBALS['inviteSumValue'] = 200;
-$GLOBALS['offTgChannel'] = 'https://t.me/fgjhaksdlf';
-$GLOBALS['cards'] = 10;
-$GLOBALS['ChannelID'] = 2248476665;
-$GLOBALS['currency'] = 'INR';
-$GLOBALS['joinChannelPay'] = '1000INR';
-$GLOBALS['adminID'] = 403480319;
-$GLOBALS['minWithdraw'] = '10.00INR';
-$GLOBALS['bonus'] = '10INR';
+$GLOBALS['adminHREF']         = 'https://t.me/t1nkov';
+$GLOBALS['summ']              = 500;
+$GLOBALS['inviteSumValue']    = 200;
+$GLOBALS['offTgChannel']      = 'https://t.me/fgjhaksdlf';
+$GLOBALS['cards']             = 10;
+$GLOBALS['ChannelID']         = 2248476665;
+$GLOBALS['subscribeSumValue'] = 1000 . $GLOBALS['currency'];
+$GLOBALS['watchSumValue']     = 8;
+$GLOBALS['valueTg']           = 1;
+$GLOBALS['currency']            = 'INR';
+$GLOBALS['joinChannelPay']    = 1000 . $GLOBALS['currency'];
+$GLOBALS['adminID']           = 403480319;
+$GLOBALS['minWithdraw']       = number_format(10, 2, '.', '') . $GLOBALS['currency'];
+$GLOBALS['bonus']             = 10 . $GLOBALS['currency'];
 $GLOBALS['buttons'] = [
     "ru" => ["🇷🇺 Русский"],
     "en" => ["🇺🇸 English"],
     "kz" => ["🇰🇿 Қазақша"]
 ];
-
+  
 $update = json_decode(file_get_contents('php://input'), true);
 $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
-$chat_id = $telegram->ChatID();
-$text = $telegram->Text() ?? '';
+$GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
+
+function isTextMatchingButtons($text) {
+	foreach ($GLOBALS['buttons'] as $buttonValues) {
+		if (in_array($text, $buttonValues)) {
+			return true;
+		}
+	}
+	return false;
+}
 
 $db = new DatabaseConnection($config_file);
 
-$telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Callback data: ' . ($callback_data ?? 'Нет данных')]);
+$telegram->sendMessage([
+	'chat_id' => $chat_id,
+	'text'    => 'Callback data: ' . $callback_data,
+]);
 
-$commands = [
-    'withdraw'           => 'handleWithdrawCommand',
-    'rep_ru'             => 'handleReportCommand',
-    'fraud'              => 'handleFraudCommand',
-    '(fraud)'            => 'handleApprovCommand',
-    'spam'               => 'handleSpamCommand',
-    '(spam)'             => 'handleApprovCommand',
-    'violence'           => 'handleViolenceCommand',
-    '(violence)'         => 'handleApprovCommand',
-    'copyright'          => 'handleCopyrightCommand',
-    '(copyright)'        => 'handleApprovCommand',
-    'other'              => 'handleOtherCommand',
-    '(other)'            => 'handleApprovCommand',
-    'invite_friend'      => 'handlePartnerCommand',
-    'join_channel'       => 'handleJoinChannelCommand',
-    'skip'               => 'handleJoinChannelCommand',
-    'view_post'          => 'count_to_ten',
-    'check'              => 'handleSubscribeCheckCommand',
-    'checkSub'           => 'handleBalanceCommand',
-    'yes'                => 'handleApprovCommand',
-    'no'                 => 'handleCanceledCommand'
-];
-
-if (isset($commands[$callback_data])) {
-    call_user_func([$db, $commands[$callback_data]], $telegram, $chat_id, $message_id, $callback_data);
+switch ($callback_data) {
+	case 'withdraw':
+		$db->handleWithdrawCommand($telegram, $chat_id, $message_id);
+		break;
+	case 'rep_ru':
+		$db->handleReportCommand($telegram, $chat_id, $message_id);
+		break;
+	case'fraud':
+		$db->handleFraudCommand($telegram, $chat_id, $message_id);
+		break;
+	case'(fraud)':
+		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
+		break;
+	case 'spam':
+		$db->handleSpamCommand($telegram, $chat_id, $message_id);
+		break;
+	case '(spam)':
+		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
+		break;
+	case'violence':
+		$db->handleViolenceCommand($telegram, $chat_id, $message_id);
+		break;
+	case'(violence)':
+		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
+		break;
+	case'copyright':
+		$db->handleCopyrightCommand($telegram, $chat_id, $message_id);
+		break;
+	case'(copyright)':
+		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
+		break;
+	case'other':
+		$db->handleOtherCommand($telegram, $chat_id, $message_id);
+		break;
+	case'(other)':
+		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
+		break;
+	case 'yes':
+		$db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
+		break;
+	case 'invite_friend':
+		$db->handlePartnerCommand($telegram, $chat_id);
+		break;
+	case 'join_channel':
+		$db->handleJoinChannelCommand($telegram, $chat_id, $message_id);
+		break;
+	case 'skip':
+		$db->handleJoinChannelCommand($telegram, $chat_id, $message_id);
+		break;
+	case 'view_post':
+		$db->count_to_ten($telegram, $chat_id, $message_id);
+		break;
+	case 'check':
+		$db->handleSubscribeCheckCommand($chat_id, $telegram, $bot_token, $message_id);
+		break;
+	case 'checkSub':
+		$db->handleBalanceCommand($telegram, $chat_id, $bot_token);
+		break;
+	case 'no':
+		$db->handleCanceledCommand($telegram, $chat_id, $message_id);
+		break;
+	default:
+		// Handle any other cases or provide a default response
+		break;
 }
 
-$telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Text: ' . $text]);
+$telegram->sendMessage([
+	'chat_id' => $chat_id,
+	'text'    => 'Text: ' . $text,
+]);
 
-if (strpos($text, '/start') === 0) {
-    $db->handleStartCommand($telegram, $chat_id, $update);
-} elseif ($commandKey = array_search($text, array_merge(...array_values($GLOBALS['buttons'])))) {
-    $db->updateUserLanguage($chat_id, $commandKey);
-    $db->handleLanguage($telegram, $chat_id);
-} elseif ($phraseText = $db->getPhraseText($text, $chat_id)) {
-    call_user_func([$db, "handle" . ucfirst($phraseText)], $telegram, $chat_id);
-} elseif ($text && $db->isInputMode($chat_id) == 'input_mode') {
-    $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'вошло']);
-    $db->saveUserText($chat_id, $telegram, $text);
+switch ($text) {
+	case strpos($text, '/start') === 0:
+		$db->handleStartCommand($telegram, $chat_id, $update);
+		break;
+	case isTextMatchingButtons($text):
+		$hhh = null;
+		foreach ($GLOBALS['buttons'] as $key => $values) {
+			if (in_array($text, $values)) {
+				$hhh = $key;
+				break;
+			}
+		}
+		if ($hhh !== null) {
+			$db->updateUserLanguage($chat_id, $hhh);
+		}
+		$db->handleLanguage($telegram, $chat_id);
+		break;
+	case $db->getPhraseText("welcome_button", $chat_id):
+		$db->handleMainMenu($telegram, $chat_id);
+		break;
+	case $db->getPhraseText("button_balance", $chat_id):
+		$db->handleBalanceCommand($telegram, $chat_id, $bot_token);
+		break;
+	case $db->getPhraseText("button_partners", $chat_id):
+		$db->handlePartnerCommand($telegram, $chat_id);
+		break;
+	case $db->getPhraseText("button_changeLang", $chat_id):
+		$db->handleStartCommand($telegram, $chat_id, $update);
+		break;
+	case $db->getPhraseText("button_Help", $chat_id):
+		$db->handleHelpCommand($telegram, $chat_id);
+		break;
+	case 'Админ кнопка':
+		$db->getChatIdByLink($telegram, $bot_token, $chat_id);
+		break;
+	case $db->getPhraseText("button_earn", $chat_id):
+		$db->handleEarnCommand($telegram, $chat_id);
+		break;
+	case 'Рассылка':
+		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
+			$db->takeAllId($telegram, $chat_id);
+			$db->adminModeRas($chat_id, $telegram);
+		}
+		break;
+	case 'Добавить текст':
+		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
+
+			$db->handleUserInput($chat_id, $telegram);
+		}
+		break;
+	case 'Главное меню':
+		$db->setInputMode($chat_id, 'def');
+		$db->handleMainMenu($telegram, $chat_id);
+		break;
+	case ($text != null):
+		if ($db->isInputMode($chat_id) == 'input_mode') {
+			$params = [
+				'chat_id' => $chat_id,
+				'text'    => 'вошло'
+			];
+			$telegram->sendMessage($params);
+			$db->saveUserText($chat_id, $telegram, $text);
+		}
+		break;
+	case $db->getPhraseText('download_button', $chat_id):
+		$db->handleDwnloadCommand($telegram, $chat_id);
+		break;
+	default:
+		// Handle any other cases or provide a default response
+		break;
 }
-
 ?>
