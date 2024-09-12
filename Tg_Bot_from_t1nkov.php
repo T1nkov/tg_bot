@@ -14,24 +14,22 @@ $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
 
-$GLOBALS = array_merge($GLOBALS, [
-    'adminHREF' => 'https://t.me/t1nkov',
-    'summ' => 500,
-    'inviteSumValue' => 200,
-    'offTgChannel' => 'https://t.me/fgjhaksdlf',
-    'cards' => 10,
-    'ChannelID' => 2248476665,
-    'currency' => 'INR',
-    'joinChannelPay' => '1000INR',
-    'adminID' => 403480319,
-    'minWithdraw' => '10.00INR',
-    'bonus' => '10INR',
-    'buttons' => [
-        "ru" => ["🇷🇺 Русский"],
-        "en" => ["🇺🇸 English"],
-        "kz" => ["🇰🇿 Қазақша"]
-    ]
-]);
+$GLOBALS['adminHREF'] = 'https://t.me/t1nkov';
+$GLOBALS['summ'] = 500;
+$GLOBALS['inviteSumValue'] = 200;
+$GLOBALS['offTgChannel'] = 'https://t.me/fgjhaksdlf';
+$GLOBALS['cards'] = 10;
+$GLOBALS['ChannelID'] = 2248476665;
+$GLOBALS['currency'] = 'INR';
+$GLOBALS['joinChannelPay'] = '1000INR';
+$GLOBALS['adminID'] = 403480319;
+$GLOBALS['minWithdraw'] = '10.00INR';
+$GLOBALS['bonus'] = '10INR';
+$GLOBALS['buttons'] = [
+    "ru" => ["🇷🇺 Русский"],
+    "en" => ["🇺🇸 English"],
+    "kz" => ["🇰🇿 Қазақша"]
+];
 
 $update = json_decode(file_get_contents('php://input'), true);
 $callback_data = $update['callback_query']['data'] ?? null;
