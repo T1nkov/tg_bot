@@ -385,20 +385,6 @@ class DatabaseConnection extends AdminPanel {
 		$telegram->sendMessage($content);
 	}	
 	
-	private function getMainMenuButtons($chat_id) {
-		return [
-			[
-				$this->getPhraseText('button_earn', $chat_id),
-				$this->getPhraseText('button_partners', $chat_id),
-				$this->getPhraseText('button_balance', $chat_id)
-			],
-			[
-				$this->getPhraseText('button_help', $chat_id),
-				$this->getPhraseText('button_changeLang', $chat_id)
-			]
-		];
-	}
-
 	public function checkTrue($telegram, $chat_id, $bot_token, $message_id) {
 		$balance = $this->getUserBalance($chat_id);
 		$referals = $this->getReferralsCount($chat_id);
