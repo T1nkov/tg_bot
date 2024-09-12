@@ -120,7 +120,26 @@ switch ($text) {
 	case $db->getPhraseText("button_Help", $chat_id):
 		$db->handleHelpCommand($telegram, $chat_id);
 		break;
-	case 'Админ кнопка':
+	case ($text != null):
+		if ($db->isInputMode($chat_id) == 'input_mode') {
+			$params = [
+				'chat_id' => $chat_id,
+				'text'    => 'вошло'
+			];
+			$telegram->sendMessage($params);
+			$db->saveUserText($chat_id, $telegram, $text);
+		}
+		break;
+	case $db->getPhraseText('download_button', $chat_id):
+		$db->handleDownloadCommand($telegram, $chat_id);
+		break;
+	default:
+		break;
+}
+
+?>
+<!-- 
+case 'Админ кнопка':
 		$db->getChatIdByLink($telegram, $bot_token, $chat_id);
 		break;
 	case $db->getPhraseText("button_earn", $chat_id):
@@ -141,22 +160,4 @@ switch ($text) {
 	case 'Главное меню':
 		$db->setInputMode($chat_id, 'def');
 		$db->handleMainMenu($telegram, $chat_id);
-		break;
-	case ($text != null):
-		if ($db->isInputMode($chat_id) == 'input_mode') {
-			$params = [
-				'chat_id' => $chat_id,
-				'text'    => 'вошло'
-			];
-			$telegram->sendMessage($params);
-			$db->saveUserText($chat_id, $telegram, $text);
-		}
-		break;
-	case $db->getPhraseText('download_button', $chat_id):
-		$db->handleDownloadCommand($telegram, $chat_id);
-		break;
-	default:
-		// Handle any other cases or provide a default response
-		break;
-}
-?>
+		break; -->
