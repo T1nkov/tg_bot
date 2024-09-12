@@ -9,9 +9,7 @@ ini_set('display_errors', 1);
 
 $config_file = require __DIR__ . '/config.php';
 
-if (!isset($config_file['db'])) { 
-    die("# db key error - Database configuration not found."); 
-}
+if (!isset($config_file['db'])) { die("# db key error - Database configuration not found."); }
 
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
@@ -34,11 +32,12 @@ $GLOBALS['config'] = [
     'joinChannelPay' => '1000 INR',
     'minWithdraw' => number_format(10, 2, '.', '') . ' INR',
     'bonus' => '10 INR',
-    'buttons' => [
-        "ru" => ["Русский"],
-        "en" => ["English"],
-        "kz" => ["Қазақша"]
-    ]
+];
+
+$GLOBALS['buttons'] = [
+    "ru" => ["Русский"],
+    "en" => ["English"],
+    "kz" => ["Қазақша"]
 ];
 
 $update = json_decode(file_get_contents('php://input'), true);

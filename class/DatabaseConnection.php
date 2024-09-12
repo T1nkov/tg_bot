@@ -23,14 +23,16 @@ class DatabaseConnection {
 	// Get the phrase from the table
 	public function getPhraseText($phrase_key, $chat_id) {
 		$language = $this->getLanguage($chat_id);
-		$stmt = $this->conn->prepare("SELECT phrase_text FROM phrases_{$language} WHERE phrase_key = ?");
+		$sql = "SELECT phrase_text FROM phrases_{$language} WHERE phrase_key = ?";
+		$stmt = $this->conn->prepare($sql);
 		$stmt->bind_param("s", $phrase_key);
 		$stmt->execute();
 		$result = $stmt->get_result();
+		$phrase_text = $result->fetch_assoc()["phrase_text"] ?? null;
 		$stmt->close();
-		return $result->num_rows ? $result->fetch_assoc()["phrase_text"] : null;
+		return $phrase_text;
 	}
-
+	
 	public function getLanguage($id_tg) {
 		$sql  = "SELECT select_language FROM users WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
