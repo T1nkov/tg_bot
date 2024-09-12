@@ -77,88 +77,57 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
-} elseif (preg_match('/^$(fraud|spam|violence|copyright|other)$$/', $callback_data, $matches)) {
+} elseif (preg_match('/^$(fraud|spam|violence|copyright|other)$$/', $callback_data)) {
     $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
 } elseif ($callback_data === 'yes') {
     $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-} else {
-
 }
 
 $telegram->sendMessage([
-	'chat_id' => $chat_id,
-	'text'    => 'Text: ' . $text,
+    'chat_id' => $chat_id,
+    'text'    => 'Text: ' . $text,
 ]);
 
-switch ($text) {
-	case strpos($text, '/start') === 0:
-		$db->handleStartCommand($telegram, $chat_id, $update);
-		break;
-	case isTextMatchingButtons($text):
-		$hhh = null;
-		foreach ($GLOBALS['buttons'] as $key => $values) {
-			if (in_array($text, $values)) {
-				$hhh = $key;
-				break;
-			}
-		}
-		if ($hhh !== null) {
-			$db->updateUserLanguage($chat_id, $hhh);
-		}
-		$db->handleLanguage($telegram, $chat_id);
-		break;
-	case $db->getPhraseText("welcome_button", $chat_id):
-		$db->handleMainMenu($telegram, $chat_id);
-		break;
-	case $db->getPhraseText("button_balance", $chat_id):
-		$db->handleBalanceCommand($telegram, $chat_id, $bot_token);
-		break;
-	case $db->getPhraseText("button_partners", $chat_id):
-		$db->handlePartnerCommand($telegram, $chat_id);
-		break;
-	case $db->getPhraseText("button_changeLang", $chat_id):
-		$db->handleStartCommand($telegram, $chat_id, $update);
-		break;
-	case $db->getPhraseText("button_Help", $chat_id):
-		$db->handleHelpCommand($telegram, $chat_id);
-		break;
-	case 'Админ кнопка':
-		$db->getChatIdByLink($telegram, $bot_token, $chat_id);
-		break;
-	case $db->getPhraseText("button_earn", $chat_id):
-		$db->handleEarnCommand($telegram, $chat_id);
-		break;
-	case 'Рассылка':
-		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
-			$db->takeAllId($telegram, $chat_id);
-			$db->adminModeRas($chat_id, $telegram);
-		}
-		break;
-	case 'Добавить текст':
-		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
+$adminCommands = [
+    '/start' => 'handleStartCommand',
+    'Админ кнопка' => function() use ($telegram, $bot_token, $chat_id) {
+        $db->getChatIdByLink($telegram, $bot_token, $chat_id);
+    },
+    'Рассылка' => function() use ($db, $telegram, $chat_id) {
+        if ($db->isAdmin($telegram, $chat_id) === 'admin') {
+            $db->takeAllId($telegram, $chat_id);
+            $db->adminModeRas($chat_id, $telegram);
+        }
+    },
+    'Добавить текст' => function() use ($db, $telegram, $chat_id) {
+        if ($db->isAdmin($telegram, $chat_id) === 'admin') {
+            $db->handleUserInput($chat_id, $telegram);
+        }
+    },
+    'Главное меню' => function() use ($db, $telegram, $chat_id) {
+        $db->setInputMode($chat_id, 'def');
+        $db->handleMainMenu($telegram, $chat_id);
+    },
+    $db->getPhraseText('download_button', $chat_id) => 'handleDwnloadCommand',
+];
 
-			$db->handleUserInput($chat_id, $telegram);
-		}
-		break;
-	case 'Главное меню':
-		$db->setInputMode($chat_id, 'def');
-		$db->handleMainMenu($telegram, $chat_id);
-		break;
-	case ($text != null):
-		if ($db->isInputMode($chat_id) == 'input_mode') {
-			$params = [
-				'chat_id' => $chat_id,
-				'text'    => 'вошло'
-			];
-			$telegram->sendMessage($params);
-			$db->saveUserText($chat_id, $telegram, $text);
-		}
-		break;
-	case $db->getPhraseText('download_button', $chat_id):
-		$db->handleDwnloadCommand($telegram, $chat_id);
-		break;
-	default:
-		// Handle any other cases or provide a default response
-		break;
+foreach ($adminCommands as $key => $value) {
+    if (strpos($text, $key) === 0) {
+        if (is_string($value)) {
+            $db->{$value}($telegram, $chat_id);
+        } elseif (is_callable($value)) {
+            $value();
+        }
+        break;
+    }
 }
-?>
+
+if ($text !== null && $db->isInputMode($chat_id) === 'input_mode') {
+    $params = [
+        'chat_id' => $chat_id,
+        'text'    => 'вошло',
+    ];
+    $telegram->sendMessage($params);
+    $db->saveUserText($chat_id, $telegram, $text);
+}
+
