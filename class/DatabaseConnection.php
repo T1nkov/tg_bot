@@ -626,24 +626,50 @@ class DatabaseConnection {
 	}
 
 	public function handleReportCommand($telegram, $chat_id, $message_id) {
-		$message = $this->getPhraseText("rep_text", $chat_id);
-		$buttons = ['spam', 'fraud', 'violence', 'copyright', 'other'];
+		$message  = $this->getPhraseText("rep_text", $chat_id);
 		$keyboard = [
-			'inline_keyboard' => array_map(function($type) use ($chat_id) {
-				return [[
-					'text' => $this->getPhraseText("{$type}_button", $chat_id),
-					'callback_data' => $type
-				]];
-			}, $buttons)
+			'inline_keyboard' => [
+				[
+					[
+						'text'          => $this->getPhraseText("spam_button", $chat_id),
+						'callback_data' => 'spam'
+					]
+				],
+				[
+					[
+						'text'          => $this->getPhraseText("fraud_button", $chat_id),
+						'callback_data' => 'fraud'
+					]
+				],
+				[
+					[
+						'text'          => $this->getPhraseText("violence_button", $chat_id),
+						'callback_data' => 'violence'
+					]
+				],
+				[
+					[
+						'text'          => $this->getPhraseText("copyright_button", $chat_id),
+						'callback_data' => 'copyright'
+					]
+				],
+				[
+					[
+						'text'          => $this->getPhraseText("other_button", $chat_id),
+						'callback_data' => 'other'
+					]
+				]
+			]
 		];
-		$content = [
-			'chat_id' => $chat_id,
-			'message_id' => $message_id,
-			'text' => $message,
+		$content  = [
+			'chat_id'      => $chat_id,
+			'message_id'   => $message_id,
+			'text'         => $message,
 			'reply_markup' => json_encode($keyboard)
 		];
 		$telegram->editMessageText($content);
 	}
+	
 	// Spam
 	public function handleSpamCommand($telegram, $chat_id, $message_id) {
 		$message = $this->getPhraseText("report_text", $chat_id);
