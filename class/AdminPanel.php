@@ -1,6 +1,12 @@
 <?php
 
 class AdminPanel {
+	protected $conn;
+
+	public function __construct(DatabaseConnection $dbConnection) {
+        $this->conn = $dbConnection->getConnection();
+    }
+
 	public function isAdmin($telegram, $chat_id) {
 		$stmt = $this->conn->prepare("SELECT role FROM users WHERE id_tg = ?");
 		$stmt->bind_param("s", $chat_id);
