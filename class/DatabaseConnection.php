@@ -145,17 +145,21 @@ class DatabaseConnection {
 		return $this->conn->insert_id;
 	}
 
-	// If there is already such a user
 	public function userExists($id_tg) {
-		$sql  = "SELECT COUNT(*) as count FROM users WHERE id_tg = ?";
+		$sql  = "SELECT COUNT(*) FROM users WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
-		$stmt->bind_param("i", $id_tg);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		$row    = $result->fetch_assoc();
-		return $row["count"] > 0;
+		if ($stmt) {
+			$stmt->bind_param("i", $id_tg);
+			$stmt->execute();
+			$stmt->bind_result($count);
+			$stmt->fetch();
+			$stmt->close(); // Close the statement
+			return $count > 0;
+		} else {
+			return false;
+		}
 	}
-
+	
 	// Whether the user is subscribed to the channel
 	public function isUserSubscribed($chat_id, $telegram, $bot_token) {
 		error_log("isUserSubscribed called for chat_id: $chat_id");
