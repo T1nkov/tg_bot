@@ -829,16 +829,6 @@ class DatabaseConnection extends AdminPanel {
 		$stmt->close();
 		return null;
 	}
-	
-	public function adminModeRas($chat_id, $telegram) {
-		$telegram->sendMessage([
-			'chat_id'      => $chat_id,
-			'text'         => 'Вы вошли в рассылку',
-			'reply_markup' => $telegram->buildKeyboard([
-				[['Добавить текст', 'Обзор', 'Главное меню']]
-			], false, true, true)
-		]);
-	}
 
 	public function isInputMode($chat_id) {
 		$stmt = $this->conn->prepare('SELECT status FROM users WHERE id_tg = ?');

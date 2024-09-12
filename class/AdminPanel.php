@@ -8,6 +8,14 @@ class AdminPanel {
 		$result = $stmt->get_result();
 		return $result->fetch_assoc()['role'] === 'admin';
 	}
-    // ...
     
+    public function adminModeBroadCast($chat_id, $telegram) {
+		$telegram->sendMessage([
+			'chat_id'      => $chat_id,
+			'text'         => 'Вы вошли в рассылку',
+			'reply_markup' => $telegram->buildKeyboard([
+				[['Добавить текст', 'Обзор', 'Главное меню']]
+			], false, true, true)
+		]);
+	}
 }
