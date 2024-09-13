@@ -563,7 +563,6 @@ class DatabaseConnection extends AdminPanel {
 				[['text' => $watchSum, 'callback_data' => 'view_post']]
 			]
 		];
-		];
 		
 		$content  = [
 			'chat_id'      => $chat_id,
