@@ -83,59 +83,59 @@ if (isset($commands[$callback_data])) {
 
 }
 
-
 $telegram->sendMessage([
 	'chat_id' => $chat_id,
 	'text'    => 'Text: ' . $command,
 ]);
 
-if ($command !== null) {
-    switch (true) {
-        case strpos($command, '/start') === 0:
-            $db->handleStartCommand($telegram, $chat_id, $update);
-            break;
-        case isTextMatchingButtons($command): // Language set
-            $hhh = null;
-            foreach ($GLOBALS['buttons'] as $key => $values) {
-                if (in_array($command, $values)) {
-                    $hhh = $key;
-                    break;
-                }
-            }
-            if ($hhh !== null) {
-                $db->updateUserLanguage($chat_id, $hhh);
-            }
-            $db->handleLanguage($telegram, $chat_id);
-            break;
-        case $db->getPhraseText("button_earn", $chat_id):
-            $db->handleEarnCommand($telegram, $chat_id);
-            break;
-        case $db->getPhraseText("welcome_button", $chat_id):
-            $db->handleMainMenu($telegram, $chat_id);
-            break;
-        case $db->getPhraseText("button_balance", $chat_id):
-            $db->handleBalanceCommand($telegram, $chat_id, $bot_token);
-            break;
-        case $db->getPhraseText("button_partners", $chat_id):
-            $db->handlePartnerCommand($telegram, $chat_id);
-            break;
-        case $db->getPhraseText("button_changeLang", $chat_id):
-            $db->handleStartCommand($telegram, $chat_id, $update);
-            break;
-        case $db->getPhraseText("button_Help", $chat_id):
-            $db->handleHelpCommand($telegram, $chat_id);
-            break;
-        default:
-            if ($db->isInputMode($chat_id) == 'input_mode') {
-                $params = [
-                    'chat_id' => $chat_id,
-                    'text'    => 'вошло'
-                ];
-                $telegram->sendMessage($params);
-                $db->saveUserText($chat_id, $telegram, $command);
-            }
-            break;
-    }
+switch ($command) {
+	case strpos($command, '/start') === 0:
+		$db->handleStartCommand($telegram, $chat_id, $update);
+		break;
+	case isTextMatchingButtons($command): // Language set
+		$hhh = null;
+		foreach ($GLOBALS['buttons'] as $key => $values) {
+			if (in_array($command, $values)) {
+				$hhh = $key;
+				break;
+			}
+		}
+		if ($hhh !== null) { $db->updateUserLanguage($chat_id, $hhh); }
+		$db->handleLanguage($telegram, $chat_id);
+		break;
+	case $db->getPhraseText("button_earn", $chat_id):
+		$db->handleEarnCommand($telegram, $chat_id);
+		break;
+	case $db->getPhraseText("welcome_button", $chat_id):
+		$db->handleMainMenu($telegram, $chat_id);
+		break;
+	case $db->getPhraseText("button_balance", $chat_id):
+		$db->handleBalanceCommand($telegram, $chat_id, $bot_token);
+		break;
+	case $db->getPhraseText("button_partners", $chat_id):
+		$db->handlePartnerCommand($telegram, $chat_id);
+		break;
+	case $db->getPhraseText("button_changeLang", $chat_id):
+		$db->handleStartCommand($telegram, $chat_id, $update);
+		break;
+	case $db->getPhraseText("button_Help", $chat_id):
+		$db->handleHelpCommand($telegram, $chat_id);
+		break;
+	case ($command != null):
+		if ($db->isInputMode($chat_id) == 'input_mode') {
+			$params = [
+				'chat_id' => $chat_id,
+				'text'    => 'вошло'
+			];
+			$telegram->sendMessage($params);
+			$db->saveUserText($chat_id, $telegram, $command);
+		}
+		break;
+	case $db->getPhraseText('download_button', $chat_id):
+		$db->handleDownloadCommand($telegram, $chat_id);
+		break;
+	default:
+		break;
 }
 
 ?>
