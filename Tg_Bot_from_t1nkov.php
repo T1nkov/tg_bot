@@ -76,7 +76,13 @@ $commands = [
 ];
 
 if (isset($commands[$callback_data])) {
-    $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
+    if ($callback_data === 'add_channel') {
+        $db->promptAddChannel($telegram, $chat_id);
+    } elseif ($callback_data === 'remove_channel') {
+        $db->promptRemoveChannel($telegram, $chat_id);
+    } else {
+        $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
+    }
 } elseif ($callback_data !== null && preg_match('/^(fraud|spam|violence|copyright|other)$/', $callback_data, $matches)) {
     $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
 } elseif ($callback_data === 'yes') {
