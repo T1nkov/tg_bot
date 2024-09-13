@@ -13,14 +13,14 @@ if (!isset($config_file['db'])) { die("# db key error - Database configuration n
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
-$text = $telegram->Text();
+$command = $telegram->Text();
 $chat_id = $telegram->ChatID();
 $data = $telegram->getData();
 
 $GLOBALS['adminHREF']         = 'https://t.me/t1nkov';
-$GLOBALS['summ']              = 500;
+$GLOBALS['amount']              = 500;
 $GLOBALS['inviteSumValue']    = 200;
-$GLOBALS['offTgChannel']      = 'https://t.me/fgjhaksdlf';
+$GLOBALS['offTgChannel']      = 'https://t.me/fgjhaksdlf'; // do you need this here?
 $GLOBALS['cards']             = 10;
 $GLOBALS['ChannelID']         = 2248476665;
 $GLOBALS['subscribeSumValue'] = 1000 . $GLOBALS['currency'];
@@ -42,9 +42,9 @@ $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
-function isTextMatchingButtons($text) {
+function isTextMatchingButtons($command) {
 	foreach ($GLOBALS['buttons'] as $buttonValues) {
-		if (in_array($text, $buttonValues)) return true;
+		if (in_array($command, $buttonValues)) return true;
 	}
 	return false;
 }
@@ -71,39 +71,72 @@ $commands = [
     'check' => 'handleSubscribeCheckCommand',
     'checkSub' => 'handleBalanceCommand',
     'no' => 'handleCanceledCommand',
+	'add_channel' => 'promptAddChannel',
+    'remove_channel' => 'promptRemoveChannel',
+    'cancel_remove' => 'displayChannels'
 ];
 
-if (isset($commands[$callback_data])) {
-    $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
-} elseif (preg_match('/^$(fraud|spam|violence|copyright|other)$$/', $callback_data, $matches)) {
-    $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-} elseif ($callback_data === 'yes') {
-    $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-} else {
-
+if (isset($callback_data) && isset($commands[$callback_data])) {
+    if ($callback_data === 'add_channel') {
+        $db->promptAddChannel($telegram, $chat_id);
+    } elseif ($callback_data === 'remove_channel') {
+        $db->promptRemoveChannel($telegram, $chat_id);
+    } else {
+        $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
+    }
+} elseif (isset($userStates[$chat_id]) && $userStates[$chat_id] === 'awaiting_channel_url') {
+    $url = trim($command);
+    if (filter_var($url, FILTER_VALIDATE_URL)) {
+        $db->addChannelURL($telegram, $chat_id, $url);
+        unset($userStates[$chat_id]);
+    } else {
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => "Пожалуйста, введите корректный URL."
+        ]);
+    }
+} elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
+    $urlToRemove = str_replace('remove_', '', $callback_data);
+    $db->removeChannelURL($telegram, $chat_id, $urlToRemove);
+    $db->displayChannels($telegram, $chat_id);
 }
 
 $telegram->sendMessage([
 	'chat_id' => $chat_id,
-	'text'    => 'Text: ' . $text,
+	'text'    => 'Text: ' . $command,
 ]);
 
-switch ($text) {
-	case strpos($text, '/start') === 0:
-		$db->handleStartCommand($telegram, $chat_id, $update);
+switch ($command) {
+    case $command !== null && strpos($command, '/start') === 0:
+        $db->handleStartCommand($telegram, $chat_id, $update);
+        break;
+    case $command !== null && strpos($command, '/admin') === 0:
+        if ($db->isAdmin($telegram, $chat_id)) {
+            $db->handleAdminPanel($telegram, $chat_id);
+        } else {
+            $message = 'Sorry, you\'re not an admin, contact with the owner if you really are.';
+            $db->handleMainMenu($telegram, $chat_id, $message);
+        }
+        break;
+	case $command !== null && (strpos($command, '/exit') === 0 || stripos($command, 'Выход') === 0):
+		$db->handleMainMenu($telegram, $chat_id);
 		break;
-	case isTextMatchingButtons($text):
+	case $command !== null && strpos($command, 'Каналы') === 0:
+		if ($db->isAdmin($telegram, $chat_id)) { $db->displayChannels($telegram, $chat_id); }
+		break;
+	case isTextMatchingButtons($command):
 		$hhh = null;
 		foreach ($GLOBALS['buttons'] as $key => $values) {
-			if (in_array($text, $values)) {
+			if (in_array($command, $values)) {
 				$hhh = $key;
 				break;
 			}
 		}
-		if ($hhh !== null) {
-			$db->updateUserLanguage($chat_id, $hhh);
-		}
+		if ($hhh !== null) { $db->updateUserLanguage($chat_id, $hhh); }
 		$db->handleLanguage($telegram, $chat_id);
+		break;
+	case $db->getPhraseText("button_earn", $chat_id):
+		$db->handleEarnCommand($telegram, $chat_id);
 		break;
 	case $db->getPhraseText("welcome_button", $chat_id):
 		$db->handleMainMenu($telegram, $chat_id);
@@ -120,43 +153,11 @@ switch ($text) {
 	case $db->getPhraseText("button_Help", $chat_id):
 		$db->handleHelpCommand($telegram, $chat_id);
 		break;
-	case 'Админ кнопка':
-		$db->getChatIdByLink($telegram, $bot_token, $chat_id);
-		break;
-	case $db->getPhraseText("button_earn", $chat_id):
-		$db->handleEarnCommand($telegram, $chat_id);
-		break;
-	case 'Рассылка':
-		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
-			$db->takeAllId($telegram, $chat_id);
-			$db->adminModeRas($chat_id, $telegram);
-		}
-		break;
-	case 'Добавить текст':
-		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
-
-			$db->handleUserInput($chat_id, $telegram);
-		}
-		break;
-	case 'Главное меню':
-		$db->setInputMode($chat_id, 'def');
-		$db->handleMainMenu($telegram, $chat_id);
-		break;
-	case ($text != null):
-		if ($db->isInputMode($chat_id) == 'input_mode') {
-			$params = [
-				'chat_id' => $chat_id,
-				'text'    => 'вошло'
-			];
-			$telegram->sendMessage($params);
-			$db->saveUserText($chat_id, $telegram, $text);
-		}
-		break;
 	case $db->getPhraseText('download_button', $chat_id):
-		$db->handleDwnloadCommand($telegram, $chat_id);
+		$db->handleDownloadCommand($telegram, $chat_id);
 		break;
 	default:
-		// Handle any other cases or provide a default response
 		break;
 }
+
 ?>

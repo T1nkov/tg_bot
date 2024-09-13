@@ -1,12 +1,13 @@
 <?php
+require_once 'AdminPanel.php';
 
-class DatabaseConnection {
+class DatabaseConnection extends AdminPanel {
     private $host;
     private $database;
     private $username;
     private $password;
-    private $conn;
 	private $botToken;
+	protected $conn;
 
     public function __construct($dbConfig) {
         if (!isset($dbConfig)) { die("Please provide db config"); }
@@ -159,21 +160,17 @@ class DatabaseConnection {
 		return $this->conn->insert_id;
 	}
 
+	// If there is already such a user
 	public function userExists($id_tg) {
-		$sql  = "SELECT COUNT(*) FROM users WHERE id_tg = ?";
+		$sql  = "SELECT COUNT(*) as count FROM users WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
-		if ($stmt) {
-			$stmt->bind_param("i", $id_tg);
-			$stmt->execute();
-			$stmt->bind_result($count);
-			$stmt->fetch();
-			$stmt->close(); // Close the statement
-			return $count > 0;
-		} else {
-			return false;
-		}
+		$stmt->bind_param("i", $id_tg);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$row    = $result->fetch_assoc();
+		return $row["count"] > 0;
 	}
-	
+
 	// Whether the user is subscribed to the channel
 	public function isUserSubscribed($chat_id, $telegram, $bot_token) {
 		error_log("isUserSubscribed called for chat_id: $chat_id");
@@ -232,8 +229,8 @@ class DatabaseConnection {
 
 	// Start
 	public function handleStartCommand($telegram, $chat_id, $update) {
-		$referral_id = null;
-		$message_text = $update['message']['text'];
+		$referral_id  = null;
+		$message_text = $update['message']['text'] ?? ''; // Ensure it's not null
 		if (strpos($message_text, '/start') !== false) {
 			$arguments = explode(' ', $message_text);
 			if (count($arguments) > 1) {
@@ -245,33 +242,38 @@ class DatabaseConnection {
 				}
 			}
 		} elseif (isset($update['message']['entities'])) {
+			$url = null;
 			foreach ($update['message']['entities'] as $entity) {
 				if ($entity['type'] === 'text_link') {
 					$url = $entity['url'];
-					if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) {
-						$referral_id = intval($matches[1]);
-					}
 					break;
 				}
 			}
+			if ($url) {
+				$matches = [];
+				if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) {
+					$referral_id = intval($matches[1]);
+				}
+			}
 		}
+		$telegram->sendMessage([
+			'chat_id' => $chat_id,
+			'text'    => 'Chat id: ' . $chat_id,
+		]);
 		if ($this->userExists($chat_id)) {
+			// update referral_id 
 			if ($referral_id && $referral_id != $chat_id) {
 				$this->updateReferralId($chat_id, $referral_id);
 			}
-			$telegram->sendMessage([
-				'chat_id' => $chat_id,
-				'text'    => 'Welcome back! Your referral ID has been updated if necessary.',
-			]);
 		} else {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
-				'text'    => 'Start registering a new user.',
+				'text'    => 'Start register new user',
 			]);
 			$new_user_id = $this->registerUser($telegram, $chat_id, $referral_id ?? 0);
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
-				'text'    => 'New user ID: ' . $new_user_id,
+				'text'    => 'New user id: ' . $new_user_id,
 			]);
 			if ($referral_id && $referral_id != $chat_id) {
 				$message = $this->getPhraseText("bonus_text", $referral_id);
@@ -286,8 +288,8 @@ class DatabaseConnection {
 		}
 		$reply_markup = $telegram->buildKeyboard(
 			array_values($GLOBALS['buttons']),
-			true, // oneTimeKeyboard
-			true  // resizeKeyboard
+			$oneTimeKeyboard = true,
+			$resizeKeyboard = true
 		);
 		$content = [
 			'chat_id'      => $chat_id,
@@ -295,13 +297,13 @@ class DatabaseConnection {
 			'reply_markup' => $reply_markup
 		];
 		$telegram->sendMessage($content);
-	}
+	}	
 
 	// Start message after language selection
 	public function handleLanguage($telegram, $chat_id) {
 		$message1     = $this->getPhraseText('welcome_message', $chat_id);
 		$message      = str_replace(
-			[ '{cards}', '{summ}', '{currency}' ], [ $GLOBALS['cards'], $GLOBALS['summ'], $GLOBALS['currency'] ],
+			[ '{cards}', '{amount}', '{currency}' ], [ $GLOBALS['cards'], $GLOBALS['amount'], $GLOBALS['currency'] ],
 			$message1
 		);
 		$button_text  = $this->getPhraseText('welcome_button', $chat_id);
@@ -361,19 +363,14 @@ class DatabaseConnection {
 		}
 	}
 
-	public function isAdmin($telegram, $chat_id) {
-		$stmt = $this->conn->prepare("SELECT role FROM users WHERE id_tg = ?");
-		$stmt->bind_param("s", $chat_id);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		return $result->fetch_assoc()['role'] === 'admin';
-	}
 	// Main menu
-	public function handleMainMenu($telegram, $chat_id) {
-		$isAdmin = $this->isAdmin($telegram, $chat_id);
-		$message = $isAdmin 
-			? '👤Admin панель👤' . PHP_EOL . PHP_EOL . PHP_EOL . $this->getPhraseText('main_menu', $chat_id)
-			: $this->getPhraseText('main_menu', $chat_id);
+	public function handleMainMenu($telegram, $chat_id, $message = null) {
+		if ($message === null) {
+			$isAdmin = $this->isAdmin($telegram, $chat_id);
+			$message = $isAdmin
+				? '👤Admin mode available👤 - /admin' . PHP_EOL . PHP_EOL . PHP_EOL . $this->getPhraseText('main_menu', $chat_id)
+				: $this->getPhraseText('main_menu', $chat_id);
+		}
 		$buttons = [
 			[
 				$this->getPhraseText('button_earn', $chat_id),
@@ -385,146 +382,72 @@ class DatabaseConnection {
 				$this->getPhraseText('button_changeLang', $chat_id)
 			]
 		];
-		if ($isAdmin) {
-			$buttons[] = [
-				"Рассылка",
-				"Админ кнопка",
-				"Админ кнопка"
-			];
-		}
-		$reply_markup = $telegram->buildKeyboard($buttons, false, true, true);
-		$content = [
+		$telegram->sendMessage([
 			'chat_id'      => $chat_id,
 			'text'         => $message,
-			'reply_markup' => $reply_markup
-		];
-		$telegram->sendMessage($content);
-	}	
+			'reply_markup' => $telegram->buildKeyboard($buttons, false, true, true)
+		]);
+	}
 
 	public function checkTrue($telegram, $chat_id, $bot_token, $message_id) {
-		$balance    = $this->getUserBalance($chat_id);
-		$referals   = $this->getReferralsCount($chat_id);
-		$joined     = $this->isUserSubscribed($chat_id, $telegram, $bot_token);
+		$balance = $this->getUserBalance($chat_id);
+		$referals = $this->getReferralsCount($chat_id);
+		$joined = $this->isUserSubscribed($chat_id, $telegram, $bot_token);
 		$conditions = $this->getPhraseText("conditions_text", $chat_id);
+		
+		$notSub = $this->getPhraseText("doesntSub_text", $chat_id);
+		$checkChannel = $this->getPhraseText('checkChannel_button', $chat_id);
+		$subscribe = $this->getPhraseText('subscribe_button', $chat_id);
 		if (!$joined) {
-			$notSub       = $this->getPhraseText("doesntSub_text", $chat_id);
-			$checkChannel = $this->getPhraseText('checkChannel_button', $chat_id);
-			$subscribe = $this->getPhraseText('subscribe_button', $chat_id);
 			$keyboard = [
 				'inline_keyboard' => [
-					[
-						[
-							'text' => $subscribe,
-							'url'  => $GLOBALS['offTgChannel']
-						]
-					],
-					[
-						[
-							'text'          => $checkChannel,
-							'callback_data' => 'checkSub'
-						]
-					]
+					[['text' => $subscribe, 'url' => $GLOBALS['offTgChannel']]],
+					[['text' => $checkChannel, 'callback_data' => 'checkSub']]
 				]
 			];
-			$content  = [
+			$telegram->editMessageText([
 				'chat_id'      => $chat_id,
 				'message_id'   => $message_id,
 				'text'         => $notSub,
 				'reply_markup' => json_encode($keyboard)
-			];
-			$telegram->editMessageText($content);
-		} elseif ($joined) {
-			if ($referals > $GLOBALS['inviteSumValue'] - 1) {
-				$joinedTG      = $this->getPhraseText("joined_text ", $chat_id);
-				$message       = str_replace(
-					[
-						'{summ}',
-						'{valuta}',
-						'{inviteSumValue}',
-						'{referals}',
-						'{joined}'
-					],
-					[
-						$GLOBALS['summ'],
-						$GLOBALS['valuta'],
-						$GLOBALS['inviteSumValue'],
-						$referals,
-						$joinedTG
-					],
-					$conditions
-				);
-				$getGift       = $this->getPhraseText("getGift_button", $chat_id);
+			]);
+		} else {
+			$joinedMsg = $this->getPhraseText("joined_text", $chat_id);
+			$message = str_replace(
+				['{amount}', '{currency}', '{inviteSumValue}', '{referals}', '{joined}'],
+				[$GLOBALS['amount'], $GLOBALS['currency'], $GLOBALS['inviteSumValue'], $referals, $joinedMsg],
+				$conditions
+			);
+			if ($referals >= $GLOBALS['inviteSumValue']) {
 				$getGiftButton = str_replace(
-					[
-						'{summ}',
-						'{valuta}'
-					],
-					[
-						$GLOBALS['summ'],
-						$GLOBALS['valuta']
-					],
-					$getGift
+					['{amount}', '{currency}'],
+					[$GLOBALS['amount'], $GLOBALS['currency']],
+					$this->getPhraseText("getGift_button", $chat_id)
 				);
-				$keyboard      = [
+				$keyboard = [
 					'inline_keyboard' => [
-						[
-							[
-								'text'          => $getGiftButton,
-								'callback_data' => 'withdraw'
-							]
-						]
+						[['text' => $getGiftButton, 'callback_data' => 'withdraw']]
 					]
 				];
-				$content       = [
-					'chat_id'      => $chat_id,
-					'text'         => $message,
-					'message_id'   => $message_id,
-					'reply_markup' => json_encode($keyboard)
-				];
 			} else {
-				$joinedTG        = $this->getPhraseText("joined_text ", $chat_id);
-				$message         = str_replace(
-					[
-						'{summ}',
-						'{valuta}',
-						'{inviteSumValue}',
-						'{referals}',
-						'{joined}'
-					],
-					[
-						$GLOBALS['summ'],
-						$GLOBALS['valuta'],
-						$GLOBALS['inviteSumValue'],
-						$referals,
-						$joinedTG
-					],
-					$conditions
-				);
-				$mustBe          = $GLOBALS['inviteSumValue'] - $referals;
-				$remindFriend    = $this->getPhraseText("inviteFriends_button", $chat_id);
+				$mustBe = $GLOBALS['inviteSumValue'] - $referals;
 				$remindFriendBTN = str_replace(
 					['{remained}'],
 					[$mustBe],
-					$remindFriend
+					$this->getPhraseText("inviteFriends_button", $chat_id)
 				);
-				$keyboard        = [
+				$keyboard = [
 					'inline_keyboard' => [
-						[
-							[
-								'text'          => $remindFriendBTN,
-								'callback_data' => 'invite_friend'
-							]
-						]
+						[['text' => $remindFriendBTN, 'callback_data' => 'invite_friend']]
 					]
 				];
-				$content         = [
-					'chat_id'      => $chat_id,
-					'message_id'   => $message_id,
-					'text'         => $message,
-					'reply_markup' => json_encode($keyboard)
-				];
 			}
-			$telegram->editMessageText($content);
+			$telegram->editMessageText([
+				'chat_id'      => $chat_id,
+				'text'         => $message,
+				'message_id'   => $message_id,
+				'reply_markup' => json_encode($keyboard)
+			]);
 		}
 	}
 
@@ -533,7 +456,7 @@ class DatabaseConnection {
 		$ref_link = $this->generateReferralLink($chat_id);
 	
 		$referal        = $this->getReferralsCount($chat_id);
-		$balance        = $GLOBALS['bonus'] * $referal . $GLOBALS['valuta'];
+		$balance        = $GLOBALS['bonus'] * $referal . $GLOBALS['currency'];
 		$partnerMessage = $this->getPhraseText("partner_text", $chat_id);
 		$message        = str_replace(
 			[
@@ -598,21 +521,13 @@ class DatabaseConnection {
 		]);
 	}
 	
-	public function handleDwnloadCommand($telegram, $chat_id) {
+	public function handleDownloadCommand($telegram, $chat_id) {
 		$lang = $this->getLanguage($chat_id);
 		$message = $this->getPhraseText("download_button", $chat_id);
-		$keyboard = json_encode([
-			'inline_keyboard' => [
-				[[
-					'text' => $this->getPhraseText("dwnldApp_button", $chat_id),
-					'url'  => "https://apps.apple.com/{$lang}/app/shein-shopping-online/id878577184"
-				]],
-				[[
-					'text' => $this->getPhraseText("dwnldGoogle_button", $chat_id),
-					'url'  => "https://play.google.com/store/apps/details?id=com.zzkko&hl={$lang}"
-				]]
-			]
-		]);
+		$keyboard = json_encode(['inline_keyboard' => [[
+			['text' => $this->getPhraseText("downloadApp_button", $chat_id), 'url' => "https://apps.apple.com/{$lang}/app/shein-shopping-online/id878577184"],
+			['text' => $this->getPhraseText("downloadGoogle_button", $chat_id), 'url' => "https://play.google.com/store/apps/details?id=com.zzkko&hl={$lang}"]
+		]]]);		
 		$telegram->sendMessage([
 			'chat_id'      => $chat_id,
 			'text'         => $message,
@@ -622,8 +537,8 @@ class DatabaseConnection {
 
 	public function handleHelpCommand($telegram, $chat_id) {
 		$message = str_replace(
-			['{summ}', '{currency}'],
-			[$GLOBALS['summ'], $GLOBALS['currency']],
+			['{amount}', '{currency}'],
+			[$GLOBALS['amount'], $GLOBALS['currency']],
 			$this->getPhraseText("help_text", $chat_id)
 		);
 		$telegram->sendMessage([
@@ -645,24 +560,9 @@ class DatabaseConnection {
 		$watchSum     = str_replace('{$wachSum}', $GLOBALS['watchSumValue'], $this->getPhraseText("view_post", $chat_id));
 		$keyboard = [
 			'inline_keyboard' => [
-				[
-					[
-						'text'          => $inviteSum,
-						'callback_data' => 'invite_friend'
-					]
-				],
-				[
-					[
-						'text'          => $subscribeSum,
-						'callback_data' => 'join_channel'
-					]
-				],
-				[
-					[
-						'text'          => $watchSum,
-						'callback_data' => 'view_post'
-					]
-				]
+				[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
+				[['text' => $subscribeSum, 'callback_data' => 'join_channel']],
+				[['text' => $watchSum, 'callback_data' => 'view_post']]
 			]
 		];
 		$content  = [
@@ -671,6 +571,34 @@ class DatabaseConnection {
 			'reply_markup' => json_encode($keyboard)
 		];
 		$telegram->sendMessage($content);
+	}
+
+	public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
+		$tg_key = 'tg' . $GLOBALS['valueTg'];
+		$channelURL = $this->getURL($tg_key);
+		$handleMessage = $this->getPhraseText("join_text", $chat_id);
+		$message = str_replace(
+			['{$sum}', '{$chanURL}'],
+			[$GLOBALS['joinChannelPay'], $channelURL],
+			$handleMessage
+		);
+		$keyboard = json_encode([
+			'inline_keyboard' => [
+				[['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+				[['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
+			]
+		]);		
+		$content = [
+			'chat_id' => $chat_id,
+			'message_id' => $message_id,
+			'text' => $message,
+			'reply_markup' => $keyboard
+		];
+		try {
+			$telegram->editMessageText($content);
+		} catch (Exception $e) {
+			error_log('Ошибка при редактировании сообщения: ' . $e->getMessage());
+		}
 	}
 
 	// Subscription check + charge to balance
@@ -702,74 +630,17 @@ class DatabaseConnection {
 		$telegram->editMessageText($content);
 	}
 
-	public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
-		$tg_key = 'tg' . $GLOBALS['valueTg'];
-		$channelURL = $this->getURL($tg_key);
-		$handleMessage = $this->getPhraseText("join_text", $chat_id);
-		$message = str_replace(
-			['{$sum}', '{$chanURL}'],
-			[$GLOBALS['joinChannelPay'], $channelURL],
-			$handleMessage
-		);
-		$keyboard = json_encode([
-			'inline_keyboard' => [
-				[
-					['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']
-				],
-				[
-					['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']
-				]
-			]
-		]);
-		$content = [
-			'chat_id' => $chat_id,
-			'message_id' => $message_id,
-			'text' => $message,
-			'reply_markup' => $keyboard
-		];
-		try {
-			$telegram->editMessageText($content);
-		} catch (Exception $e) {
-			error_log('Ошибка при редактировании сообщения: ' . $e->getMessage());
-		}
-	}
-
 	public function handleReportCommand($telegram, $chat_id, $message_id) {
 		$message  = $this->getPhraseText("rep_text", $chat_id);
 		$keyboard = [
 			'inline_keyboard' => [
-				[
-					[
-						'text'          => $this->getPhraseText("spam_button", $chat_id),
-						'callback_data' => 'spam'
-					]
-				],
-				[
-					[
-						'text'          => $this->getPhraseText("fraud_button", $chat_id),
-						'callback_data' => 'fraud'
-					]
-				],
-				[
-					[
-						'text'          => $this->getPhraseText("violence_button", $chat_id),
-						'callback_data' => 'violence'
-					]
-				],
-				[
-					[
-						'text'          => $this->getPhraseText("copyright_button", $chat_id),
-						'callback_data' => 'copyright'
-					]
-				],
-				[
-					[
-						'text'          => $this->getPhraseText("other_button", $chat_id),
-						'callback_data' => 'other'
-					]
-				]
+				[['text' => $this->getPhraseText("spam_button", $chat_id), 'callback_data' => 'spam'],
+				 ['text' => $this->getPhraseText("fraud_button", $chat_id), 'callback_data' => 'fraud'],
+				 ['text' => $this->getPhraseText("violence_button", $chat_id), 'callback_data' => 'violence'],
+				 ['text' => $this->getPhraseText("copyright_button", $chat_id), 'callback_data' => 'copyright'],
+				 ['text' => $this->getPhraseText("other_button", $chat_id), 'callback_data' => 'other']]
 			]
-		];
+		];		
 		$content  = [
 			'chat_id'      => $chat_id,
 			'message_id'   => $message_id,
@@ -903,16 +774,6 @@ class DatabaseConnection {
 		}
 		$stmt->close();
 		return null;
-	}
-	
-	public function adminModeRas($chat_id, $telegram) {
-		$telegram->sendMessage([
-			'chat_id'      => $chat_id,
-			'text'         => 'Вы вошли в рассылку',
-			'reply_markup' => $telegram->buildKeyboard([
-				[['Добавить текст', 'Обзор', 'Главное меню']]
-			], false, true, true)
-		]);
 	}
 
 	public function isInputMode($chat_id) {
