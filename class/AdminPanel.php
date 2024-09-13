@@ -24,4 +24,6 @@ class AdminPanel {
 			], false, true, true)
 		]);
 	}
+
+	
 }

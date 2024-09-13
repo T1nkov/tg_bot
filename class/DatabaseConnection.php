@@ -367,7 +367,7 @@ class DatabaseConnection extends AdminPanel {
 	public function handleMainMenu($telegram, $chat_id) {
 		$isAdmin = $this->isAdmin($telegram, $chat_id);
 		$message = $isAdmin
-			? '👤Admin панель👤' . PHP_EOL . PHP_EOL . PHP_EOL . $this->getPhraseText('main_menu', $chat_id)
+			? '👤Admin mode available👤' . PHP_EOL . PHP_EOL . PHP_EOL . $this->getPhraseText('main_menu', $chat_id)
 			: $this->getPhraseText('main_menu', $chat_id);
 		$buttons = [
 			[
@@ -634,14 +634,10 @@ class DatabaseConnection extends AdminPanel {
 		);
 		$keyboard = json_encode([
 			'inline_keyboard' => [
-				[
-					['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']
-				],
-				[
-					['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']
-				]
+				[['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+				[['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
 			]
-		]);
+		]);		
 		$content = [
 			'chat_id' => $chat_id,
 			'message_id' => $message_id,
@@ -659,38 +655,13 @@ class DatabaseConnection extends AdminPanel {
 		$message  = $this->getPhraseText("rep_text", $chat_id);
 		$keyboard = [
 			'inline_keyboard' => [
-				[
-					[
-						'text'          => $this->getPhraseText("spam_button", $chat_id),
-						'callback_data' => 'spam'
-					]
-				],
-				[
-					[
-						'text'          => $this->getPhraseText("fraud_button", $chat_id),
-						'callback_data' => 'fraud'
-					]
-				],
-				[
-					[
-						'text'          => $this->getPhraseText("violence_button", $chat_id),
-						'callback_data' => 'violence'
-					]
-				],
-				[
-					[
-						'text'          => $this->getPhraseText("copyright_button", $chat_id),
-						'callback_data' => 'copyright'
-					]
-				],
-				[
-					[
-						'text'          => $this->getPhraseText("other_button", $chat_id),
-						'callback_data' => 'other'
-					]
-				]
+				[['text' => $this->getPhraseText("spam_button", $chat_id), 'callback_data' => 'spam'],
+				 ['text' => $this->getPhraseText("fraud_button", $chat_id), 'callback_data' => 'fraud'],
+				 ['text' => $this->getPhraseText("violence_button", $chat_id), 'callback_data' => 'violence'],
+				 ['text' => $this->getPhraseText("copyright_button", $chat_id), 'callback_data' => 'copyright'],
+				 ['text' => $this->getPhraseText("other_button", $chat_id), 'callback_data' => 'other']]
 			]
-		];
+		];		
 		$content  = [
 			'chat_id'      => $chat_id,
 			'message_id'   => $message_id,
