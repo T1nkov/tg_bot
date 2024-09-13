@@ -29,3 +29,5 @@ trait ViewTgPost {
         return $seenPostUrls;
     }
 }
+
+// the functionality seems to be ready, but stupid limitations of telegram do not allow to use it
