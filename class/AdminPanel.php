@@ -42,7 +42,7 @@ trait AdminPanel {
 	}
 	
 	public function displayChannels($telegram, $chat_id) {
-        $stmt = $this->conn->prepare("SELECT channel_url FROM channels");
+        $stmt = $this->conn->prepare("SELECT channel_url FROM channel_tg");
         $stmt->execute();
         $result = $stmt->get_result();
         $channelList = '';
@@ -71,12 +71,18 @@ trait AdminPanel {
     }
 
     public function addChannelURL($telegram, $chat_id, $url) {
-        $stmt = $this->conn->prepare("INSERT INTO channels (channel_url) VALUES (?)");
-        $stmt->bind_param("s", $url);
+        $stmt = $this->conn->prepare("SELECT MAX(id) as max_id FROM channel_tg");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $maxId = $result->fetch_assoc()['max_id'];
+        $newId = $maxId ? $maxId + 1 : 1;
+        $stmt = $this->conn->prepare("INSERT INTO channel_tg (id, tg_key, tg_url) VALUES (?, ?, ?)");
+        $tgKey = "tg$newId";
+        $stmt->bind_param("iss", $newId, $tgKey, $url);
         if ($stmt->execute()) {
             $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'text' => "Канал $url добавлен"
+                'text' => "Канал $url добавлен с tg_key $tgKey"
             ]);
         } else {
             $telegram->sendMessage([
@@ -88,7 +94,7 @@ trait AdminPanel {
     }
 	
 	public function promptRemoveChannel($telegram, $chat_id) {
-        $stmt = $this->conn->prepare("SELECT channel_url FROM channels");
+        $stmt = $this->conn->prepare("SELECT channel_url FROM channel_tg");
         $stmt->execute();
         $result = $stmt->get_result();
         if ($result->num_rows === 0) {
@@ -117,18 +123,30 @@ trait AdminPanel {
     }
 
     public function removeChannelURL($telegram, $chat_id, $url) {
-        $stmt = $this->conn->prepare("DELETE FROM channels WHERE channel_url = ?");
+        $stmt = $this->conn->prepare("DELETE FROM channel_tg WHERE tg_url = ?");
         $stmt->bind_param("s", $url);
         if ($stmt->execute()) {
             $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'text'    => "Канал $url удалён"
+                'text' => "Канал $url удалён"
             ]);
+            $this->reorderChannels();
         } else {
             $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'text'    => "Ошибка при удалении канала."
+                'text' => "Ошибка при удалении канала."
             ]);
+        }
+    }
+
+    private function reorderChannels() {
+        $stmt = $this->conn->query("SELECT id FROM channel_tg ORDER BY id ASC");
+        $counter = 1;
+        while ($row = $stmt->fetch_assoc()) {
+            $updateStmt = $this->conn->prepare("UPDATE channel_tg SET id = ? WHERE id = ?");
+            $updateStmt->bind_param("ii", $counter, $row['id']);
+            $updateStmt->execute();
+            $counter++;
         }
     }
 }

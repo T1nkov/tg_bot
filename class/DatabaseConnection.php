@@ -1,8 +1,10 @@
 <?php
 require_once 'AdminPanel.php';
+require_once 'ViewTgPost.php';
 
 class DatabaseConnection {
 	use AdminPanel;
+	use ViewTgPost;
 
 	private $host;
     private $database;
