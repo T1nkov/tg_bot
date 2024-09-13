@@ -558,9 +558,9 @@ class DatabaseConnection extends AdminPanel {
 		$watchSum     = str_replace('{$wachSum}', $GLOBALS['watchSumValue'], $this->getPhraseText("view_post", $chat_id));
 		$keyboard = [
 			'inline_keyboard' => [
-				[['text' => $inviteSum, 'callback_data' => 'invite_friend'],
-				 ['text' => $subscribeSum, 'callback_data' => 'join_channel'],
-				 ['text' => $watchSum, 'callback_data' => 'view_post']]
+				[[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
+				 [['text' => $subscribeSum, 'callback_data' => 'join_channel']],
+				 [['text' => $watchSum, 'callback_data' => 'view_post']]]
 			]
 		];
 		
