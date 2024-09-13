@@ -565,13 +565,40 @@ class DatabaseConnection extends AdminPanel {
 				[['text' => $watchSum, 'callback_data' => 'view_post']]
 			]
 		];
-		
 		$content  = [
 			'chat_id'      => $chat_id,
 			'text'         => $message,
 			'reply_markup' => json_encode($keyboard)
 		];
 		$telegram->sendMessage($content);
+	}
+
+	public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
+		$tg_key = 'tg' . $GLOBALS['valueTg'];
+		$channelURL = $this->getURL($tg_key);
+		$handleMessage = $this->getPhraseText("join_text", $chat_id);
+		$message = str_replace(
+			['{$sum}', '{$chanURL}'],
+			[$GLOBALS['joinChannelPay'], $channelURL],
+			$handleMessage
+		);
+		$keyboard = [
+			'inline_keyboard' => [
+				[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
+				[['text' => $subscribeSum, 'callback_data' => 'join_channel']],
+				[['text' => $watchSum, 'callback_data' => 'view_post']]
+			]
+		];
+		$content  = [
+			'chat_id'      => $chat_id,
+			'text'         => $message,
+			'reply_markup' => json_encode($keyboard)
+		];
+		try {
+			$telegram->editMessageText($content);
+		} catch (Exception $e) {
+			error_log('Ошибка при редактировании сообщения: ' . $e->getMessage());
+		}
 	}
 
 	// Subscription check + charge to balance
@@ -601,35 +628,6 @@ class DatabaseConnection extends AdminPanel {
 			'reply_markup' => json_encode(['inline_keyboard' => [$keyboard]])
 		];
 		$telegram->editMessageText($content);
-	}
-
-	public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
-		$tg_key = 'tg' . $GLOBALS['valueTg'];
-		$channelURL = $this->getURL($tg_key);
-		$handleMessage = $this->getPhraseText("join_text", $chat_id);
-		$message = str_replace(
-			['{$sum}', '{$chanURL}'],
-			[$GLOBALS['joinChannelPay'], $channelURL],
-			$handleMessage
-		);
-		$keyboard = [
-			'inline_keyboard' => [
-				[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
-				[['text' => $subscribeSum, 'callback_data' => 'join_channel']],
-				[['text' => $watchSum, 'callback_data' => 'view_post']]
-			]
-		];	
-		$content = [
-			'chat_id' => $chat_id,
-			'message_id' => $message_id,
-			'text' => $message,
-			'reply_markup' => $keyboard
-		];
-		try {
-			$telegram->editMessageText($content);
-		} catch (Exception $e) {
-			error_log('Ошибка при редактировании сообщения: ' . $e->getMessage());
-		}
 	}
 
 	public function handleReportCommand($telegram, $chat_id, $message_id) {
