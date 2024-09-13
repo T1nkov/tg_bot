@@ -100,9 +100,9 @@ switch ($command) {
             $db->handleMainMenu($telegram, $chat_id, $message);
         }
         break;
-    case $command !== null && strpos($command, '/exit') === 0:
-        $db->handleMainMenu($telegram, $chat_id);
-        break;
+	case $command !== null && (strpos($command, '/exit') === 0 || stripos($command, 'Выход') === 0):
+		$db->handleMainMenu($telegram, $chat_id);
+		break;
 	case isTextMatchingButtons($command): // Language set
 		$hhh = null;
 		foreach ($GLOBALS['buttons'] as $key => $values) {
