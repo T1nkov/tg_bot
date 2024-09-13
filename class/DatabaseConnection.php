@@ -594,6 +594,7 @@ class DatabaseConnection extends AdminPanel {
 			'text'         => $message,
 			'reply_markup' => json_encode($keyboard)
 		];
+		$telegram->sendMessage($content);
 		try {
 			$telegram->editMessageText($content);
 		} catch (Exception $e) {
