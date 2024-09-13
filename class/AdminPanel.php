@@ -25,5 +25,22 @@ class AdminPanel {
 		]);
 	}
 
-	
+	public function handleAdminPanel($telegram, $chat_id) {
+		$isAdmin = $this->isAdmin($telegram, $chat_id);
+		$message = $isAdmin
+			? 'Welcome to admin menu, /exit'
+			: 'Sorry, you\'re not an admin, contact with the owner if you really are.';
+		$buttons = [
+			[
+				'Рассылка',
+				'Добавить ссылку на канал', // add it to DB
+				'Выход' // send same /exit command
+			]
+		];
+		$telegram->sendMessage([
+			'chat_id'      => $chat_id,
+			'text'         => $message,
+			'reply_markup' => $telegram->buildKeyboard($buttons, false, true, true)
+		]);
+	}
 }
