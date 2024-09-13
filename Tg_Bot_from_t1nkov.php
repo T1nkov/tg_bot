@@ -49,7 +49,6 @@ function isTextMatchingButtons($command) {
 	return false;
 }
 
-$userStates = []; 
 $db = new DatabaseConnection($config_file);
 
 $telegram->sendMessage([
@@ -76,6 +75,7 @@ $commands = [
     'remove_channel' => 'promptRemoveChannel'
 ];
 
+$userStates = []; 
 if (isset($callback_data) && isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
         $userStates[$chat_id] = 'awaiting_channel_url';
@@ -87,7 +87,7 @@ if (isset($callback_data) && isset($commands[$callback_data])) {
     }
 } elseif (isset($userStates[$chat_id]) && $userStates[$chat_id] === 'awaiting_channel_url') {
     $url = trim($command);
-    if (filter_var($url, FILTER_VALIDATE_URL)) { // input validation as a bonus
+    if (filter_var($url, FILTER_VALIDATE_URL)) {
         $db->addChannelURL($telegram, $chat_id, $url);
         unset($userStates[$chat_id]);
         $db->displayChannels($telegram, $chat_id);
@@ -102,6 +102,7 @@ if (isset($callback_data) && isset($commands[$callback_data])) {
     $db->removeChannelURL($telegram, $chat_id, $urlToRemove);
     $db->displayChannels($telegram, $chat_id);
 }
+
 
 $telegram->sendMessage([
 	'chat_id' => $chat_id,

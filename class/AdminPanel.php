@@ -101,21 +101,21 @@ class AdminPanel {
         ]);
     }
 
-    public function addChannelURL($telegram, $chat_id, $url) {
-        $stmt = $this->conn->prepare("INSERT INTO channels (channel_url) VALUES (?)");
-        $stmt->bind_param("s", $url);
-        if ($stmt->execute()) {
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text'    => "Канал $url добавлен"
-            ]);
-        } else {
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text'    => "Ошибка при добавлении канала."
-            ]);
-        }
-    }
+	public function addChannelURL($telegram, $chat_id, $url) {
+		$stmt = $this->conn->prepare("INSERT INTO channels (channel_url) VALUES (?)");
+		$stmt->bind_param("s", $url);
+		if ($stmt->execute()) {
+			$telegram->sendMessage([
+				'chat_id' => $chat_id,
+				'text'    => "Канал $url добавлен"
+			]);
+		} else {
+			$telegram->sendMessage([
+				'chat_id' => $chat_id,
+				'text'    => "Ошибка при добавлении канала."
+			]);
+		}
+	}	
 
     public function removeChannelURL($telegram, $chat_id, $url) {
         $stmt = $this->conn->prepare("DELETE FROM channels WHERE channel_url = ?");
