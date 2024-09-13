@@ -76,7 +76,7 @@ $commands = [
     'remove_channel' => 'promptRemoveChannel'
 ];
 
-if (isset($commands[$callback_data])) {
+if (isset($callback_data) && isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
         $userStates[$chat_id] = 'awaiting_channel_url';
         $db->promptAddChannel($telegram, $chat_id);
@@ -97,7 +97,7 @@ if (isset($commands[$callback_data])) {
             'text'    => "Пожалуйста, введите корректный URL."
         ]);
     }
-} elseif (preg_match('/^remove_/', $callback_data)) {
+} elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
     $urlToRemove = str_replace('remove_', '', $callback_data);
     $db->removeChannelURL($telegram, $chat_id, $urlToRemove);
     $db->displayChannels($telegram, $chat_id);
