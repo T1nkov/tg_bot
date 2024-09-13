@@ -612,12 +612,13 @@ class DatabaseConnection extends AdminPanel {
 			[$GLOBALS['joinChannelPay'], $channelURL],
 			$handleMessage
 		);
-		$keyboard = json_encode([
+		$keyboard = [
 			'inline_keyboard' => [
-				[['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
-				[['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
+				[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
+				[['text' => $subscribeSum, 'callback_data' => 'join_channel']],
+				[['text' => $watchSum, 'callback_data' => 'view_post']]
 			]
-		]);		
+		];	
 		$content = [
 			'chat_id' => $chat_id,
 			'message_id' => $message_id,
