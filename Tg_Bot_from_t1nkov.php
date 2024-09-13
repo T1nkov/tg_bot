@@ -37,7 +37,7 @@ $GLOBALS['buttons'] = [
     "kz" => ["🇰🇿 Қазақша"]
 ];
   
-// $update = json_decode(file_get_contents('php://input'), true);
+$update = json_decode(file_get_contents('php://input'), true);
 $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
