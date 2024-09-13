@@ -786,6 +786,7 @@ class DatabaseConnection {
 		$stmt->bind_param("i", $chat_id);
 		if (!$stmt->execute()) return 'error';
 		$result = $stmt->get_result();
+		
 		return $result->num_rows > 0 ? $result->fetch_assoc()['status'] : 'def';
 	}
 
