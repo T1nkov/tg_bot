@@ -522,18 +522,10 @@ class DatabaseConnection extends AdminPanel {
 	public function handleDownloadCommand($telegram, $chat_id) {
 		$lang = $this->getLanguage($chat_id);
 		$message = $this->getPhraseText("download_button", $chat_id);
-		$keyboard = json_encode([
-			'inline_keyboard' => [
-				[[
-					'text' => $this->getPhraseText("dwnldApp_button", $chat_id),
-					'url'  => "https://apps.apple.com/{$lang}/app/shein-shopping-online/id878577184"
-				]],
-				[[
-					'text' => $this->getPhraseText("dwnldGoogle_button", $chat_id),
-					'url'  => "https://play.google.com/store/apps/details?id=com.zzkko&hl={$lang}"
-				]]
-			]
-		]);
+		$keyboard = json_encode(['inline_keyboard' => [[
+			['text' => $this->getPhraseText("downloadApp_button", $chat_id), 'url' => "https://apps.apple.com/{$lang}/app/shein-shopping-online/id878577184"],
+			['text' => $this->getPhraseText("downloadGoogle_button", $chat_id), 'url' => "https://play.google.com/store/apps/details?id=com.zzkko&hl={$lang}"]
+		]]]);		
 		$telegram->sendMessage([
 			'chat_id'      => $chat_id,
 			'text'         => $message,
@@ -566,26 +558,12 @@ class DatabaseConnection extends AdminPanel {
 		$watchSum     = str_replace('{$wachSum}', $GLOBALS['watchSumValue'], $this->getPhraseText("view_post", $chat_id));
 		$keyboard = [
 			'inline_keyboard' => [
-				[
-					[
-						'text'          => $inviteSum,
-						'callback_data' => 'invite_friend'
-					]
-				],
-				[
-					[
-						'text'          => $subscribeSum,
-						'callback_data' => 'join_channel'
-					]
-				],
-				[
-					[
-						'text'          => $watchSum,
-						'callback_data' => 'view_post'
-					]
-				]
+				[['text' => $inviteSum, 'callback_data' => 'invite_friend'],
+				 ['text' => $subscribeSum, 'callback_data' => 'join_channel'],
+				 ['text' => $watchSum, 'callback_data' => 'view_post']]
 			]
 		];
+		
 		$content  = [
 			'chat_id'      => $chat_id,
 			'text'         => $message,
