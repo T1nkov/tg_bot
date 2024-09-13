@@ -367,7 +367,7 @@ class DatabaseConnection extends AdminPanel {
 	public function handleMainMenu($telegram, $chat_id) {
 		$isAdmin = $this->isAdmin($telegram, $chat_id);
 		$message = $isAdmin
-			? '👤Admin mode available👤' . PHP_EOL . PHP_EOL . PHP_EOL . $this->getPhraseText('main_menu', $chat_id)
+			? '👤Admin mode available👤 - /admin' . PHP_EOL . PHP_EOL . PHP_EOL . $this->getPhraseText('main_menu', $chat_id)
 			: $this->getPhraseText('main_menu', $chat_id);
 		$buttons = [
 			[
