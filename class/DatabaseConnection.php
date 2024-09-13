@@ -804,12 +804,12 @@ class DatabaseConnection {
 		return $stmt && $stmt->bind_param("s", $text) && $stmt->execute();
 	}
 	
-	public function handleUserInput($chatId, $telegram) {
+	public function handleUserInput($chat_id, $telegram) {
 		$telegram->sendMessage([
-			'chat_id' => $chatId,
+			'chat_id' => $chat_id,
 			'text'    => "Вы вошли в режим ввода текста!\nПожалуйста, введите ваш текст."
 		]);
-		$this->setInputMode($chatId, 'input_mode');
+		$this->setInputMode($chat_id, 'input_mode');
 	}
 	
 	public function __destruct() { $this->conn && $this->conn->close(); }
