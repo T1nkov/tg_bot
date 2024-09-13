@@ -589,12 +589,11 @@ class DatabaseConnection extends AdminPanel {
 			]
 		]);		
 		$content = [
-			$content = [
-				'chat_id' => $chat_id,
-				'message_id' => $message_id,
-				'text' => $message,
-				'reply_markup' => $keyboard
-			];
+			'chat_id' => $chat_id,
+			'message_id' => $message_id,
+			'text' => $message,
+			'reply_markup' => $keyboard
+		];
 		try {
 			$telegram->editMessageText($content);
 		} catch (Exception $e) {
