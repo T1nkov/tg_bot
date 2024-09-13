@@ -37,7 +37,7 @@ $GLOBALS['buttons'] = [
     "kz" => ["🇰🇿 Қазақша"]
 ];
   
-$update = json_decode(file_get_contents('php://input'), true);
+// $update = json_decode(file_get_contents('php://input'), true);
 $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
@@ -90,7 +90,7 @@ $telegram->sendMessage([
 
 switch ($command) {
     case $command !== null && strpos($command, '/start') === 0:
-        $db->handleStartCommand($telegram, $chat_id);
+        $db->handleStartCommand($telegram, $chat_id, $update);
         break;
     case $command !== null && strpos($command, '/admin') === 0:
         if ($db->isAdmin($telegram, $chat_id)) {
@@ -103,6 +103,7 @@ switch ($command) {
 	case $command !== null && (strpos($command, '/exit') === 0 || stripos($command, 'Выход') === 0):
 		$db->handleMainMenu($telegram, $chat_id);
 		break;
+		
 	case isTextMatchingButtons($command): // Language set
 		$hhh = null;
 		foreach ($GLOBALS['buttons'] as $key => $values) {
@@ -127,7 +128,7 @@ switch ($command) {
 		$db->handlePartnerCommand($telegram, $chat_id);
 		break;
 	case $db->getPhraseText("button_changeLang", $chat_id):
-		$db->handleStartCommand($telegram, $chat_id);
+		$db->handleStartCommand($telegram, $chat_id, $update);
 		break;
 	case $db->getPhraseText("button_Help", $chat_id):
 		$db->handleHelpCommand($telegram, $chat_id);
