@@ -46,7 +46,7 @@ trait AdminPanel {
         $stmt->execute();
         $result = $stmt->get_result();
         $channelList = '';
-        while ($row = $result->fetch_assoc()) { $channelList .= $row['channel_url'] . "\n"; }
+        while ($row = $result->fetch_assoc()) { $channelList .= $row['tg_url'] . "\n"; }
         $message = "Ссылки на каналы:\n" . $channelList;
         $keyboard = [
             'inline_keyboard' => [
@@ -94,7 +94,7 @@ trait AdminPanel {
     }
 	
 	public function promptRemoveChannel($telegram, $chat_id) {
-        $stmt = $this->conn->prepare("SELECT channel_url FROM channel_tg");
+        $stmt = $this->conn->prepare("SELECT tg_url FROM channel_tg");
         $stmt->execute();
         $result = $stmt->get_result();
         if ($result->num_rows === 0) {
@@ -107,8 +107,8 @@ trait AdminPanel {
         $keyboard = ['inline_keyboard' => []];
         while ($row = $result->fetch_assoc()) {
             $keyboard['inline_keyboard'][] = [[
-                'text' => $row['channel_url'], 
-                'callback_data' => 'remove_' . $row['channel_url']
+                'text' => $row['tg_url'], 
+                'callback_data' => 'remove_' . $row['tg_url']
             ]];
         }
         $keyboard['inline_keyboard'][] = [[
