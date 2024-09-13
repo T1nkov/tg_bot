@@ -42,7 +42,7 @@ trait AdminPanel {
 	}
 	
 	public function displayChannels($telegram, $chat_id) {
-        $stmt = $this->conn->prepare("SELECT tg_url FROM channel_tg;");
+        $stmt = $this->conn->prepare("SELECT tg_url FROM channel_tg");
         $stmt->execute();
         $result = $stmt->get_result();
         $channelList = '';
