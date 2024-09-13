@@ -103,7 +103,7 @@ switch ($command) {
 	case $command !== null && (strpos($command, '/exit') === 0 || stripos($command, 'Выход') === 0):
 		$db->handleMainMenu($telegram, $chat_id);
 		break;
-	case case $command !== null && strpos($command, 'Каналы') === 0:
+	case $command !== null && strpos($command, 'Каналы') === 0:
 		if ($db->isAdmin($telegram, $chat_id)) { $db->displayChannels($telegram, $chat_id); }
 		break;
 	case isTextMatchingButtons($command): // Language set
