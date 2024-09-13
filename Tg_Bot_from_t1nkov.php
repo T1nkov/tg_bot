@@ -18,15 +18,14 @@ $chat_id = $telegram->ChatID();
 $data = $telegram->getData();
 
 $GLOBALS['adminHREF']         = 'https://t.me/t1nkov';
-$GLOBALS['amount']              = 500;
+$GLOBALS['currency']          = 'INR';
+$GLOBALS['amount']            = 500;
 $GLOBALS['inviteSumValue']    = 200;
-$GLOBALS['offTgChannel']      = 'https://t.me/fgjhaksdlf'; // do you need this here?
 $GLOBALS['cards']             = 10;
 $GLOBALS['ChannelID']         = 2248476665;
 $GLOBALS['subscribeSumValue'] = 1000 . $GLOBALS['currency'];
 $GLOBALS['watchSumValue']     = 8;
 $GLOBALS['valueTg']           = 1;
-$GLOBALS['currency']          = 'INR';
 $GLOBALS['joinChannelPay']    = 1000 . $GLOBALS['currency'];
 $GLOBALS['adminID']           = 403480319;
 $GLOBALS['minWithdraw']       = number_format(10, 2, '.', '') . $GLOBALS['currency'];
@@ -77,6 +76,9 @@ $commands = [
 ];
 
 if (isset($commands[$callback_data])) {
+    if ($commands[$callback_data] === 'add_url') {
+
+    }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
 } elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
     $urlToRemove = str_replace('remove_', '', $callback_data);
