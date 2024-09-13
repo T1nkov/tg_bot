@@ -75,10 +75,8 @@ $commands = [
     'remove_channel' => 'promptRemoveChannel'
 ];
 
-$userStates = [];
 if (isset($callback_data) && isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
-        $userStates[$chat_id] = 'awaiting_channel_url';
         $db->promptAddChannel($telegram, $chat_id);
     } elseif ($callback_data === 'remove_channel') {
         $db->promptRemoveChannel($telegram, $chat_id);
@@ -125,7 +123,7 @@ switch ($command) {
 	case $command !== null && strpos($command, 'Каналы') === 0:
 		if ($db->isAdmin($telegram, $chat_id)) { $db->displayChannels($telegram, $chat_id); }
 		break;
-	case isTextMatchingButtons($command): // Language set
+	case isTextMatchingButtons($command):
 		$hhh = null;
 		foreach ($GLOBALS['buttons'] as $key => $values) {
 			if (in_array($command, $values)) {
@@ -162,26 +160,3 @@ switch ($command) {
 }
 
 ?>
-<!-- 
-case 'Админ кнопка':
-		$db->getChatIdByLink($telegram, $bot_token, $chat_id);
-		break;
-	case $db->getPhraseText("button_earn", $chat_id):
-		$db->handleEarnCommand($telegram, $chat_id);
-		break;
-	case 'Рассылка':
-		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
-			$db->takeAllId($telegram, $chat_id);
-			$db->adminModeRas($chat_id, $telegram);
-		}
-		break;
-	case 'Добавить текст':
-		if ($db->isAdmin($telegram, $chat_id) == 'admin') {
-
-			$db->handleUserInput($chat_id, $telegram);
-		}
-		break;
-	case 'Главное меню':
-		$db->setInputMode($chat_id, 'def');
-		$db->handleMainMenu($telegram, $chat_id);
-		break; -->
