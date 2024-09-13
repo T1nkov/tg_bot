@@ -582,19 +582,19 @@ class DatabaseConnection extends AdminPanel {
 			[$GLOBALS['joinChannelPay'], $channelURL],
 			$handleMessage
 		);
-		$keyboard = [
+		$keyboard = json_encode([
 			'inline_keyboard' => [
-				[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
-				[['text' => $subscribeSum, 'callback_data' => 'join_channel']],
-				[['text' => $watchSum, 'callback_data' => 'view_post']]
+				[['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+				[['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
 			]
-		];
-		$content  = [
-			'chat_id'      => $chat_id,
-			'text'         => $message,
-			'reply_markup' => json_encode($keyboard)
-		];
-		$telegram->sendMessage($content);
+		]);		
+		$content = [
+			$content = [
+				'chat_id' => $chat_id,
+				'message_id' => $message_id,
+				'text' => $message,
+				'reply_markup' => $keyboard
+			];
 		try {
 			$telegram->editMessageText($content);
 		} catch (Exception $e) {
