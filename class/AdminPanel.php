@@ -29,7 +29,7 @@ class AdminPanel {
 		$isAdmin = $this->isAdmin($telegram, $chat_id);
 		$message = $isAdmin
 			? 'Welcome to admin menu, /exit'
-			: 'Sorry, you\'re not an admin, contact with the owner if you really are.';
+			: 'Sorry, you\'re not an admin, contact with the owner if you really are.', return;
 		$buttons = [
 			[
 				'Рассылка',
