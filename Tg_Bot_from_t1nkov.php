@@ -76,7 +76,7 @@ $commands = [
     'cancel_remove' => 'displayChannels'
 ];
 
-if (isset($callback_data) && isset($commands[$callback_data])) {
+if (isset($commands[$callback_data])) {
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
 } elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
     $urlToRemove = str_replace('remove_', '', $callback_data);
