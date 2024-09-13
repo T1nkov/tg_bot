@@ -1,6 +1,6 @@
 <?php
 
-class AdminPanel {
+trait AdminPanel {
 	protected $conn;
 
 	public function __construct(DatabaseConnection $dbConnection) {
