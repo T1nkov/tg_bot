@@ -30,7 +30,7 @@ class AdminPanel {
 		$buttons = [
 			[
 				'Рассылка',
-				'Добавить ссылку на канал', // add to DB
+				'Каналы', // add to DB
 				'Выход' // send same command /exit
 			]
 		];
@@ -39,6 +39,29 @@ class AdminPanel {
 			'text'         => $message,
 			'reply_markup' => $telegram->buildKeyboard($buttons, false, true, true)
 		]);
+	}
+	
+	public function displayChannels($telegram, $chat_id) {
+		$stmt = $this->conn->prepare("SELECT channel_url FROM channels");
+		$stmt->execute();
+		$result = $stmt->get_result();
+		$channelList = '';
+		while ($row = $result->fetch_assoc()) {
+			$channelList .= $row['channel_url'] . "\n";
+		}
+		$message = "Ссылки на каналы:\n" . $channelList;
+		$keyboard = [
+			'inline_keyboard' => [
+				[['text' => 'Добавить ссылку на канал', 'callback_data' => 'add_channel']],
+				[['text' => 'Удалить ссылку на канал', 'callback_data' => 'remove_channel']]
+			]
+		];
+		$content = [
+			'chat_id'      => $chat_id,
+			'text'         => $message,
+			'reply_markup' => json_encode($keyboard)
+		];
+		$telegram->sendMessage($content);
 	}
 	
 }
