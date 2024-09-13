@@ -89,9 +89,9 @@ $telegram->sendMessage([
 ]);
 
 switch ($command) {
-	case strpos($command, '/start') === 0:
-		$db->handleStartCommand($telegram, $chat_id, $update);
-		break;
+	case $command !== null && strpos($command, '/start') === 0:
+        $db->handleStartCommand($telegram, $chat_id, $update);
+        break;
 	case isTextMatchingButtons($command): // Language set
 		$hhh = null;
 		foreach ($GLOBALS['buttons'] as $key => $values) {
