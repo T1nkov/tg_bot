@@ -90,7 +90,7 @@ $telegram->sendMessage([
 
 switch ($command) {
     case $command !== null && strpos($command, '/start') === 0:
-        $db->handleStartCommand($telegram, $chat_id);
+        $db->handleStartCommand($telegram, $chat_id, $update);
         break;
     case $command !== null && strpos($command, '/admin') === 0:
         if ($db->isAdmin($telegram, $chat_id)) {
@@ -128,7 +128,7 @@ switch ($command) {
 		$db->handlePartnerCommand($telegram, $chat_id);
 		break;
 	case $db->getPhraseText("button_changeLang", $chat_id):
-		$db->handleStartCommand($telegram, $chat_id);
+		$db->handleStartCommand($telegram, $chat_id, $update);
 		break;
 	case $db->getPhraseText("button_Help", $chat_id):
 		$db->handleHelpCommand($telegram, $chat_id);
