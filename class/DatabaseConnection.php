@@ -566,7 +566,7 @@ class DatabaseConnection {
 			'inline_keyboard' => [
 				[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
 				[['text' => $subscribeSum, 'callback_data' => 'join_channel']],
-				[['text' => $watchSum, 'callback_data' => 'view_post']]
+				[['text' => $watchSum, 'url' => 'https://t.me/BinanceChinese/20459461']]
 			]
 		];
 		$content  = [
