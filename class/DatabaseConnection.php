@@ -561,25 +561,14 @@ class DatabaseConnection {
 		$message      = $this->getPhraseText("income_text", $chat_id);
 		$inviteSum    = str_replace('{$inviteSum}', $GLOBALS['inviteSumValue'], $this->getPhraseText("invite_friend", $chat_id));
 		$subscribeSum = str_replace('{$subscribeSum}', $GLOBALS['subscribeSumValue'], $this->getPhraseText("join_channel", $chat_id));
-		$postUrl = $this->getUniquePostUrl($chat_id);
-		if ($postUrl) {
-			$watchSum = str_replace('{$wachSum}', $GLOBALS['watchSumValue'], $this->getPhraseText("view_post", $chat_id));
-			$keyboard = [
-				'inline_keyboard' => [
-					[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
-					[['text' => $subscribeSum, 'callback_data' => 'join_channel']],
-					[['text' => $watchSum, 'callback_data' => 'view_post:' . $postUrl]]
-				]
-			];
-			$this->markPostAsSeen($chat_id, $postUrl);
-		} else {
-			$keyboard = [
-				'inline_keyboard' => [
-					[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
-					[['text' => $subscribeSum, 'callback_data' => 'join_channel']]
-				]
-			];
-		}
+		$watchSum     = str_replace('{$wachSum}', $GLOBALS['watchSumValue'], $this->getPhraseText("view_post", $chat_id));
+		$keyboard = [
+			'inline_keyboard' => [
+				[['text' => $inviteSum, 'callback_data' => 'invite_friend']],
+				[['text' => $subscribeSum, 'callback_data' => 'join_channel']],
+				[['text' => $watchSum, 'callback_data' => 'view_post']]
+			]
+		];
 		$content  = [
 			'chat_id'      => $chat_id,
 			'text'         => $message,
