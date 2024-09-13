@@ -45,12 +45,8 @@ class AdminPanel {
         $stmt = $this->conn->prepare("SELECT channel_url FROM channels");
         $stmt->execute();
         $result = $stmt->get_result();
-        
         $channelList = '';
-        while ($row = $result->fetch_assoc()) {
-            $channelList .= $row['channel_url'] . "\n";
-        }
-        
+        while ($row = $result->fetch_assoc()) { $channelList .= $row['channel_url'] . "\n"; }
         $message = "Ссылки на каналы:\n" . $channelList;
         $keyboard = [
             'inline_keyboard' => [
@@ -88,8 +84,36 @@ class AdminPanel {
                 'text' => "Ошибка при добавлении канала."
             ]);
         }
-        
-        $this->displayChannels($telegram, $chat_id); // Display channels after adding
+        $this->displayChannels($telegram, $chat_id);
+    }
+	
+	public function promptRemoveChannel($telegram, $chat_id) {
+        $stmt = $this->conn->prepare("SELECT channel_url FROM channels");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 0) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Сначала добавьте каналы!"
+            ]);
+            return;
+        }
+        $keyboard = ['inline_keyboard' => []];
+        while ($row = $result->fetch_assoc()) {
+            $keyboard['inline_keyboard'][] = [[
+                'text' => $row['channel_url'], 
+                'callback_data' => 'remove_' . $row['channel_url']
+            ]];
+        }
+        $keyboard['inline_keyboard'][] = [[
+            'text' => 'Отмена', 
+            'callback_data' => 'cancel_remove'
+        ]];
+        $telegram->sendMessage([
+            'chat_id'      => $chat_id,
+            'text'         => "Выберите ссылку для удаления:",
+            'reply_markup' => json_encode($keyboard)
+        ]);
     }
 
     public function removeChannelURL($telegram, $chat_id, $url) {
