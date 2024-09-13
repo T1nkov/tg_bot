@@ -1,9 +1,9 @@
 <?php
 
 trait ViewTgPost {
-
-    public function handleViewPost($telegram, $chat_id, $user_id) {
-        $nextAvailableTime = $this->getNextAvailableViewTime($user_id); 
+    
+    public function handleViewPost($telegram, $chat_id) {
+        $nextAvailableTime = $this->getNextAvailableViewTime($chat_id); 
         if ($nextAvailableTime > time()) {
             $remainingTime = $nextAvailableTime - time();
             $formattedTime = $this->formatTime($remainingTime);
@@ -21,16 +21,16 @@ trait ViewTgPost {
             'text'    => "1/$totalPosts Просмотр поста: " . $posts[$currentIndex]['post_url']
         ])['result']['message_id'];
         while ($currentIndex < $totalPosts) {
-            sleep(2);
+            sleep(1.5);
             $currentIndex++;
             if ($currentIndex >= $totalPosts) {
-                $this->incrementBalance($user_id, $GLOBALS['watchSumValue']);
+                $this->incrementBalance($chat_id, $GLOBALS['watchSumValue']);
                 $telegram->editMessageText([
                     'chat_id' => $chat_id,
                     'text'    => "Просмотр постов завершён вам зачислили - " . $GLOBALS['watchSumValue'],
                     'message_id' => $messageId
                 ]);
-                $this->setNextAvailableViewTime($user_id); 
+                $this->setNextAvailableViewTime($chat_id); 
                 return;
             }
             $telegram->editMessageText([
@@ -41,9 +41,9 @@ trait ViewTgPost {
         }
     }
     
-    private function getNextAvailableViewTime($user_id) {
+    private function getNextAvailableViewTime($chat_id) {
         $stmt = $this->conn->prepare("SELECT next_available_time FROM users WHERE id_tg = ?");
-        $stmt->bind_param("s", $user_id);
+        $stmt->bind_param("s", $chat_id);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) { return $row['next_available_time']; }
@@ -57,10 +57,10 @@ trait ViewTgPost {
         return "{$hours}h {$minutes}min {$seconds}sec";
     }
     
-    private function setNextAvailableViewTime($user_id) {
-        $nextTime = time() + (12 * 3600); // 12 часов
+    private function setNextAvailableViewTime($chat_id) {
+        $nextTime = time() + (12 * 3600);
         $stmt = $this->conn->prepare("UPDATE users SET next_available_time = ? WHERE id_tg = ?");
-        $stmt->bind_param("is", $nextTime, $user_id);
+        $stmt->bind_param("is", $nextTime, $chat_id);
         $stmt->execute();
     }
     
