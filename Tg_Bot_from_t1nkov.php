@@ -37,7 +37,7 @@ $GLOBALS['buttons'] = [
     "kz" => ["🇰🇿 Қазақша"]
 ];
   
-$update = json_decode(file_get_contents('php://input'), true);
+// $update = json_decode(file_get_contents('php://input'), true);
 $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
@@ -89,15 +89,20 @@ $telegram->sendMessage([
 ]);
 
 switch ($command) {
-	case $command !== null && strpos($command, '/start') === 0:
+    case $command !== null && strpos($command, '/start') === 0:
         $db->handleStartCommand($telegram, $chat_id, $update);
         break;
-	case $command !== null && strpos($command, '/admin') === 0:
-		$db->handleAdminPanel($telegram, $chat_id, $update);
-		break;
-	case $command !== null && strpos($command, '/exit') === 0:
-		$db->handleMainMenu($telegram, $chat_id, $update);
-		break;
+    case $command !== null && strpos($command, '/admin') === 0:
+        if ($db->isAdmin($telegram, $chat_id)) {
+            $db->handleAdminPanel($telegram, $chat_id);
+        } else {
+            $message = 'Sorry, you\'re not an admin, contact with the owner if you really are.';
+            $db->handleMainMenu($telegram, $chat_id, $message);
+        }
+        break;
+    case $command !== null && strpos($command, '/exit') === 0:
+        $db->handleMainMenu($telegram, $chat_id);
+        break;
 	case isTextMatchingButtons($command): // Language set
 		$hhh = null;
 		foreach ($GLOBALS['buttons'] as $key => $values) {
