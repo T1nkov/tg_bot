@@ -77,7 +77,9 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     if ($commands[$callback_data] === 'add_url') {
-
+        if($text != null && $this->isInputMode($chat_id)  == "input_mode"  ) {
+            $this->addUrlInDB();
+        }
     }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
 } elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
