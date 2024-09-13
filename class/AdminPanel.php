@@ -64,4 +64,72 @@ class AdminPanel {
 		$telegram->sendMessage($content);
 	}
 	
+	public function promptAddChannel($telegram, $chat_id) {
+        $message = "Введите ссылку для добавления:";
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => $message
+        ]);
+    }
+
+    public function promptRemoveChannel($telegram, $chat_id) {
+        $stmt = $this->conn->prepare("SELECT channel_url FROM channels");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 0) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Сначала добавьте каналы!"
+            ]);
+            return;
+        }
+        $keyboard = ['inline_keyboard' => []];
+        while ($row = $result->fetch_assoc()) {
+            $keyboard['inline_keyboard'][] = [[
+                'text' => $row['channel_url'], 
+                'callback_data' => 'remove_' . $row['channel_url']
+            ]];
+        }
+        $keyboard['inline_keyboard'][] = [[
+            'text' => 'Отмена', 
+            'callback_data' => 'cancel_remove'
+        ]];
+        $telegram->sendMessage([
+            'chat_id'      => $chat_id,
+            'text'         => "Выберите ссылку для удаления:",
+            'reply_markup' => json_encode($keyboard)
+        ]);
+    }
+
+    public function addChannelURL($telegram, $chat_id, $url) {
+        $stmt = $this->conn->prepare("INSERT INTO channels (channel_url) VALUES (?)");
+        $stmt->bind_param("s", $url);
+        if ($stmt->execute()) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Канал $url добавлен"
+            ]);
+        } else {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Ошибка при добавлении канала."
+            ]);
+        }
+    }
+
+    public function removeChannelURL($telegram, $chat_id, $url) {
+        $stmt = $this->conn->prepare("DELETE FROM channels WHERE channel_url = ?");
+        $stmt->bind_param("s", $url);
+        if ($stmt->execute()) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Канал $url удалён"
+            ]);
+        } else {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Ошибка при удалении канала."
+            ]);
+        }
+    }
 }

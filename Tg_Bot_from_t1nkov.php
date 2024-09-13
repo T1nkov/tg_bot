@@ -71,6 +71,8 @@ $commands = [
     'check' => 'handleSubscribeCheckCommand',
     'checkSub' => 'handleBalanceCommand',
     'no' => 'handleCanceledCommand',
+	'add_channel' => 'promptAddChannel',
+    'remove_channel' => 'promptRemoveChannel'
 ];
 
 if (isset($commands[$callback_data])) {
