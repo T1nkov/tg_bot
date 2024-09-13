@@ -87,7 +87,7 @@ if (isset($commands[$callback_data])) {
     }
 } elseif (isset($userStates[$chat_id]) && $userStates[$chat_id] === 'awaiting_channel_url') {
     $url = trim($command);
-    if (filter_var($url, FILTER_VALIDATE_URL)) {
+    if (filter_var($url, FILTER_VALIDATE_URL)) { // input validation as a bonus
         $db->addChannelURL($telegram, $chat_id, $url);
         unset($userStates[$chat_id]);
         $db->displayChannels($telegram, $chat_id);
