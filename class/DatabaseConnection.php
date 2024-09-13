@@ -1,8 +1,10 @@
 <?php
 require_once 'AdminPanel.php';
 
-class DatabaseConnection extends AdminPanel {
-    private $host;
+class DatabaseConnection {
+	use AdminPanel;
+
+	private $host;
     private $database;
     private $username;
     private $password;
