@@ -451,77 +451,42 @@ class Telegram {
     public function getUpdateType() {
         if ($this->update_type) { return $this->update_type; }
         $update = $this->data;
-        if (isset($update['inline_query'])) {
-            $this->update_type = self::INLINE_QUERY;
-            return $this->update_type;
-        }
-        if (isset($update['callback_query'])) {
-            $this->update_type = self::CALLBACK_QUERY;
-            return $this->update_type;
-        }
-        if (isset($update['edited_message'])) {
-            $this->update_type = self::EDITED_MESSAGE;
-            return $this->update_type;
-        }
-        if (isset($update['message']['text'])) {
-            $this->update_type = self::MESSAGE;
-            return $this->update_type;
-        }
-        if (isset($update['message']['photo'])) {
-            $this->update_type = self::PHOTO;
-            return $this->update_type;
-        }
-        if (isset($update['message']['video'])) {
-            $this->update_type = self::VIDEO;
-            return $this->update_type;
-        }
-        if (isset($update['message']['audio'])) {
-            $this->update_type = self::AUDIO;
-            return $this->update_type;
-        }
-        if (isset($update['message']['voice'])) {
-            $this->update_type = self::VOICE;
-            return $this->update_type;
-        }
-        if (isset($update['message']['contact'])) {
-            $this->update_type = self::CONTACT;
-            return $this->update_type;
-        }
-        if (isset($update['message']['location'])) {
-            $this->update_type = self::LOCATION;
-            return $this->update_type;
-        }
-        if (isset($update['message']['reply_to_message'])) {
-            $this->update_type = self::REPLY;
-            return $this->update_type;
-        }
-        if (isset($update['message']['animation'])) {
-            $this->update_type = self::ANIMATION;
-            return $this->update_type;
-        }
-        if (isset($update['message']['sticker'])) {
-            $this->update_type = self::STICKER;
-            return $this->update_type;
-        }
-        if (isset($update['message']['document'])) {
-            $this->update_type = self::DOCUMENT;
-            return $this->update_type;
-        }
-        if (isset($update['message']['new_chat_member'])) {
-            $this->update_type = self::NEW_CHAT_MEMBER;
-            return $this->update_type;
-        }
-        if (isset($update['message']['left_chat_member'])) {
-            $this->update_type = self::LEFT_CHAT_MEMBER;
-            return $this->update_type;
-        }
-        if (isset($update['my_chat_member'])) {
-            $this->update_type = self::MY_CHAT_MEMBER;
-            return $this->update_type;
-        }
-        if (isset($update['channel_post'])) {
-            $this->update_type = self::CHANNEL_POST;
-            return $this->update_type;
+        $updateTypes = [
+            'inline_query' => self::INLINE_QUERY,
+            'callback_query' => self::CALLBACK_QUERY,
+            'edited_message' => self::EDITED_MESSAGE,
+            'message' => [
+                'text' => self::MESSAGE,
+                'photo' => self::PHOTO,
+                'video' => self::VIDEO,
+                'audio' => self::AUDIO,
+                'voice' => self::VOICE,
+                'contact' => self::CONTACT,
+                'location' => self::LOCATION,
+                'reply_to_message' => self::REPLY,
+                'animation' => self::ANIMATION,
+                'sticker' => self::STICKER,
+                'document' => self::DOCUMENT,
+                'new_chat_member' => self::NEW_CHAT_MEMBER,
+                'left_chat_member' => self::LEFT_CHAT_MEMBER,
+            ],
+            'my_chat_member' => self::MY_CHAT_MEMBER,
+            'channel_post' => self::CHANNEL_POST,
+        ];
+        foreach ($updateTypes as $key => $type) {
+            if (isset($update[$key])) {
+                if (is_array($type)) {
+                    foreach ($type as $subKey => $subType) {
+                        if (isset($update[$key][$subKey])) {
+                            $this->update_type = $subType;
+                            return $this->update_type;
+                        }
+                    }
+                } else {
+                    $this->update_type = $type;
+                    return $this->update_type;
+                }
+            }
         }
         return false;
     }
