@@ -77,7 +77,7 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     if ($commands[$callback_data] === 'add_url') {
-        if($text != null && $this->isInputMode($chat_id)  == "input_mode"  ) {
+        if($command != null && $this->isInputMode($chat_id)  == "input_mode"  ) {
             $this->addUrlInDB();
         }
     }
