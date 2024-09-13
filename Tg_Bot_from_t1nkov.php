@@ -73,8 +73,7 @@ $commands = [
     'no' => 'handleCanceledCommand',
 	'add_channel' => 'promptAddChannel',
     'remove_channel' => 'promptRemoveChannel',
-    'cancel_remove' => 'displayChannels',
-    ''
+    'cancel_remove' => 'displayChannels'
 ];
 
 if (isset($callback_data) && isset($commands[$callback_data])) {
