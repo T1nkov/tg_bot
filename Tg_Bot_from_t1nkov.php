@@ -49,6 +49,7 @@ function isTextMatchingButtons($command) {
 	return false;
 }
 
+$userStates = []; 
 $db = new DatabaseConnection($config_file);
 
 $telegram->sendMessage([
@@ -77,18 +78,29 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
+        $userStates[$chat_id] = 'awaiting_channel_url';
         $db->promptAddChannel($telegram, $chat_id);
     } elseif ($callback_data === 'remove_channel') {
         $db->promptRemoveChannel($telegram, $chat_id);
     } else {
         $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
     }
-} elseif ($callback_data !== null && preg_match('/^(fraud|spam|violence|copyright|other)$/', $callback_data, $matches)) {
-    $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-} elseif ($callback_data === 'yes') {
-    $db->handleApprovCommand($telegram, $chat_id, $message_id, $callback_data);
-} else {
-
+} elseif (isset($userStates[$chat_id]) && $userStates[$chat_id] === 'awaiting_channel_url') {
+    $url = trim($command);
+    if (filter_var($url, FILTER_VALIDATE_URL)) {
+        $db->addChannelURL($telegram, $chat_id, $url);
+        unset($userStates[$chat_id]);
+        $db->displayChannels($telegram, $chat_id);
+    } else {
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => "Пожалуйста, введите корректный URL."
+        ]);
+    }
+} elseif (preg_match('/^remove_/', $callback_data)) {
+    $urlToRemove = str_replace('remove_', '', $callback_data);
+    $db->removeChannelURL($telegram, $chat_id, $urlToRemove);
+    $db->displayChannels($telegram, $chat_id);
 }
 
 $telegram->sendMessage([
