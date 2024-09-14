@@ -77,9 +77,10 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
+        $catch_url = $telegram->Text();
         $db->handleUserInput($chat_id, $telegram);
-        if($command !== $callback_data) {
-            $db->addChannelURL($telegram, $chat_id, $command);
+        if($catch_url != null) {
+            $db->addChannelURL($telegram, $chat_id, $catch_url);
             $db->setInputMode($chat_id, 'def');
         }
     }
