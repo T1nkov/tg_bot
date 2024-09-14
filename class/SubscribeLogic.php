@@ -22,19 +22,14 @@ trait SubscribeLogic {
             'text' => $message,
             'reply_markup' => $keyboard
         ];
-        try {
-            $telegram->editMessageText($content);
-        } catch (Exception $e) {
-            error_log('Ошибка при редактировании сообщения: ' . $e->getMessage());
-        }
+        $telegram->editMessageText($content);
     }
 
     public function handleSubscribeCheckCommand($telegram, $chat_id, $message_id) {
         $tg_key = $this->getKey();
         $response = $telegram->getChatMember($tg_key, $chat_id);
-        $subscriptionStatus = $response->status;
-        file_put_contents('output.txt', "$subscriptionStatus");
-        if ($subscriptionStatus == 'member' || $subscriptionStatus == 'administrator' || $subscriptionStatus == 'creator') {
+        $subscriptionStatus = $response->result->status;
+        if ($subscriptionStatus === 'member' || $subscriptionStatus === 'administrator' || $subscriptionStatus === 'creator') {
             $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
         } else {
             $channelURL = $this->getURL($tg_key);
@@ -42,17 +37,19 @@ trait SubscribeLogic {
         }
         $keyboard = json_encode([
             'inline_keyboard' => [
+                [['text' => 'Next', 'callback_data' => 'next']],
                 [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
                 [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
             ]
         ]);
         $telegram->editMessageText([
-            'chat_id'      => $chat_id,
-            'message_id'   => $message_id,
-            'text'         => $message,
+            'chat_id' => $chat_id,
+            'message_id' => $message_id,
+            'text' => $message,
             'reply_markup' => $keyboard
         ]);
     }
+    
 
     private function getKey() {
         $sql = "SELECT tg_key FROM channel_tg LIMIT 1";
