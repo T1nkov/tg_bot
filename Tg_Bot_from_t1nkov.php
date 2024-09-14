@@ -76,7 +76,7 @@ $commands = [
 ];
 
 if (isset($commands[$callback_data])) {
-    if ($callback_data === 'add_url') {
+    if ($callback_data === 'add_channel') {
         $telegram->sendMessage([
             'chat_id' => $chat_id,
             'text'    => 'Text: ' . "Проверка 1",
