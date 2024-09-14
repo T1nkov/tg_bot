@@ -143,7 +143,7 @@ class DatabaseConnection {
 		]);
 		try {
 			$status = 'def';
-			$stmt->bind_param("ssiids", $username, $role, $chat_id, $id_referal, $balance, $status);
+			$stmt->bind_param("sssdss", $username, $role, $chat_id, $id_referal, $balance, $status);
 		} catch (\Exception $e) {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
