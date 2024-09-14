@@ -79,7 +79,7 @@ if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_url') {
         $telegram->sendMessage([
             'chat_id' => $chat_id,
-            'text'    => 'Text: ' . "THIS iS $callback_data",
+            'text'    => 'Text: ' . "Проверка 1",
         ]);
         if($command != null) {
             $db->addUrlInDB($telegram, $chat_id, $command);
