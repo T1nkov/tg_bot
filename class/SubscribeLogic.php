@@ -23,7 +23,7 @@ trait SubscribeLogic {
     }
 
     public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
-		$tg_key = this->getNextChannel($chat_id);
+		$tg_key = 'tg' . $GLOBALS['valueTg'];
 		$channelURL = $this->getURL($tg_key);
 		$handleMessage = $this->getPhraseText("join_text", $chat_id);
 		$message = str_replace(
