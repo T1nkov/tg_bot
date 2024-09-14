@@ -1,5 +1,4 @@
 <?php
-
 trait ViewTgPost {
     
     public function handleViewPost($telegram, $chat_id) {
@@ -96,7 +95,6 @@ trait ViewTgPost {
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) { $seenPostUrls[] = $row['post_id']; }
         return $seenPostUrls;
-
     }
 
 }

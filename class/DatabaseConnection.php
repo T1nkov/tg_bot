@@ -393,69 +393,7 @@ class DatabaseConnection {
 			'reply_markup' => $telegram->buildKeyboard($buttons, false, true, true)
 		]);
 	}
-
-	public function checkTrue($telegram, $chat_id, $bot_token, $message_id) {
-		$balance = $this->getUserBalance($chat_id);
-		$referals = $this->getReferralsCount($chat_id);
-		$joined = $this->isUserSubscribed($chat_id, $telegram, $bot_token);
-		$conditions = $this->getPhraseText("conditions_text", $chat_id);
-		
-		$notSub = $this->getPhraseText("doesntSub_text", $chat_id);
-		$checkChannel = $this->getPhraseText('checkChannel_button', $chat_id);
-		$subscribe = $this->getPhraseText('subscribe_button', $chat_id);
-		if (!$joined) {
-			$keyboard = [
-				'inline_keyboard' => [
-					[['text' => $subscribe, 'url' => $GLOBALS['offTgChannel']]],
-					[['text' => $checkChannel, 'callback_data' => 'checkSub']]
-				]
-			];
-			$telegram->editMessageText([
-				'chat_id'      => $chat_id,
-				'message_id'   => $message_id,
-				'text'         => $notSub,
-				'reply_markup' => json_encode($keyboard)
-			]);
-		} else {
-			$joinedMsg = $this->getPhraseText("joined_text", $chat_id);
-			$message = str_replace(
-				['{amount}', '{currency}', '{inviteSumValue}', '{referals}', '{joined}'],
-				[$GLOBALS['amount'], $GLOBALS['currency'], $GLOBALS['inviteSumValue'], $referals, $joinedMsg],
-				$conditions
-			);
-			if ($referals >= $GLOBALS['inviteSumValue']) {
-				$getGiftButton = str_replace(
-					['{amount}', '{currency}'],
-					[$GLOBALS['amount'], $GLOBALS['currency']],
-					$this->getPhraseText("getGift_button", $chat_id)
-				);
-				$keyboard = [
-					'inline_keyboard' => [
-						[['text' => $getGiftButton, 'callback_data' => 'withdraw']]
-					]
-				];
-			} else {
-				$mustBe = $GLOBALS['inviteSumValue'] - $referals;
-				$remindFriendBTN = str_replace(
-					['{remained}'],
-					[$mustBe],
-					$this->getPhraseText("inviteFriends_button", $chat_id)
-				);
-				$keyboard = [
-					'inline_keyboard' => [
-						[['text' => $remindFriendBTN, 'callback_data' => 'invite_friend']]
-					]
-				];
-			}
-			$telegram->editMessageText([
-				'chat_id'      => $chat_id,
-				'text'         => $message,
-				'message_id'   => $message_id,
-				'reply_markup' => json_encode($keyboard)
-			]);
-		}
-	}
-
+	
 	// To invite a friend
 	public function handlePartnerCommand($telegram, $chat_id) {
 		$ref_link = $this->generateReferralLink($chat_id);
@@ -576,35 +514,6 @@ class DatabaseConnection {
 			'reply_markup' => json_encode($keyboard)
 		];
 		$telegram->sendMessage($content);
-	}
-
-	// Subscription check + charge to balance
-	public function handleSubscribeCheckCommand($chat_id, $telegram, $bot_token, $message_id) {
-		$subscribed = $this->isUserSubscribed($chat_id, $telegram, $bot_token);
-		$tg_key = 'tg' . $GLOBALS['valueTg'];
-		$channelURL = $this->getURL($tg_key);
-		$skipButton = $this->getPhraseText("skipChannel_button", $chat_id);
-		if ($subscribed) {
-			$handleMessage = $this->getPhraseText("approveSubscribe_text", $chat_id);
-			$message = str_replace('{$joinChannelPay}', $GLOBALS['joinChannelPay'], $handleMessage);
-			$this->incrementBalance($chat_id, 9); // Update balance
-			$keyboard = [['text' => $skipButton, 'callback_data' => 'skip']];
-		} else {
-			$handleMessage = $this->getPhraseText("notSunscribe_text", $chat_id);
-			$message = str_replace('{$channelURL}', $channelURL, $handleMessage);
-			$checkButton = $this->getPhraseText("checkChannel_button", $chat_id);
-			$keyboard = [
-				['text' => $checkButton, 'callback_data' => 'check'],
-				[$skipButton, 'callback_data' => 'skip']
-			];
-		}
-		$content = [
-			'chat_id' => $chat_id,
-			'message_id' => $message_id,
-			'text' => $message,
-			'reply_markup' => json_encode(['inline_keyboard' => [$keyboard]])
-		];
-		$telegram->editMessageText($content);
 	}
 
 	public function handleReportCommand($telegram, $chat_id, $message_id) {
@@ -752,7 +661,7 @@ class DatabaseConnection {
 		$stmt->close();
 		return null;
 	}
-
+	
 	public function isInputMode($chat_id) {
 		$stmt = $this->conn->prepare('SELECT status FROM users WHERE id_tg = ?');
 		if (!$stmt) return 'error';

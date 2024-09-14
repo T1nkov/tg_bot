@@ -67,12 +67,13 @@ $commands = [
     'join_channel' => 'handleJoinChannelCommand',
     'skip' => 'handleJoinChannelCommand',
     'view_post' => 'handleViewPost',
-    'check' => 'handleSubscribeCheckCommand',
+    'check' => 'handleSubscribeCommand',
     'checkSub' => 'handleBalanceCommand',
     'no' => 'handleCanceledCommand',
 	'add_channel' => 'promptAddChannel',
     'remove_channel' => 'promptRemoveChannel',
-    'cancel_remove' => 'displayChannels'
+    'cancel_remove' => 'displayChannels',
+    'next' => 'handleJoinChannelCommand'
 ];
 
 if (isset($commands[$callback_data])) {
