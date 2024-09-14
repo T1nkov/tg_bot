@@ -1,19 +1,8 @@
 <?php
 trait SubscribeLogic {
 
-    private function getFirstTgKey() {
-        $query = "SELECT tg_key FROM channel_tg LIMIT 1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($row = $result->fetch_assoc()) {
-            return $row['tg_key'];
-        }
-        return null;
-    }
-    
     public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
-		$tg_key = this->getFirstTgKey();
+		$tg_key =  -1002281485760;
 		$channelURL = $this->getURL($tg_key);
 		$handleMessage = $this->getPhraseText("join_text", $chat_id);
 		$message = str_replace(
@@ -36,7 +25,7 @@ trait SubscribeLogic {
 		try {
 			$telegram->editMessageText($content);
 		} catch (Exception $e) {
-			error_log('Err.' . $e->getMessage());
+			error_log('Ошибка при редактировании сообщения: ' . $e->getMessage());
 		}
 	}
 
