@@ -76,14 +76,11 @@ $commands = [
 ];
 
 if (isset($commands[$callback_data])) {
-    if ($commands[$callback_data] === 'add_url') {
+    if ($callback_data === 'add_url') {
         $this->handleUserInput($chat_id, $telegram);
-        if($command != null && $this->isInputMode($chat_id)  == "input_mode"  ) {
-            if ($this->addChannelURL($telegram, $chat_id, $command)) {
-                $this->setInputMode($chat_id, 'def');
-            } else {
-                error_log("Ошибка при добавлении URL для chat_id: $chat_id");
-            }
+        if($command != null) {
+            $this->addUrlInDB($telegram, $chat_id, $command);
+            $this->setInputMode($chat_id, 'def')
         }
     }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
@@ -98,58 +95,60 @@ $telegram->sendMessage([
 	'text'    => 'Text: ' . $command,
 ]);
 
-switch ($command) {
-    case $command !== null && strpos($command, '/start') === 0:
-        $db->handleStartCommand($telegram, $chat_id, $update);
-        break;
-    case $command !== null && strpos($command, '/admin') === 0:
-        if ($db->isAdmin($telegram, $chat_id)) {
-            $db->handleAdminPanel($telegram, $chat_id);
-        } else {
-            $message = 'Sorry, you\'re not an admin, contact with the owner if you really are.';
-            $db->handleMainMenu($telegram, $chat_id, $message);
-        }
-        break;
-	case $command !== null && (strpos($command, '/exit') === 0 || stripos($command, 'Выход') === 0):
-		$db->handleMainMenu($telegram, $chat_id);
-		break;
-	case $command !== null && strpos($command, 'Каналы') === 0:
-		if ($db->isAdmin($telegram, $chat_id)) { $db->displayChannels($telegram, $chat_id); }
-		break;
-	case isTextMatchingButtons($command):
-		$hhh = null;
-		foreach ($GLOBALS['buttons'] as $key => $values) {
-			if (in_array($command, $values)) {
-				$hhh = $key;
-				break;
-			}
-		}
-		if ($hhh !== null) { $db->updateUserLanguage($chat_id, $hhh); }
-		$db->handleLanguage($telegram, $chat_id);
-		break;
-	case $db->getPhraseText("button_earn", $chat_id):
-		$db->handleEarnCommand($telegram, $chat_id);
-		break;
-	case $db->getPhraseText("welcome_button", $chat_id):
-		$db->handleMainMenu($telegram, $chat_id);
-		break;
-	case $db->getPhraseText("button_balance", $chat_id):
-		$db->handleBalanceCommand($telegram, $chat_id, $bot_token);
-		break;
-	case $db->getPhraseText("button_partners", $chat_id):
-		$db->handlePartnerCommand($telegram, $chat_id);
-		break;
-	case $db->getPhraseText("button_changeLang", $chat_id):
-		$db->handleStartCommand($telegram, $chat_id, $update);
-		break;
-	case $db->getPhraseText("button_Help", $chat_id):
-		$db->handleHelpCommand($telegram, $chat_id);
-		break;
-	case $db->getPhraseText('download_button', $chat_id):
-		$db->handleDownloadCommand($telegram, $chat_id);
-		break;
-	default:
-		break;
+if ($this->isInputMode($chat_id)  == "def") {
+    switch ($command) {
+        case $command !== null && strpos($command, '/start') === 0:
+            $db->handleStartCommand($telegram, $chat_id, $update);
+            break;
+        case $command !== null && strpos($command, '/admin') === 0:
+            if ($db->isAdmin($telegram, $chat_id)) {
+                $db->handleAdminPanel($telegram, $chat_id);
+            } else {
+                $message = 'Sorry, you\'re not an admin, contact with the owner if you really are.';
+                $db->handleMainMenu($telegram, $chat_id, $message);
+            }
+            break;
+        case $command !== null && (strpos($command, '/exit') === 0 || stripos($command, 'Выход') === 0):
+            $db->handleMainMenu($telegram, $chat_id);
+            break;
+        case $command !== null && strpos($command, 'Каналы') === 0:
+            if ($db->isAdmin($telegram, $chat_id)) { $db->displayChannels($telegram, $chat_id); }
+            break;
+        case isTextMatchingButtons($command):
+            $hhh = null;
+            foreach ($GLOBALS['buttons'] as $key => $values) {
+                if (in_array($command, $values)) {
+                    $hhh = $key;
+                    break;
+                }
+            }
+            if ($hhh !== null) { $db->updateUserLanguage($chat_id, $hhh); }
+            $db->handleLanguage($telegram, $chat_id);
+            break;
+        case $db->getPhraseText("button_earn", $chat_id):
+            $db->handleEarnCommand($telegram, $chat_id);
+            break;
+        case $db->getPhraseText("welcome_button", $chat_id):
+            $db->handleMainMenu($telegram, $chat_id);
+            break;
+        case $db->getPhraseText("button_balance", $chat_id):
+            $db->handleBalanceCommand($telegram, $chat_id, $bot_token);
+            break;
+        case $db->getPhraseText("button_partners", $chat_id):
+            $db->handlePartnerCommand($telegram, $chat_id);
+            break;
+        case $db->getPhraseText("button_changeLang", $chat_id):
+            $db->handleStartCommand($telegram, $chat_id, $update);
+            break;
+        case $db->getPhraseText("button_Help", $chat_id):
+            $db->handleHelpCommand($telegram, $chat_id);
+            break;
+        case $db->getPhraseText('download_button', $chat_id):
+            $db->handleDownloadCommand($telegram, $chat_id);
+            break;
+        default:
+            break;
+    }
 }
 
 ?>
