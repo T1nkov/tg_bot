@@ -77,7 +77,6 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_url') {
-        $db->handleUserInput($chat_id, $telegram);
         if($command != null) {
             $db->addUrlInDB($telegram, $chat_id, $command);
             $db->setInputMode($chat_id, 'def');
