@@ -29,36 +29,32 @@ trait SubscribeLogic {
         }
     }
 
-    public function handleSubscribeCheckCommand($telegram, $chat_id, $message) {
+    public function handleSubscribeCheckCommand($telegram, $chat_id, $message_id) {
         $tg_key = $this->getKey();
-        try {
-            $response = $telegram->getChatMember($tg_key, $chat_id);
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text'    => 'Text: ' . $response
-            ]);
-            $subscriptionStatus = $response->status;
-            if ($subscriptionStatus == 'member' || $subscriptionStatus == 'administrator' || $subscriptionStatus == 'creator') {
-                $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
-            } else {
-                $channelURL = $this->getURL($tg_key);
-                $message = "❌ Проверить не удалось! Подпишитесь на канал: {$channelURL}";
-            }
-            $keyboard = json_encode([
-                'inline_keyboard' => [
-                    [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
-                    [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
-                ]
-            ]);
-            $content = [
-                'chat_id' => $chat_id,
-                'text' => $message,
-                'reply_markup' => $keyboard
-            ];
-            $telegram->sendMessage($content);
-        } catch (Exception $e) {
-            error_log('Ошибка при проверке подписки: ' . $e->getMessage());
+        $response = $telegram->getChatMember($tg_key, $chat_id);
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => 'Text: ' . $response
+        ]);
+        $subscriptionStatus = $response->status;
+        if ($subscriptionStatus == 'member' || $subscriptionStatus == 'administrator' || $subscriptionStatus == 'creator') {
+            $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
+        } else {
+            $channelURL = $this->getURL($tg_key);
+            $message = "❌ Проверить не удалось! Подпишитесь на канал: {$channelURL}";
         }
+        $keyboard = json_encode([
+            'inline_keyboard' => [
+                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
+            ]
+        ]);
+        $telegram->editMessageText([
+            'chat_id'      => $chat_id,
+            'message_id'   => $message_id,
+            'text'         => $message,
+            'reply_markup' => $keyboard
+        ]);
     }
 
     private function getKey() {
