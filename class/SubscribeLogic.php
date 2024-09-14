@@ -64,8 +64,9 @@ trait SubscribeLogic {
 
     private function getAvailableChannelKey($user_id) {
         $subscribedChannels = $this->getSubscribedChannels($user_id);
-        if (empty($subscribedChannels)) { return false; }
         $allChannels = $this->getAllChannels();
+        $allChannelKeys = array_column($allChannels, 'tg_key');
+        if (empty(array_diff($allChannelKeys, $subscribedChannels))) { return false; }
         foreach ($allChannels as $channel) { if (!in_array($channel['tg_key'], $subscribedChannels)) { return $channel['tg_key']; } }
         return false;
     }
