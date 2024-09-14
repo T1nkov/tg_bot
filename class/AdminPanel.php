@@ -77,7 +77,7 @@ trait AdminPanel {
         $maxId = $result->fetch_assoc()['max_id'];
         $newId = $maxId ? $maxId + 1 : 1;
         $stmt = $this->conn->prepare("INSERT INTO channel_tg (id, tg_key, tg_url) VALUES (?, ?, ?)");
-        $tgKey = $this->getChatIdByLink($telegram, $chat_id, $url)
+        $tgKey = $this->getChatIdByLink($telegram, $chat_id, $url);
         $stmt->bind_param("iss", $newId, $tgKey, $url);
         if ($stmt->execute()) {
             $telegram->sendMessage([
