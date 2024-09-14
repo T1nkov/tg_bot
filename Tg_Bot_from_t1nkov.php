@@ -83,7 +83,7 @@ if (isset($commands[$callback_data])) {
                 'chat_id' => $chat_id,
                 'text'    => 'Text from catch: ' . $command,
             ]);
-            $db->addUrlInDB($telegram, $chat_id, $command);
+            $db->addChannelURL($telegram, $chat_id, $command);
             $db->setInputMode($chat_id, 'def');
         }
     }
