@@ -752,7 +752,7 @@ class DatabaseConnection {
 		$stmt->close();
 		return null;
 	}
-
+	
 	public function isInputMode($chat_id) {
 		$stmt = $this->conn->prepare('SELECT status FROM users WHERE id_tg = ?');
 		if (!$stmt) return 'error';
