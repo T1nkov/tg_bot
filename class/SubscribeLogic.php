@@ -19,7 +19,7 @@ trait SubscribeLogic {
             );
             $keyboard = json_encode([
                 'inline_keyboard' => [
-                    [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+                    [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check_' . $tg_key]],
                     [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
                 ]
             ]);
@@ -42,9 +42,8 @@ trait SubscribeLogic {
         }
     }
 
-    public function handleSubscribeCommand($telegram, $chat_id, $message_id) {
-        $tg_key = $this->getKey();
-        $response = $response = $telegram->getChatMember(['chat_id' => $tg_key, 'user_id' => $chat_id]);
+    public function handleSubscribeCommand($telegram, $chat_id, $message_id, $tg_key) {
+        $response = $telegram->getChatMember(['chat_id' => $tg_key, 'user_id' => $chat_id]);
         $subscriptionStatus = $response['result']['status'];
         if ($subscriptionStatus === 'member' || $subscriptionStatus === 'administrator' || $subscriptionStatus === 'creator') {
             $this->addSubscription($chat_id, $tg_key);
@@ -56,7 +55,7 @@ trait SubscribeLogic {
             $message = "❌ Проверить не удалось! Подпишитесь на канал: {$channelURL}";
             $keyboard = json_encode([
                 'inline_keyboard' => [
-                    [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+                    [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check_' . $tg_key]],
                     [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
                 ]
             ]);
@@ -69,26 +68,12 @@ trait SubscribeLogic {
         ]);
     }
 
-    private function getKey() {
-        $sql = "SELECT tg_key FROM channel_tg LIMIT 1";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-            $stmt->bind_result($tg_key);
-            $stmt->fetch();
-            $stmt->close();
-            return $tg_key;
-        }
-        $stmt->close();
-        return null;
-    }
-
     private function addSubscription($user_id, $tg_key) {
         $sql = "INSERT INTO user_subscriptions (id_tg, tg_key, subscribed_at) VALUES (?, ?, NOW())";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('is', $user_id, $tg_key);
         $stmt->execute();
+        $stmt->close();
     }
 
     private function getSubscribedChannels($user_id) {
@@ -97,8 +82,13 @@ trait SubscribeLogic {
         $stmt->bind_param('i', $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
+
         $subscribedChannels = [];
-        while ($row = $result->fetch_assoc()) { $subscribedChannels[] = $row['tg_key']; }
+        while ($row = $result->fetch_assoc()) {
+            $subscribedChannels[] = $row['tg_key'];
+        }
+
+        $stmt->close();
         return $subscribedChannels;
     }
 }
