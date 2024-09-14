@@ -96,4 +96,14 @@ trait SubscribeLogic {
         $stmt->execute();
     }
 
+    private function getSubscribedChannels($user_id) {
+        $sql = "SELECT tg_key FROM user_subscriptions WHERE id_tg = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $subscribedChannels = [];
+        while ($row = $result->fetch_assoc()) { $subscribedChannels[] = $row['tg_key']; }
+        return $subscribedChannels;
+    }
 }
