@@ -4,6 +4,10 @@ trait SubscribeLogic {
 
     public function handleJoinChannelCommand($telegram, $chat_id, $message_id, $tg_key = null) {
         $tg_key = $this->getAvailableChannelKey($chat_id);
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => $tg_key
+        ]);
         // if ($tg_key == false || $tg_key == []) {
         //     $message = "🥳 Вы подписались на все каналы!";
         //     $keyboard = json_encode([]);
