@@ -17,6 +17,7 @@ $command = $telegram->Text();
 $chat_id = $telegram->ChatID();
 $data = $telegram->getData();
 
+$GLOBALS['bot_name']          = 'testest0001_bot';
 $GLOBALS['adminHREF']         = 'https://t.me/t1nkov';
 $GLOBALS['currency']          = 'INR';
 $GLOBALS['amount']            = 500;

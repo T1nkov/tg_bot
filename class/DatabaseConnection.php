@@ -119,12 +119,8 @@ class DatabaseConnection {
 		$stmt->close();
 		return $balance . $GLOBALS['currency'];
 	}
-	// bot name should be given as param next time
-	public function generateReferralLink($chat_id) {
-		$bot_name = 'testest0001_bot';
-		$referralLink = "https://t.me/{$bot_name}?start=" . urlencode($chat_id); // Aware
-		return $referralLink;
-	}
+
+	public function generateReferralLink($chat_id) { return "https://t.me/{$GLOBALS['bot_name']}?start=" . urlencode($chat_id); }
 	
 	public function registerUser($telegram, $chat_id, $id_referal, $balance = 0.0, $role = 'user') {
 		$username = $GLOBALS['username1'];
