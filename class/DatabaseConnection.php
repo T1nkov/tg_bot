@@ -48,7 +48,7 @@ class DatabaseConnection {
 		$stmt->close();
 		return $row["select_language"];
 	}
-
+	
 	public function getChatIdByLink($telegram, $chat_id, $link) {
         $telegram->sendMessage([
             'chat_id' => $chat_id,

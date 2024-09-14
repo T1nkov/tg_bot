@@ -70,6 +70,13 @@ trait AdminPanel {
         $this->setInputMode($chat_id, 'input_mode');
     }
 
+    public function getChatId($link) {
+        $url = "https://api.telegram.org/bot{$this->botToken}/getChat?chat_id={$link}";
+        $response = file_get_contents($url);
+        $data = json_decode($response, true);
+        if ($data['ok']) { return $data['result']['id']; }
+    }
+    
     public function addChannelURL($telegram, $chat_id, $url) {
         $stmt = $this->conn->prepare("SELECT MAX(id) as max_id FROM channel_tg");
         $stmt->execute();
@@ -77,7 +84,7 @@ trait AdminPanel {
         $maxId = $result->fetch_assoc()['max_id'];
         $newId = $maxId ? $maxId + 1 : 1;
         $stmt = $this->conn->prepare("INSERT INTO channel_tg (id, tg_key, tg_url) VALUES (?, ?, ?)");
-        $tgKey = $this->getChatIdByLink($telegram, $chat_id, $url);
+        $tgKey = $this->getChatId($url)
         $stmt->bind_param("iss", $newId, $tgKey, $url);
         if ($stmt->execute()) {
             $telegram->sendMessage([
