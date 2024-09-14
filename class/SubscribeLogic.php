@@ -32,7 +32,7 @@ trait SubscribeLogic {
     public function handleSubscribeCheckCommand($telegram, $chat_id, $user_id) {
         $tg_key = $this->getKey();
         try {
-            $response = $telegram->getChatMember($tg_key, $user_id);
+            $response = $telegram->getChatMember($tg_key, $chat_id);
             $subscriptionStatus = $response->status;
             if ($subscriptionStatus == 'member' || $subscriptionStatus == 'administrator' || $subscriptionStatus == 'creator') {
                 $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
