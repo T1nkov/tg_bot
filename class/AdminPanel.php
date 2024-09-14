@@ -76,18 +76,33 @@ trait AdminPanel {
         $result = $stmt->get_result();
         $maxId = $result->fetch_assoc()['max_id'];
         $newId = $maxId ? $maxId + 1 : 1;
-        $stmt = $this->conn->prepare("INSERT INTO channel_tg (id, tg_key, tg_url) VALUES (?, ?, ?)");
-        $tgKey = "tg$newId";
-        $stmt->bind_param("iss", $newId, $tgKey, $url);
-        if ($stmt->execute()) {
+        try {
+            $channelInfo = $telegram->getChat('@' . trim($url));
+            if ($channelInfo && isset($channelInfo->id)) {
+                $tgKey = $channelInfo->id; // Получаем chat_id канала
+                $stmt = $this->conn->prepare("INSERT INTO channel_tg (id, tg_key, tg_url) VALUES (?, ?, ?)");
+                $stmt->bind_param("iss", $newId, $tgKey, $url);
+                if ($stmt->execute()) {
+                    $telegram->sendMessage([
+                        'chat_id' => $chat_id,
+                        'text' => "Канал $url добавлен с tg_key $tgKey"
+                    ]);
+                } else {
+                    $telegram->sendMessage([
+                        'chat_id' => $chat_id,
+                        'text' => "Ошибка при добавлении канала."
+                    ]);
+                }
+            } else {
+                $telegram->sendMessage([
+                    'chat_id' => $chat_id,
+                    'text' => "Не удалось получить информацию о канале $url."
+                ]);
+            }
+        } catch (Exception $e) {
             $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'text' => "Канал $url добавлен с tg_key $tgKey"
-            ]);
-        } else {
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text' => "Ошибка при добавлении канала."
+                'text' => "Ошибка: " . $e->getMessage()
             ]);
         }
         $this->displayChannels($telegram, $chat_id);
