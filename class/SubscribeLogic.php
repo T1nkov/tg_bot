@@ -6,7 +6,7 @@ trait SubscribeLogic {
         $tg_key = $this->getAvailableChannelKey($chat_id);
         $telegram->sendMessage([
             'chat_id' => $chat_id,
-            'text'    => 'handler: ' . $tg_key
+            'text'    => 'handler: ' . var_dump($tg_key)
         ]);
         // if ($tg_key == false || $tg_key == []) {
         //     $message = "🥳 Вы подписались на все каналы!";
