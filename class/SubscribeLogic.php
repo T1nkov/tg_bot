@@ -28,7 +28,7 @@ trait SubscribeLogic {
     public function sub_check($telegram, $chat_id, $message_id) {
         $tg_key = $this->getKey();
         $response = $response = $telegram->getChatMember(['chat_id' => $tg_key, 'user_id' => $chat_id]);
-        $subscriptionStatus = $response->result->status;
+        $subscriptionStatus = $response;
         $telegram->sendMessage([
             'chat_id' => $chat_id,
             'text'    => 'Text: ' . $subscriptionStatus
