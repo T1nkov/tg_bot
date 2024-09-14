@@ -5,7 +5,7 @@ trait SubscribeLogic {
     public function handleJoinChannelCommand($telegram, $chat_id, $message_id, $tg_key = null) {
         $tg_key = $this->getAvailableChannelKey($chat_id);
         if ($tg_key === false) {
-            $message = "🥳 Вы подписались на все каналы!";
+            $message = $this->getPhraseText("all_subscribed", $chat_id);
             $telegram->editMessageText([
                 'chat_id' => $chat_id,
                 'message_id' => $message_id,
@@ -40,13 +40,17 @@ trait SubscribeLogic {
         $response = $telegram->getChatMember(['chat_id' => $tg_key, 'user_id' => $chat_id]);
         $subscriptionStatus = $response['result']['status'];
         if ($subscriptionStatus === 'member' || $subscriptionStatus === 'administrator' || $subscriptionStatus === 'creator') {
-            $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
+            $message = strtr($this->getPhraseText("verified_sub", $chat_id), [
+                '{sub_sum_val}' => $GLOBALS['subscribeSumValue'],
+            ]);
             $keyboard = json_encode(['inline_keyboard' => [[['text' => 'Next', 'callback_data' => 'next']]]]);
             $this->incrementBalance($chat_id, $GLOBALS['subscribeSumValue']);
             $this->addSubscription($chat_id, $tg_key);
         } else {
             $channelURL = $this->getURL($tg_key);
-            $message = "❌ Проверить не удалось! Подпишитесь на канал: {$channelURL}";
+            $message = strtr($this->getPhraseText("canceled_sub", $chat_id), [
+                '{channel_url}' => $channelURL,
+            ]);
             $keyboard = json_encode([
                 'inline_keyboard' => [
                     [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
