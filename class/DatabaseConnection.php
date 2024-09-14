@@ -49,12 +49,11 @@ class DatabaseConnection {
 		return $row["select_language"];
 	}
 
-	public function getChatIdByLink($telegram, $chat_id) {
+	public function getChatIdByLink($telegram, $chat_id, $link) {
         $telegram->sendMessage([
             'chat_id' => $chat_id,
             'text'    => 'Function started...'
         ]);
-        $link = '@fgjhaksdlf'; // hardcode, fix it!
         $url = "https://api.telegram.org/bot{$this->botToken}/getChat?chat_id={$link}";
         $response = @file_get_contents($url);
         if ($response === false) {
