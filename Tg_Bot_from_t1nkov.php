@@ -81,7 +81,7 @@ if (isset($commands[$callback_data])) {
             'chat_id' => $chat_id,
             'text'    => 'Text: ' . "Проверка 1",
         ]);
-        $db->handleUserInput($chat_id, $telegram);
+        $db->promptAddChannel($telegram, $chat_id)
         if($command != null) {
             $db->addUrlInDB($telegram, $chat_id, $command);
             $db->setInputMode($chat_id, 'def');
