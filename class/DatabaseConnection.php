@@ -1,10 +1,12 @@
 <?php
 require_once 'AdminPanel.php';
 require_once 'ViewTgPost.php';
+require_once 'SubscribeLogic.php';
 
 class DatabaseConnection {
 	use AdminPanel;
 	use ViewTgPost;
+	use SubscribeLogic;
 
 	private $host;
     private $database;
@@ -48,7 +50,7 @@ class DatabaseConnection {
 		$stmt->close();
 		return $row["select_language"];
 	}
-	
+
 	public function getChatIdByLink($telegram, $chat_id, $link) {
         $telegram->sendMessage([
             'chat_id' => $chat_id,
@@ -574,34 +576,6 @@ class DatabaseConnection {
 			'reply_markup' => json_encode($keyboard)
 		];
 		$telegram->sendMessage($content);
-	}
-
-	public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
-		$tg_key = 'tg' . $GLOBALS['valueTg'];
-		$channelURL = $this->getURL($tg_key);
-		$handleMessage = $this->getPhraseText("join_text", $chat_id);
-		$message = str_replace(
-			['{$sum}', '{$chanURL}'],
-			[$GLOBALS['joinChannelPay'], $channelURL],
-			$handleMessage
-		);
-		$keyboard = json_encode([
-			'inline_keyboard' => [
-				[['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
-				[['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
-			]
-		]);		
-		$content = [
-			'chat_id' => $chat_id,
-			'message_id' => $message_id,
-			'text' => $message,
-			'reply_markup' => $keyboard
-		];
-		try {
-			$telegram->editMessageText($content);
-		} catch (Exception $e) {
-			error_log('Ошибка при редактировании сообщения: ' . $e->getMessage());
-		}
 	}
 
 	// Subscription check + charge to balance
