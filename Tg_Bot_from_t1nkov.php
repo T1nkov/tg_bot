@@ -8,8 +8,6 @@ ini_set('display_errors', 1);
 
 $config_file = require __DIR__ . '/config.php';
 
-if (!isset($config_file['db'])) { die("# db key error - Database configuration not found."); }
-
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
 $GLOBALS['TOKEN'] = $bot_token;
@@ -43,10 +41,7 @@ $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
 function isTextMatchingButtons($command) {
-	foreach ($GLOBALS['buttons'] as $buttonValues) {
-		if (in_array($command, $buttonValues)) return true;
-	}
-	return false;
+    return in_array($command, array_merge(...array_values($GLOBALS['buttons'])));
 }
 
 $db = new DatabaseConnection($config_file);
@@ -57,31 +52,31 @@ $telegram->sendMessage([
 ]);
 
 $commands = [
-    'withdraw' => 'handleWithdrawCommand',
-    'rep_ru' => 'handleReportCommand',
-    'fraud' => 'handleFraudCommand',
-    'spam' => 'handleSpamCommand',
-    'violence' => 'handleViolenceCommand',
-    'copyright' => 'handleCopyrightCommand',
-    'other' => 'handleOtherCommand',
-    'invite_friend' => 'handlePartnerCommand',
-    'join_channel' => 'handleJoinChannelCommand',
-    'skip' => 'handleJoinChannelCommand',
-    'view_post' => 'handleViewPost',
-    'check' => 'handleSubscribeCommand',
-    'checkSub' => 'handleBalanceCommand',
-    'no' => 'handleCanceledCommand',
-	'add_channel' => 'promptAddChannel',
+    'withdraw'       => 'handleWithdrawCommand',
+    'rep_ru'         => 'handleReportCommand',
+    'fraud'          => 'handleFraudCommand',
+    'spam'           => 'handleSpamCommand',
+    'violence'       => 'handleViolenceCommand',
+    'copyright'      => 'handleCopyrightCommand',
+    'other'          => 'handleOtherCommand',
+    'invite_friend'  => 'handlePartnerCommand',
+    'join_channel'   => 'handleJoinChannelCommand',
+    'skip'           => 'handleJoinChannelCommand',
+    'view_post'      => 'handleViewPost',
+    'check'          => 'handleSubscribeCommand',
+    'checkSub'       => 'handleBalanceCommand',
+    'no'             => 'handleCanceledCommand',
+	'add_channel'    => 'promptAddChannel',
     'remove_channel' => 'promptRemoveChannel',
-    'cancel_remove' => 'displayChannels',
-    'next' => 'handleJoinChannelCommand'
+    'cancel_remove'  => 'displayChannels',
+    'next'           => 'handleJoinChannelCommand'
 ];
 
 if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
         $catch_url = $telegram->Text();
         $db->promptAddChannel($telegram, $chat_id);
-        return; // THIS IS SO IMPORTANT THING
+        return;
     }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
 } elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
