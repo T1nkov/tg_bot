@@ -68,7 +68,7 @@ trait AdminPanel {
             'chat_id' => $chat_id,
             'text' => $message
         ]);
-        setInputMode($chat_id, 'input_mode');
+        $this->setInputMode($chat_id, 'input_mode');
     }
 
     public function addChannelURL($telegram, $chat_id, $url) {
