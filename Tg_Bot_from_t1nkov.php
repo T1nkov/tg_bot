@@ -81,7 +81,10 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     if ($commands[$callback_data] === 'add_channel') {
-
+		$telegram->sendMessage([
+			'chat_id' => $chat_id,
+			'text' => "проверка 1"
+		]);
         if ($this->isInputMode($chat_id) === 'input_mode') {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
