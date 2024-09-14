@@ -79,10 +79,6 @@ if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
         $db->handleUserInput($chat_id, $telegram);
         if($command != null) {
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text'    => 'Text from catch: ' . $command,
-            ]);
             $db->addChannelURL($telegram, $chat_id, $command);
             $db->setInputMode($chat_id, 'def');
         }
