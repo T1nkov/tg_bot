@@ -73,7 +73,7 @@ $commands = [
 	'add_channel' => 'promptAddChannel',
     'remove_channel' => 'promptRemoveChannel',
     'cancel_remove' => 'displayChannels',
-    'next' => 'handleNextChannel'
+    'next' => 'handleJoinChannelCommand'
 ];
 
 if (isset($commands[$callback_data])) {
