@@ -8,7 +8,6 @@ trait SubscribeLogic {
             'chat_id' => $chat_id,
             'text'    => $tg_key
         ]);
-        return;
         // if ($tg_key == false || $tg_key == []) {
         //     $message = "🥳 Вы подписались на все каналы!";
         //     $keyboard = json_encode([]);
