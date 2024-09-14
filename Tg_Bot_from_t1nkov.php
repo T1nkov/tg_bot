@@ -37,7 +37,6 @@ $GLOBALS['buttons'] = [
 ];
   
 $update = json_decode(file_get_contents('php://input'), true);
-echo '<pre>'; print_r($update); echo '</pre>';
 $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
@@ -51,10 +50,10 @@ function isTextMatchingButtons($command) {
 
 $db = new DatabaseConnection($config_file);
 
-// $telegram->sendMessage([
-//     'chat_id' => $chat_id,
-//     'text'    => 'Callback data: ' . $callback_data,
-// ]);
+$telegram->sendMessage([
+    'chat_id' => $chat_id,
+    'text'    => 'Callback data: ' . $callback_data,
+]);
 
 $commands = [
     'withdraw' => 'handleWithdrawCommand',
@@ -90,10 +89,10 @@ if (isset($commands[$callback_data])) {
     $db->displayChannels($telegram, $chat_id);
 }
 
-// $telegram->sendMessage([
-// 	'chat_id' => $chat_id,
-// 	'text'    => 'Text: ' . $command
-// ]);
+$telegram->sendMessage([
+	'chat_id' => $chat_id,
+	'text'    => 'Text: ' . $command
+]);
 
 if ($db->isInputMode($chat_id) === 'input_mode') {
     if (!empty($command)) {
