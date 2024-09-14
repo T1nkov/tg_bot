@@ -31,7 +31,6 @@ trait SubscribeLogic {
                 [['text' => 'Пропустить', 'callback_data' => 'skip']]
             ]
         ];
-
         $telegram->sendMessage([
             'chat_id' => $chat_id,
             'text' => $message,
