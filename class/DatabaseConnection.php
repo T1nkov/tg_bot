@@ -740,7 +740,7 @@ class DatabaseConnection {
 	public function getURL($tg_key) {
 		$sql = "SELECT tg_url FROM channel_tg WHERE tg_key = ?";
 		$stmt = $this->conn->prepare($sql);
-		$stmt->bind_param("d", $tg_key);
+		$stmt->bind_param("s", $tg_key);
 		$stmt->execute();
 		$stmt->store_result();
 		if ($stmt->num_rows > 0) {
