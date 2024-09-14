@@ -86,19 +86,25 @@ if (isset($commands[$callback_data])) {
 			'chat_id' => $chat_id,
 			'text' => "проверка 1" 
 		]);
-        if ($command != null && $this->isInputMode($chat_id) === 'input_mode') {
+        if ($this->isInputMode($chat_id) == 'input_mode') {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
 				'text' => "active inpit mode"
 			]);
-            
+            if ($command != null) {
                 $telegram->sendMessage([
                     'chat_id' => $chat_id,
                     'text' => 'вы ввели: ' . $command
                 ]);
                 $this->addChannelURL($telegram, $chat_id, $command);
                 $this->setInputMode($chat_id, 'def');
-             
+            } else {
+                // Обработка случая, когда command равен null
+                $telegram->sendMessage([
+                    'chat_id' => $chat_id,
+                    'text' => 'Команда не была введена.',
+                ]);
+            }
         } else {
             // Обработка случая, когда не в input mode
             $telegram->sendMessage([
