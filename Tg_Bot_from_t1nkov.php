@@ -77,10 +77,6 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
-        $telegram->sendMessage([
-            'chat_id' => $chat_id,
-            'text'    => 'Text: ' . "Проверка 1",
-        ]);
         $db->promptAddChannel($telegram, $chat_id);
         if($command != null) {
             $db->addUrlInDB($telegram, $chat_id, $command);
