@@ -1,5 +1,5 @@
 <?php
-require_once 'DatabaseConnection.php';
+
 trait AdminPanel {
 	protected $conn;
 
@@ -68,7 +68,7 @@ trait AdminPanel {
             'chat_id' => $chat_id,
             'text' => $message
         ]);
-        $this->handleUserInput($chat_id, $telegram);
+        
     }
 
     public function addChannelURL($telegram, $chat_id, $url) {

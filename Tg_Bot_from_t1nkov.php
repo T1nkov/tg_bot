@@ -70,14 +70,14 @@ $commands = [
     'check' => 'handleSubscribeCheckCommand',
     'checkSub' => 'handleBalanceCommand',
     'no' => 'handleCanceledCommand',
-	'add_channel' => 'promptAddChannel',
+	'add_channel' => 'handleUserInput',
     'remove_channel' => 'promptRemoveChannel',
     'cancel_remove' => 'displayChannels'
 ];
 
 if (isset($commands[$callback_data])) {
     if ($commands[$callback_data] === 'add_channel') {
-		
+		$this->handleUserInput($chat_id, $telegram);
         if($command != null && $this->isInputMode($chat_id)  == "input_mode"  ) {
          $this-> addChannelURL($telegram, $chat_id, $command);
 		 $this ->setInputMode($chat_id, 'def');
