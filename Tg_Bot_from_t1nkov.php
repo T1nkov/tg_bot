@@ -82,11 +82,12 @@ $commands = [
 if (isset($commands[$callback_data])) {
 	
     if ($callback_data === 'add_channel') {
+		$this->handleUserInput($telegram, $chat_id);
 		$telegram->sendMessage([
 			'chat_id' => $chat_id,
 			'text' => "проверка 1" 
 		]);
-		$this->handleUserInput($telegram, $chat_id);
+		
         if ($this->isInputMode($chat_id) == 'input_mode') {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
