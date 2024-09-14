@@ -81,10 +81,10 @@ if (isset($commands[$callback_data])) {
             'chat_id' => $chat_id,
             'text'    => 'Text: ' . "Проверка 1",
         ]);
-        if($command != null) {
-            $db->addUrlInDB($telegram, $chat_id, $command);
-            $db->setInputMode($chat_id, 'def');
-        }
+        // if($command != null) {
+        //     $db->addUrlInDB($telegram, $chat_id, $command);
+        //     $db->setInputMode($chat_id, 'def');
+        // }
     }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
 } elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
