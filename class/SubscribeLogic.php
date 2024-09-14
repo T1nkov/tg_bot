@@ -8,6 +8,7 @@ trait SubscribeLogic {
             FROM channel_tg ct
             LEFT JOIN user_subscriptions us ON ct.tg_key = us.tg_key AND us.id_tg = ?
             WHERE us.id_tg IS NULL LIMIT 1";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -79,11 +80,13 @@ trait SubscribeLogic {
     }
 
     public function checkSubscription($telegram, $user_id, $channel_id) {
-        $response = $telegram->getChatMember(['chat_id' => $channel_id, 'user_id' => $user_id]);
-        if (isset($response['result']['status'])) {
-            return $response['result']['status'] === 'member' || 
-                $response['result']['status'] === 'administrator' || 
-                $response['result']['status'] === 'creator';
+        try {
+            $response = $telegram->getChatMember(['chat_id' => $channel_id, 'user_id' => $user_id]);
+            if (isset($response['result']['status'])) {
+                return in_array($response['result']['status'], ['member', 'administrator', 'creator']);
+            }
+        } catch (Exception $e) {
+            error_log('Ошибка при проверке подписки: ' . $e->getMessage());
         }
         return false;
     }
@@ -95,4 +98,6 @@ trait SubscribeLogic {
             'reply_markup' => json_encode($this->getInitialKeyboard()),
         ]);
     }
+
+    private function getInitialKeyboard() { return []; }
 }
