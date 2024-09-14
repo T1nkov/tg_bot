@@ -77,10 +77,10 @@ $commands = [
 
 if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_url') {
-        $db->->handleUserInput($chat_id, $telegram);
+        $db->handleUserInput($chat_id, $telegram);
         if($command != null) {
-            $db->->addUrlInDB($telegram, $chat_id, $command);
-            $db->->setInputMode($chat_id, 'def');
+            $db->addUrlInDB($telegram, $chat_id, $command);
+            $db->setInputMode($chat_id, 'def');
         }
     }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
@@ -95,7 +95,7 @@ $telegram->sendMessage([
 	'text'    => 'Text: ' . $command,
 ]);
 
-if ($db->->isInputMode($chat_id)  == "def") {
+if ($db->isInputMode($chat_id)  == "def") {
     switch ($command) {
         case $command !== null && strpos($command, '/start') === 0:
             $db->handleStartCommand($telegram, $chat_id, $update);
