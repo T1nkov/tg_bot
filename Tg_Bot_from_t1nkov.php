@@ -50,11 +50,6 @@ function isTextMatchingButtons($command) {
 
 $db = new DatabaseConnection($config_file);
 
-$telegram->sendMessage([
-    'chat_id' => $chat_id,
-    'text'    => 'Callback data: ' . $callback_data,
-]);
-
 $commands = [
     'withdraw' => 'handleWithdrawCommand',
     'rep_ru' => 'handleReportCommand',
@@ -96,6 +91,11 @@ if (isset($commands[$callback_data])) {
 $telegram->sendMessage([
 	'chat_id' => $chat_id,
 	'text'    => 'Text: ' . $command,
+]);
+
+$telegram->sendMessage([
+    'chat_id' => $chat_id,
+    'text'    => 'Callback data: ' . $callback_data,
 ]);
 
 if ($db->isInputMode($chat_id) === 'def') {
