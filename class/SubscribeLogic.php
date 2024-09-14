@@ -12,8 +12,8 @@ trait SubscribeLogic {
         );
         $keyboard = json_encode([
             'inline_keyboard' => [
-                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
-                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
+                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check_cb']],
+                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip_cb']]
             ]
         ]);
         $content = [
@@ -28,7 +28,6 @@ trait SubscribeLogic {
     public function handleSubscribeCheckCommand($telegram, $chat_id, $message_id) {
         $tg_key = $this->getKey();
         $subscriptionStatus = $telegram->getChatMember($tg_key, $chat_id)['result']['status'];
-        echo $subscriptionStatus;
         if ($subscriptionStatus === 'member' || $subscriptionStatus === 'administrator' || $subscriptionStatus === 'creator') {
             $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
         } else {
@@ -38,8 +37,8 @@ trait SubscribeLogic {
         $keyboard = json_encode([
             'inline_keyboard' => [
                 [['text' => 'Next', 'callback_data' => 'next']],
-                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
-                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
+                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check_cb']],
+                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip_cb']]
             ]
         ]);
         $telegram->editMessageText([
