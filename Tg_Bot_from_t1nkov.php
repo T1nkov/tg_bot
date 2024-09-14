@@ -78,11 +78,8 @@ $commands = [
 if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
         $catch_url = $telegram->Text();
-        $db->handleUserInput($chat_id, $telegram);
-        if($catch_url != null) {
-            $db->addChannelURL($telegram, $chat_id, $catch_url);
-            $db->setInputMode($chat_id, 'def');
-        }
+        $db->promptAddChannel($telegram, $chat_id)
+        return;
     }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
 } elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
@@ -95,6 +92,14 @@ $telegram->sendMessage([
 	'chat_id' => $chat_id,
 	'text'    => 'Text: ' . $command,
 ]);
+
+if ($db->isInputMode($chat_id) === 'input_mode') {
+    if (!empty($command)) {
+        $db->addChannelURL($telegram, $chat_id, $command);
+        $db->setInputMode($chat_id, 'def');
+        return;
+    }
+}
 
 if ($db->isInputMode($chat_id) === 'def') {
     switch ($command) {
