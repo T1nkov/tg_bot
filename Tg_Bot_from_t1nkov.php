@@ -79,6 +79,7 @@ if (isset($commands[$callback_data])) {
     if ($callback_data === 'add_channel') {
         $catch_url = $telegram->Text();
         $db->handleUserInput($chat_id, $telegram);
+        return;
     }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
 } elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
