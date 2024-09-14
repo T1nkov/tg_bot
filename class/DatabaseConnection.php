@@ -806,7 +806,7 @@ class DatabaseConnection {
 		return $stmt && $stmt->bind_param("s", $text) && $stmt->execute();
 	}
 	
-	public function handleUserInput($telegram,$chatId) {
+	public function handleUserInput($chatId, $telegram) {
 		$telegram->sendMessage([
 			'chat_id' => $chatId,
 			'text'    => "Вы вошли в режим ввода текста!\nПожалуйста, введите ваш текст."
