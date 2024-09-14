@@ -796,6 +796,7 @@ class DatabaseConnection {
 		if ($stmt === false) { return false; }
 		$stmt->bind_param("si", $mode, $chat_id);
 		if (!$stmt->execute()) { return false; }
+		
 		return true;
 	}
 
