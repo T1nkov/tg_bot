@@ -24,7 +24,6 @@ trait SubscribeLogic {
         ];
         $telegram->editMessageText($content);
     }
-    
 
     public function handleSubscribeCommand($telegram, $chat_id, $message_id) {
         $tg_key = $this->getKey();
@@ -33,7 +32,7 @@ trait SubscribeLogic {
         if ($subscriptionStatus === 'member' || $subscriptionStatus === 'administrator' || $subscriptionStatus === 'creator') {
             $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
             $keyboard = json_encode(['inline_keyboard' => [[['text' => 'Next', 'callback_data' => 'next']]]]);
-            // this->incrementBalance($chat_id, $GLOBALS['subscribeSumValue']);
+            this->incrementBalance($chat_id, $GLOBALS['subscribeSumValue']);
         } else {
             $channelURL = $this->getURL($tg_key);
             $message = "❌ Проверить не удалось! Подпишитесь на канал: {$channelURL}";
