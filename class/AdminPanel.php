@@ -1,5 +1,5 @@
 <?php
-
+require_once 'DatabaseConnection.php';
 trait AdminPanel {
 	protected $conn;
 
