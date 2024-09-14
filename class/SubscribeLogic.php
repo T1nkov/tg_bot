@@ -29,7 +29,7 @@ trait SubscribeLogic {
 		}
 	}
 
-    private function getKey() {
+    public function getKey() {
         $sql = "SELECT tg_key FROM channel_tg LIMIT 1";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
