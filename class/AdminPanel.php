@@ -63,12 +63,13 @@ trait AdminPanel {
     }
     
     public function promptAddChannel($telegram, $chat_id) {
-        this->handleUserInput($chat_id, $telegram);
+        setInputMode($chat_id, 'input_mode');
         $message = "Введите ссылку для добавления:";
         $telegram->sendMessage([
             'chat_id' => $chat_id,
             'text' => $message
         ]);
+        
     }
 
     public function addChannelURL($telegram, $chat_id, $url) {
