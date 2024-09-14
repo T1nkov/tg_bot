@@ -65,14 +65,15 @@ $commands = [
     'other' => 'handleOtherCommand',
     'invite_friend' => 'handlePartnerCommand',
     'join_channel' => 'handleJoinChannelCommand',
-    'skip' => '_',
+    'skip' => 'handleJoinChannelCommand',
     'view_post' => 'handleViewPost',
-    'check' => 'sub_check',
+    'check' => 'handleSubscribeCommand',
     'checkSub' => 'handleBalanceCommand',
     'no' => 'handleCanceledCommand',
 	'add_channel' => 'promptAddChannel',
     'remove_channel' => 'promptRemoveChannel',
-    'cancel_remove' => 'displayChannels'
+    'cancel_remove' => 'displayChannels',
+    'next' => ''
 ];
 
 if (isset($commands[$callback_data])) {
