@@ -37,6 +37,7 @@ $GLOBALS['buttons'] = [
 ];
   
 $update = json_decode(file_get_contents('php://input'), true);
+echo '<pre>'; print_r($update); echo '</pre>';
 $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
@@ -54,8 +55,6 @@ $db = new DatabaseConnection($config_file);
 //     'chat_id' => $chat_id,
 //     'text'    => 'Callback data: ' . $callback_data,
 // ]);
-$callback_data_display = $callback_data !== null ? htmlspecialchars($callback_data) : '';
-echo 'Callback data: ' . $callback_data_display . '<br>';
 
 $commands = [
     'withdraw' => 'handleWithdrawCommand',
@@ -95,8 +94,6 @@ if (isset($commands[$callback_data])) {
 // 	'chat_id' => $chat_id,
 // 	'text'    => 'Text: ' . $command
 // ]);
-$command_display = $command !== null ? htmlspecialchars($command) : '';
-echo 'Command: ' . $command_display . '<br>';
 
 if ($db->isInputMode($chat_id) === 'input_mode') {
     if (!empty($command)) {
