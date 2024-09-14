@@ -1,4 +1,5 @@
 <?php
+
 trait SubscribeLogic {
 
     public function handleJoinChannelCommand($telegram, $chat_id, $message_id, $tg_key = null) {
@@ -38,7 +39,7 @@ trait SubscribeLogic {
 
     public function handleSubscribeCommand($telegram, $chat_id, $message_id) {
         $tg_key = $this->getAvailableChannelKey($chat_id);
-        $response = $response = $telegram->getChatMember(['chat_id' => $tg_key, 'user_id' => $chat_id]);
+        $response = $telegram->getChatMember(['chat_id' => $tg_key, 'user_id' => $chat_id]);
         $subscriptionStatus = $response['result']['status'];
         if ($subscriptionStatus === 'member' || $subscriptionStatus === 'administrator' || $subscriptionStatus === 'creator') {
             $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
@@ -61,7 +62,7 @@ trait SubscribeLogic {
             'reply_markup' => $keyboard
         ]);
     }
-    
+
     private function getAvailableChannelKey($user_id) {
         $subscribedChannels = $this->getSubscribedChannels($user_id);
         $allChannels = $this->getAllChannels();
@@ -71,6 +72,21 @@ trait SubscribeLogic {
             }
         }
         return false;
+    }
+
+    private function getAllChannels() {
+        $sql = "SELECT tg_key, tg_url FROM channel_tg";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $channels = [];
+        while ($row = $result->fetch_assoc()) {
+            $channels[] = [
+                'tg_key' => $row['tg_key'],
+                'tg_url' => $row['tg_url']
+            ];
+        }
+        return $channels;
     }
 
     private function addSubscription($user_id, $tg_key) {
@@ -87,7 +103,9 @@ trait SubscribeLogic {
         $stmt->execute();
         $result = $stmt->get_result();
         $subscribedChannels = [];
-        while ($row = $result->fetch_assoc()) { $subscribedChannels[] = $row['tg_key']; }
+        while ($row = $result->fetch_assoc()) {
+            $subscribedChannels[] = $row['tg_key'];
+        }
         return $subscribedChannels;
     }
 }
