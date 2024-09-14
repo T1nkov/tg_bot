@@ -1,102 +1,98 @@
 <?php
+trait SubscribeLogic {
 
-trait ViewTgPost {
-    
-    public function handleViewPost($telegram, $chat_id) {
-        $nextAvailableTime = $this->getNextAvailableViewTime($chat_id); 
-        if ($nextAvailableTime > time()) {
-            $remainingTime = $nextAvailableTime - time();
-            $formattedTime = $this->formatTime($remainingTime);
+    private function getNextChannel($chat_id) {
+        $user_id = $this->getUserId($chat_id);
+        $query = "
+            SELECT ct.tg_key, ct.tg_url
+            FROM channel_tg ct
+            LEFT JOIN user_subscriptions us ON ct.tg_key = us.tg_key AND us.id_tg = ?
+            WHERE us.id_tg IS NULL LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        return $result->fetch_assoc();
+    }
+
+    public function handleJoinChannelCommand($telegram, $chat_id, $user_id) {
+        $nextChannel = $this->getNextChannel($chat_id);
+        if (!$nextChannel) {
             $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'text'    => "Просмотр постов будет доступен через $formattedTime"
+                'text' => "🥳 Вы подписались на все каналы!",
             ]);
             return;
         }
-        $posts = $this->getPosts();
-        $totalPosts = count($posts);
-        $currentIndex = 0;
-        $messageId = $telegram->sendMessage([
+        $message = "Подпишись на канал и получи " . $GLOBALS['subscribeSumValue'];
+        $keyboard = [
+            'inline_keyboard' => [
+                [['text' => 'Проверить', 'callback_data' => 'check_subscription']],
+                [['text' => 'Пропустить', 'callback_data' => 'skip']]
+            ]
+        ];
+        $telegram->sendMessage([
             'chat_id' => $chat_id,
-            'text'    => "1/$totalPosts Просмотр поста: " . $posts[$currentIndex]['post_url']
-        ])['result']['message_id'];
-        while ($currentIndex < $totalPosts) {
-            sleep(1.5);
-            $currentIndex++;
-            if ($currentIndex >= $totalPosts) {
-                $this->incrementBalance($chat_id, $GLOBALS['watchSumValue']);
-                $telegram->editMessageText([
-                    'chat_id' => $chat_id,
-                    'text'    => "Просмотр постов завершён вам зачислили - " . $GLOBALS['watchSumValue'],
-                    'message_id' => $messageId
-                ]);
-                $this->setNextAvailableViewTime($chat_id); 
-                return;
+            'text' => $message,
+            'reply_markup' => json_encode($keyboard)
+        ]);
+    }
+
+    public function handleCheckSubscription($telegram, $chat_id, $user_id) {
+        $nextChannel = $this->getNextChannel($chat_id);
+        if ($nextChannel) {
+            $channel_id = $nextChannel['tg_key'];
+            $isSubscribed = $this->checkSubscription($telegram, $user_id, $channel_id);
+            if ($isSubscribed) {
+                $this->insertSubscription($user_id, $channel_id);
+                $this->incrementBalance($chat_id, $GLOBALS['subscribeSumValue']);
+                $successMessage = "✅ Проверка прошла! Вам зачислено " . $GLOBALS['subscribeSumValue'];
+                $this->editMessage($telegram, $chat_id, $successMessage);
+                $this->handleJoinChannelCommand($telegram, $chat_id, $user_id);
+            } else {
+                $this->showFailedSubscriptionMessage($telegram, $chat_id, $nextChannel['tg_url']);
             }
-            $telegram->editMessageText([
-                'chat_id' => $chat_id,
-                'text'    => ($currentIndex + 1) . "/$totalPosts Просмотр поста: " . $posts[$currentIndex]['post_url'],
-                'message_id' => $messageId
-            ]);
         }
     }
-    
-    private function getNextAvailableViewTime($chat_id) {
-        $stmt = $this->conn->prepare("SELECT next_available_time FROM users WHERE id_tg = ?");
-        $stmt->bind_param("s", $chat_id);
+
+    private function showFailedSubscriptionMessage($telegram, $chat_id, $channel_url) {
+        $failedMessage = "❌ Проверить не удалось! Подпишитесь на канал: " . $channel_url;
+        $keyboard = [
+            'inline_keyboard' => [
+                [['text' => 'Проверить', 'callback_data' => 'check_subscription']],
+                [['text' => 'Пропустить', 'callback_data' => 'skip']]
+            ]
+        ];
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => $failedMessage,
+            'reply_markup' => json_encode($keyboard)
+        ]);
+    }
+
+    private function insertSubscription($user_id, $channel_id) {
+        $stmt = $this->conn->prepare("INSERT INTO user_subscriptions (id_tg, tg_key) VALUES (?, ?)
+                                        ON DUPLICATE KEY UPDATE subscribed_at = CURRENT_TIMESTAMP");
+        $stmt->bind_param("ii", $user_id, $channel_id);
         $stmt->execute();
-        $result = $stmt->get_result();
-        if ($row = $result->fetch_assoc()) { return $row['next_available_time']; }
-        return 0;
     }
-    
-    private function formatTime($seconds) {
-        $hours = floor($seconds / 3600);
-        $minutes = floor(($seconds % 3600) / 60);
-        $seconds = $seconds % 60;
-        return "{$hours}h {$minutes}min {$seconds}sec";
-    }
-    
-    private function setNextAvailableViewTime($chat_id) {
-        $nextTime = time() + (12 * 3600);
-        $stmt = $this->conn->prepare("UPDATE users SET next_available_time = ? WHERE id_tg = ?");
-        $stmt->bind_param("is", $nextTime, $chat_id);
-        $stmt->execute();
-    }
-    
-    private function getPosts() {
-        $result = $this->conn->query("SELECT post_url FROM posts");
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-    
-    // the functionality seems to be ready, but stupid limitations of telegram do not allow to use it
-    private function getUniquePostUrl($chat_id) {
-        $seenPostUrls = $this->getSeenPosts($chat_id);
-        $seenPostUrlList = empty($seenPostUrls) ? "NULL" : "'" . implode("','", $seenPostUrls) . "'";
-        $query = "SELECT post_url FROM posts WHERE post_url NOT IN ($seenPostUrlList) LIMIT 1";
-        $result = $this->conn->query($query);
-        if ($result && $result->num_rows > 0) {
-            $post = $result->fetch_assoc();
-            return $post['post_url'];
+
+    public function checkSubscription($telegram, $user_id, $channel_id) {
+        $response = $telegram->getChatMember(['chat_id' => $channel_id, 'user_id' => $user_id]);
+        if (isset($response['result']['status'])) {
+            return $response['result']['status'] === 'member' || 
+                   $response['result']['status'] === 'administrator' || 
+                   $response['result']['status'] === 'creator';
         }
-        return null;
+        return false;
     }
 
-    private function markPostAsSeen($chat_id, $post_url) {
-        $stmt = $this->conn->prepare("INSERT INTO post_views (user_id, post_id) VALUES (?, ?)");
-        $stmt->bind_param("is", $chat_id, $post_url);
-        $stmt->execute();
+    private function editMessage($telegram, $chat_id, $text) {
+        $telegram->editMessageText([
+            'chat_id' => $chat_id,
+            'text'    => $text,
+            'reply_markup' => json_encode($this->getInitialKeyboard()),
+        ]);
     }
-
-    private function getSeenPosts($chat_id) {
-        $seenPostUrls = [];
-        $stmt = $this->conn->prepare("SELECT post_url FROM post_views WHERE user_id = ?");
-        $stmt->bind_param("i", $chat_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) { $seenPostUrls[] = $row['post_id']; }
-        return $seenPostUrls;
-
-    }
-
 }
