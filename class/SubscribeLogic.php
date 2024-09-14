@@ -29,7 +29,7 @@ trait SubscribeLogic {
         }
     }
 
-    public function handleSubscribeCheckCommand($telegram, $chat_id, $user_id) {
+    public function handleSubscribeCheckCommand($telegram, $chat_id, $message) {
         $tg_key = $this->getKey();
         try {
             $response = $telegram->getChatMember($tg_key, $chat_id);
