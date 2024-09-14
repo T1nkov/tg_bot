@@ -127,6 +127,7 @@ class DatabaseConnection {
 	}
 	
 	public function registerUser($telegram, $chat_id, $id_referal, $balance = 0.0, $role = 'user') {
+		$id_referal = (string)$id_referal;
 		$username = $GLOBALS['username1'];
 		if (empty($username)) {
 			$telegram->sendMessage([
@@ -143,7 +144,7 @@ class DatabaseConnection {
 		]);
 		try {
 			$status = 'def';
-			$stmt->bind_param("ssisds", $username, $role, $chat_id, (string)$id_referal, $balance, $status);
+			$stmt->bind_param("ssisds", $username, $role, $chat_id, $id_referal, $balance, $status);
 		} catch (\Exception $e) {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
@@ -235,15 +236,14 @@ class DatabaseConnection {
 	// Start
 	public function handleStartCommand($telegram, $chat_id, $update) {
 		$referral_id  = null;
-		$message_text = $update['message']['text'] ?? ''; // Ensure it's not null
+		$message_text = $update['message']['text'] ?? '';
 		if (strpos($message_text, '/start') !== false) {
 			$arguments = explode(' ', $message_text);
 			if (count($arguments) > 1) {
-				$referral_id = intval($arguments[1]);
+				$referral_id = $arguments[1] ?? null;
 			} else {
-				$matches = [];
 				if (preg_match('/start=([0-9a-z]+)/i', $message_text, $matches)) {
-					$referral_id = intval($matches[1]);
+					$referral_id = $matches[1] ?? null;
 				}
 			}
 		} elseif (isset($update['message']['entities'])) {
@@ -257,7 +257,7 @@ class DatabaseConnection {
 			if ($url) {
 				$matches = [];
 				if (preg_match('/start=([0-9a-z]+)/i', $url, $matches)) {
-					$referral_id = intval($matches[1]);
+					$referral_id = $matches[1] ?? null;
 				}
 			}
 		}
