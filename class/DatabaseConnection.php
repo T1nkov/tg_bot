@@ -127,6 +127,7 @@ class DatabaseConnection {
 	}
 	
 	public function registerUser($telegram, $chat_id, $id_referal, $balance = 0.0, $role = 'user') {
+		$id_referal = (string)$id_referal;
 		$username = $GLOBALS['username1'];
 		if (empty($username)) {
 			$telegram->sendMessage([
@@ -143,7 +144,7 @@ class DatabaseConnection {
 		]);
 		try {
 			$status = 'def';
-			$stmt->bind_param("ssisds", $username, $role, $chat_id, (string)$id_referal, $balance, $status);
+			$stmt->bind_param("ssisds", $username, $role, $chat_id, $id_referal, $balance, $status);
 		} catch (\Exception $e) {
 			$telegram->sendMessage([
 				'chat_id' => $chat_id,
