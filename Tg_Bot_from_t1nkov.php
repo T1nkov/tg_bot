@@ -80,7 +80,7 @@ if (isset($commands[$callback_data])) {
         $this->handleUserInput($chat_id, $telegram);
         if($command != null) {
             $this->addUrlInDB($telegram, $chat_id, $command);
-            $this->setInputMode($chat_id, 'def')
+            $this->setInputMode($chat_id, 'def');
         }
     }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
