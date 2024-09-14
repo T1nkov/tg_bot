@@ -98,7 +98,7 @@ $telegram->sendMessage([
 	'text'    => 'Text: ' . $command,
 ]);
 
-if ($db->isInputMode($chat_id)  == "def") {
+if ($db->isInputMode($chat_id) === 'def') {
     switch ($command) {
         case $command !== null && strpos($command, '/start') === 0:
             $db->handleStartCommand($telegram, $chat_id, $update);
