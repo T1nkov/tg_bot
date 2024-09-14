@@ -15,40 +15,49 @@ trait SubscribeLogic {
             $result = $stmt->get_result();
             $channel = $result->fetch_assoc();
             $stmt->close();
-            return $channel;
+            return $channel; // return tg_key tg_url []
         } else {
-            error_log("Err. " . $this->conn->error);
+            error_log("Ошибка: " . $this->conn->error);
             return null;
         }
     }
-
+    
     public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
-		$tg_key = 'tg' . $GLOBALS['valueTg'];
-		$channelURL = $this->getURL($tg_key);
-		$handleMessage = $this->getPhraseText("join_text", $chat_id);
-		$message = str_replace(
-			['{$sum}', '{$chanURL}'],
-			[$GLOBALS['joinChannelPay'], $channelURL],
-			$handleMessage
-		);
-		$keyboard = json_encode([
-			'inline_keyboard' => [
-				[['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
-				[['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
-			]
-		]);		
-		$content = [
-			'chat_id' => $chat_id,
-			'message_id' => $message_id,
-			'text' => $message,
-			'reply_markup' => $keyboard
-		];
-		try {
-			$telegram->editMessageText($content);
-		} catch (Exception $e) {
-			error_log('Ошибка при редактировании сообщения: ' . $e->getMessage());
-		}
-	}
+        $channel = $this->getNextChannel($chat_id);
+        if ($channel) {
+            $tg_key = $channel['tg_key'];
+            $channelURL = $channel['tg_url'];
+            $handleMessage = $this->getPhraseText("join_text", $chat_id);
+            $message = str_replace(
+                ['{$sum}', '{$chanURL}'],
+                [$GLOBALS['joinChannelPay'], $channelURL],
+                $handleMessage
+            );
+            $keyboard = json_encode([
+                'inline_keyboard' => [
+                    [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+                    [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
+                ]
+            ]);        
+            $content = [
+                'chat_id' => $chat_id,
+                'message_id' => $message_id,
+                'text' => $message,
+                'reply_markup' => $keyboard
+            ];
+            try {
+                $telegram->editMessageText($content);
+            } catch (Exception $e) {
+                error_log('Err. ' . $e->getMessage());
+            }
+        } else {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text' => "Err.",
+            ]);
+        }
+    }
+    
 
     public function handleCheckSubscription($telegram, $chat_id, $user_id) {
         $nextChannel = $this->getNextChannel($chat_id);
