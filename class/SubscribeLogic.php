@@ -7,13 +7,19 @@ trait SubscribeLogic {
             SELECT ct.tg_key, ct.tg_url
             FROM channel_tg ct
             LEFT JOIN user_subscriptions us ON ct.tg_key = us.tg_key AND us.id_tg = ?
-            WHERE us.id_tg IS NULL LIMIT 1";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $result->fetch_assoc();
+            WHERE us.id_tg IS NULL
+            LIMIT 1";
+        if ($stmt = $this->conn->prepare($query)) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $channel = $result->fetch_assoc();
+            $stmt->close();
+            return $channel;
+        } else {
+            error_log("Err. " . $this->conn->error);
+            return null;
+        }
     }
 
     public function handleJoinChannelCommand($telegram, $chat_id, $user_id) {
