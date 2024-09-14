@@ -2,7 +2,7 @@
 trait SubscribeLogic {
 
     public function handleJoinChannelCommand($telegram, $chat_id, $message_id) {
-		$tg_key = getKey();
+		$tg_key = $this->getKey();
 		$channelURL = $this->getURL($tg_key);
 		$handleMessage = $this->getPhraseText("join_text", $chat_id);
 		$message = str_replace(
@@ -29,7 +29,7 @@ trait SubscribeLogic {
 		}
 	}
 
-    public function getKey() {
+    private function getKey() {
         $sql = "SELECT tg_key FROM channel_tg LIMIT 1";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
