@@ -12,8 +12,8 @@ trait SubscribeLogic {
         );
         $keyboard = json_encode([
             'inline_keyboard' => [
-                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check_cb']],
-                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip_cb']]
+                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
             ]
         ]);
         $content = [
@@ -27,7 +27,7 @@ trait SubscribeLogic {
 
     public function handleSubscribeCheckCommand($telegram, $chat_id, $message_id) {
         $tg_key = $this->getKey();
-        $response = $telegram->getChatMember($tg_key, $user_id);
+        $response = $telegram->getChatMember($tg_key, $chat_id);
         $subscriptionStatus = $response['result']['status'];
         if ($subscriptionStatus === 'member' || $subscriptionStatus === 'administrator' || $subscriptionStatus === 'creator') {
             $message = "✅ Проверка прошла! {$GLOBALS['subscribeSumValue']}\nОставайтесь активными и не отписывайтесь от канала в течение 5 дней. Если вы отпишетесь, деньги вернутся.";
@@ -38,8 +38,8 @@ trait SubscribeLogic {
         $keyboard = json_encode([
             'inline_keyboard' => [
                 [['text' => 'Next', 'callback_data' => 'next']],
-                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check_cb']],
-                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip_cb']]
+                [['text' => $this->getPhraseText("checkChannel_button", $chat_id), 'callback_data' => 'check']],
+                [['text' => $this->getPhraseText("skipChannel_button", $chat_id), 'callback_data' => 'skip']]
             ]
         ]);
         $telegram->editMessageText([
@@ -49,7 +49,6 @@ trait SubscribeLogic {
             'reply_markup' => $keyboard
         ]);
     }
-    
 
     private function getKey() {
         $sql = "SELECT tg_key FROM channel_tg LIMIT 1";
