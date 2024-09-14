@@ -50,12 +50,11 @@ function isTextMatchingButtons($command) {
 
 $db = new DatabaseConnection($config_file);
 
-$callback_data_display = $callback_data !== null ? htmlspecialchars($callback_data) : '';
-$command_display = $command !== null ? htmlspecialchars($command) : '';
 // $telegram->sendMessage([
 //     'chat_id' => $chat_id,
 //     'text'    => 'Callback data: ' . $callback_data,
 // ]);
+$callback_data_display = $callback_data !== null ? htmlspecialchars($callback_data) : '';
 echo 'Callback data: ' . $callback_data_display . '<br>';
 
 $commands = [
@@ -96,6 +95,7 @@ if (isset($commands[$callback_data])) {
 // 	'chat_id' => $chat_id,
 // 	'text'    => 'Text: ' . $command
 // ]);
+$command_display = $command !== null ? htmlspecialchars($command) : '';
 echo 'Command: ' . $command_display . '<br>';
 
 if ($db->isInputMode($chat_id) === 'input_mode') {
