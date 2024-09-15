@@ -2,9 +2,58 @@
 
 trait Broadcast {
     
-    public function initiateBroadcast() {
-
+    public function initiateBroadcast($telegram, $chat_id) {
+        $stmt = $this->conn->prepare("SELECT photo_id, video_id, audio_id, message_text FROM broadcast_posts LIMIT 1");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 0) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Нет доступных постов для рассылки."
+            ]);
+            return;
+        }
+        $row = $result->fetch_assoc();
+        $photo_id = $row['photo_id'];
+        $video_id = $row['video_id'];
+        $audio_id = $row['audio_id'];
+        $message_text = $row['message_text'];
+        if (!is_null($photo_id) && $message_text !== '') {
+            $telegram->sendPhoto([
+                'chat_id' => $chat_id,
+                'photo'   => $photo_id,
+                'caption' => $message_text
+            ]);
+        } elseif (!is_null($video_id) && $message_text !== '') {
+            $telegram->sendVideo([
+                'chat_id' => $chat_id,
+                'video'   => $video_id,
+                'caption' => $message_text
+            ]);
+        } elseif (!is_null($audio_id) && $message_text !== '') {
+            $telegram->sendAudio([
+                'chat_id' => $chat_id,
+                'audio'   => $audio_id,
+                'caption' => $message_text
+            ]);
+        } elseif (!is_null($photo_id)) {
+            $telegram->sendPhoto([
+                'chat_id' => $chat_id,
+                'photo'   => $photo_id
+            ]);
+        } elseif (!is_null($video_id)) {
+            $telegram->sendVideo([
+                'chat_id' => $chat_id,
+                'video'   => $video_id
+            ]);
+        } elseif (!is_null($audio_id)) {
+            $telegram->sendAudio([
+                'chat_id' => $chat_id,
+                'audio'   => $audio_id
+            ]);
+        }
     }
+    
 
     public function displayPosts($telegram, $chat_id) {
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
