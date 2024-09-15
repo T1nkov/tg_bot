@@ -14,14 +14,14 @@ trait Broadcast {
             return;
         }
         $row = $result->fetch_assoc();
-        if (!is_null($row['video_id'])) {
-            $content = ['chat_id' => $chat_id, 'video' => $row['video_id']];
-            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
-            $telegram->sendVideo($content);
-        } elseif (!is_null($row['photo_id'])) {
+        if (!is_null($row['photo_id'])) {
             $content = ['chat_id' => $chat_id, 'photo' => $row['photo_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendPhoto($content);
+        } elseif (!is_null($row['video_id'])) {
+            $content = ['chat_id' => $chat_id, 'video' => $row['video_id']];
+            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+            $telegram->sendVideo($content);
         } elseif (!is_null($row['audio_id'])) {
             $content = ['chat_id' => $chat_id, 'audio' => $row['audio_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
