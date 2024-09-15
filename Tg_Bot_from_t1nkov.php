@@ -40,7 +40,7 @@ $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
-function isTextMatchingButtons($command) {
+function matchLanguage($command) {
     return in_array($command, array_merge(...array_values($GLOBALS['buttons'])));
 }
 
@@ -126,15 +126,8 @@ if ($db->isInputMode($chat_id) === 'def') {
         case $command !== null && strpos($command, 'Рассылка') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { $db->displayPosts($telegram, $chat_id); }
             break;
-        case isTextMatchingButtons($command):
-            $hhh = null;
-            foreach ($GLOBALS['buttons'] as $key => $values) {
-                if (in_array($command, $values)) {
-                    $hhh = $key;
-                    break;
-                }
-            }
-            if ($hhh !== null) { $db->updateUserLanguage($chat_id, $hhh); }
+        case matchLanguage($command): // for sure it handle 3 commands at the same time
+            $db->updateUserLanguage($chat_id, $$command);
             $db->handleLanguage($telegram, $chat_id);
             break;
         case $db->getPhraseText("button_earn", $chat_id):

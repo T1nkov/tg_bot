@@ -301,7 +301,7 @@ class DatabaseConnection {
 		$telegram->sendMessage($content);
 	}	
 
-	// Start message after language selection
+	// Start message after language selectiаon
 	public function handleLanguage($telegram, $chat_id) {
 		$message1     = $this->getPhraseText('welcome_message', $chat_id);
 		$message      = str_replace(
