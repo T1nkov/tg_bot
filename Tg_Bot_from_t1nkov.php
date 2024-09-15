@@ -85,7 +85,7 @@ if (isset($commands[$callback_data])) {
 
 $telegram->sendMessage([
 	'chat_id' => $chat_id,
-	'text'    => 'Text: ' . $data
+	'text'    => 'Text: ' . json_encode($data, JSON_PRETTY_PRINT)
 ]);
 
 if ($db->isInputMode($chat_id) === 'input_mode') {
