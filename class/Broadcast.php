@@ -62,7 +62,7 @@ trait Broadcast {
     public function uploadPostDetails($telegram, $chat_id, $data) {
         $stmt = $this->conn->prepare("
             SELECT post_name FROM broadcast_posts 
-            WHERE photo_id = '' AND video_id = '' AND audio_id = '' AND message_text = '' 
+            WHERE photo_id IS NUL AND video_id IS NUL AND audio_id IS NUL AND message_text = '' 
             LIMIT 1
         ");
         $stmt->execute();
