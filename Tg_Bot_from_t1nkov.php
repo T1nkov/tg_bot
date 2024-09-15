@@ -6,7 +6,7 @@ include 'class/DatabaseConnection.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$config_file = require __DIR__ . 'config/config.php';
+$config_file = require __DIR__ . './config/config.php';
 
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
