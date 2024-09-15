@@ -48,26 +48,28 @@ $telegram->sendMessage([
 ]);
 
 $commands = [
-    'withdraw'       => 'handleWithdrawCommand',
-    'rep_ru'         => 'handleReportCommand',
-    'fraud'          => 'handleFraudCommand',
-    'spam'           => 'handleSpamCommand',
-    'violence'       => 'handleViolenceCommand',
-    'copyright'      => 'handleCopyrightCommand',
-    'other'          => 'handleOtherCommand',
-    'invite_friend'  => 'handlePartnerCommand',
-    'join_channel'   => 'handleJoinChannelCommand',
-    'skip'           => 'handleJoinChannelCommand',
-    'view_post'      => 'handleViewPost',
-    'check'          => 'handleSubscribeCommand',
-    'checkSub'       => 'handleBalanceCommand',
-    'no'             => 'handleCanceledCommand',
-	'add_channel'    => 'promptAddChannel',
-    'remove_channel' => 'promptRemoveChannel',
-    'cancel_remove'  => 'displayChannels',
-    'next'           => 'handleJoinChannelCommand',
-    'init_cast'      => 'initiateBroadcast',
-    'create_post'    => 'handlePostName'
+    'withdraw'            => 'handleWithdrawCommand',
+    'rep_ru'              => 'handleReportCommand',
+    'fraud'               => 'handleFraudCommand',
+    'spam'                => 'handleSpamCommand',
+    'violence'            => 'handleViolenceCommand',
+    'copyright'           => 'handleCopyrightCommand',
+    'other'               => 'handleOtherCommand',
+    'invite_friend'       => 'handlePartnerCommand',
+    'join_channel'        => 'handleJoinChannelCommand',
+    'skip'                => 'handleJoinChannelCommand',
+    'view_post'           => 'handleViewPost',
+    'check'               => 'handleSubscribeCommand',
+    'checkSub'            => 'handleBalanceCommand',
+    'no'                  => 'handleCanceledCommand',
+	'add_channel'         => 'promptAddChannel',
+    'remove_channel'      => 'promptRemoveChannel',
+    'remove_post'         => 'promptRemovePost',
+    'cancel_remove'       => 'displayChannels',
+    'cancel_remove_post'  => 'displayPosts',
+    'next'                => 'handleJoinChannelCommand',
+    'init_cast'           => 'initiateBroadcast',
+    'create_post'         => 'handlePostName'
 ];
 
 if (isset($commands[$callback_data])) {
@@ -77,6 +79,10 @@ if (isset($commands[$callback_data])) {
     $urlToRemove = str_replace('remove_', '', $callback_data);
     $db->removeChannelURL($telegram, $chat_id, $urlToRemove);
     $db->displayChannels($telegram, $chat_id);
+} elseif (isset($callback_data) && preg_match('/^remove_post_/', $callback_data)) {
+    $postIdToRemove = str_replace('remove_post_', '', $callback_data);
+    $db->removePostById($telegram, $chat_id, $postIdToRemove);
+    $db->displayPosts($telegram, $chat_id);
 }
 
 $telegram->sendMessage([
