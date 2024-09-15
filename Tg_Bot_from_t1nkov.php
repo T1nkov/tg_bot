@@ -67,7 +67,7 @@ $commands = [
     'cancel_remove'  => 'displayChannels',
     'next'           => 'handleJoinChannelCommand',
     'init_cast'      => 'initiateBroadcast',
-    'create_post'    => 'handleNewPost'
+    'create_post'    => 'handlePostName'
 ];
 
 if (isset($commands[$callback_data])) {
@@ -92,7 +92,16 @@ if ($db->isInputMode($chat_id) === 'input_mode') {
     }
 }
 
-if ($db->isInputMode($chat_id) === 'post_edit') {
+if ($db->isInputMode($chat_id) === 'post_name') {
+    if (!empty($data['message']['text'])) {
+        $postName = $data['message']['text'];
+        $db->uploadNameforPost($telegram, $chat_id, $postName);
+        $db->handleNewPost($telegram, $chat_id) // quickly provide post setting msg
+        return;
+    }
+}
+
+if ($db->isInputMode($chat_id) === 'post_set') {
     if (!empty($data['message'])) {
         // 
         $db->setInputMode($chat_id, 'def');

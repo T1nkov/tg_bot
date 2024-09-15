@@ -21,14 +21,44 @@ trait Broadcast {
         ];
         $telegram->sendMessage($content);
     }
+    
+    public function handlePostName($telegram, $chat_id) {
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => 'Дайте имя вашему посту: '
+        ]);
+        $this->setInputMode($chat_id, 'post_name');
+    }
 
     public function handleNewPost($telegram, $chat_id) {
         $telegram->sendMessage([
             'chat_id' => $chat_id,
             'text' => 'Отправьте мне весь пост одним сообщением:'
         ]);
-        $this->setInputMode($chat_id, 'post_edit');
+        $this->setInputMode($chat_id, 'post_set');
     }
+
+    public function uploadNameforPost($telegram, $chat_id, $postName) {
+        $stmt = $this->conn->prepare("SELECT MAX(id) as max_id FROM broadcast_posts");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $maxId = $result->fetch_assoc()['max_id'];
+        $newId = $maxId ? $maxId + 1 : 1;
+        $stmt = $this->conn->prepare("INSERT INTO broadcast_posts (id, post_name) VALUES (?, ?)");
+        $stmt->bind_param("is", $newId, $postName);
+        if ($stmt->execute()) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text' => "Название поста '$postName' успешно добавлено."
+            ]);
+        } else {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text' => "Ошибка при добавлении названия поста."
+            ]);
+        }
+    }
+    
 
     public function addBroadcastMessageToDB($telegram, $chat_id, $url) {
         $stmt = $this->conn->prepare("SELECT MAX(id) as max_id FROM channel_tg");
