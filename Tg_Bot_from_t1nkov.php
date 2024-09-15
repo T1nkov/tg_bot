@@ -75,8 +75,8 @@ $commands = [
 if (isset($commands[$callback_data])) {
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
     return;
-} elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
-    $urlToRemove = str_replace('remove_', '', $callback_data);
+} elseif (isset($callback_data) && preg_match('/^remove_channel_/', $callback_data)) {
+    $urlToRemove = str_replace('remove_channel_', '', $callback_data);
     $db->removeChannelURL($telegram, $chat_id, $urlToRemove);
     $db->displayChannels($telegram, $chat_id);
 } elseif (isset($callback_data) && preg_match('/^remove_post_/', $callback_data)) {

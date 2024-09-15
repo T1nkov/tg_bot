@@ -109,7 +109,7 @@ trait AdminPanel {
         while ($row = $result->fetch_assoc()) {
             $keyboard['inline_keyboard'][] = [[
                 'text' => $row['tg_url'], 
-                'callback_data' => 'remove_' . $row['tg_url']
+                'callback_data' => 'remove_channel_' . $row['tg_url']
             ]];
         }
         $keyboard['inline_keyboard'][] = [[
