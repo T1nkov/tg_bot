@@ -14,45 +14,26 @@ trait Broadcast {
             return;
         }
         $row = $result->fetch_assoc();
-        $photo_id = $row['photo_id'];
-        $video_id = $row['video_id'];
-        $audio_id = $row['audio_id'];
-        $message_text = $row['message_text'];
-        if (!is_null($video_id) && $message_text !== '') {
-            $telegram->sendVideo([
+        if (!is_null($row['video_id'])) {
+            $content = ['chat_id' => $chat_id, 'video' => $row['video_id']];
+            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+            $telegram->sendVideo($content);
+        } elseif (!is_null($row['photo_id'])) {
+            $content = ['chat_id' => $chat_id, 'photo' => $row['photo_id']];
+            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+            $telegram->sendPhoto($content);
+        } elseif (!is_null($row['audio_id'])) {
+            $content = ['chat_id' => $chat_id, 'audio' => $row['audio_id']];
+            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+            $telegram->sendAudio($content);
+        } elseif ($message_text !== '') {
+            $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'video'   => $video_id,
-                'caption' => $message_text
-            ]);
-        } elseif (!is_null($video_id) && $message_text !== '') {
-            $telegram->sendVideo([
-                'chat_id' => $chat_id,
-                'video'   => $video_id,
-                'caption' => $message_text
-            ]);
-        } elseif (!is_null($audio_id) && $message_text !== '') {
-            $telegram->sendAudio([
-                'chat_id' => $chat_id,
-                'audio'   => $audio_id,
-                'caption' => $message_text
-            ]);
-        } elseif (!is_null($photo_id)) {
-            $telegram->sendPhoto([
-                'chat_id' => $chat_id,
-                'photo'   => $photo_id
-            ]);
-        } elseif (!is_null($video_id)) {
-            $telegram->sendVideo([
-                'chat_id' => $chat_id,
-                'video'   => $video_id
-            ]);
-        } elseif (!is_null($audio_id)) {
-            $telegram->sendAudio([
-                'chat_id' => $chat_id,
-                'audio'   => $audio_id
+                'text'    => $message_text
             ]);
         }
     }
+    
     
     public function displayPosts($telegram, $chat_id) {
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
