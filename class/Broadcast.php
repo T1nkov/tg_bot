@@ -18,8 +18,12 @@ trait Broadcast {
         $telegram->sendMessage($content);
     }
 
-    public function handleNewPost() {
-
+    public function handleNewPost($telegram, $chat_id) {
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => 'Отправьте мне весь пост одним сообщением:'
+        ]);
+        $this->setInputMode($chat_id, 'post_edit');
     }
 
     public function initiateBroadcast() {

@@ -100,6 +100,14 @@ if ($db->isInputMode($chat_id) === 'input_mode') {
     }
 }
 
+if ($db->isInputMode($chat_id) === 'post_edit') {
+    if (!empty($command)) {
+        // 
+        $db->setInputMode($chat_id, 'def');
+        return;
+    }
+}
+
 if ($db->isInputMode($chat_id) === 'def') {
     switch ($command) {
         case $command !== null && strpos($command, '/start') === 0:
