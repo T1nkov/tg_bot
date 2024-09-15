@@ -19,7 +19,7 @@ trait Broadcast {
         $audio_id = $row['audio_id'];
         $message_text = $row['message_text'];
         if (!is_null($video_id) && $message_text !== '') {
-            $telegram->sendPhoto([
+            $telegram->sendVideo([
                 'chat_id' => $chat_id,
                 'video'   => $video_id,
                 'caption' => $message_text
