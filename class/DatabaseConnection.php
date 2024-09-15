@@ -2,11 +2,13 @@
 require_once 'AdminPanel.php';
 require_once 'ViewTgPost.php';
 require_once 'SubscribeLogic.php';
+require_once 'Broadcast.php';
 
 class DatabaseConnection {
 	use AdminPanel;
 	use ViewTgPost;
 	use SubscribeLogic;
+	use Broadcast;
 
 	private $host;
     private $database;
