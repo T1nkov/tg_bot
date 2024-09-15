@@ -54,7 +54,6 @@ trait Broadcast {
         }
     }
     
-
     public function displayPosts($telegram, $chat_id) {
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
         $stmt->execute();
