@@ -103,7 +103,7 @@ if ($db->isInputMode($chat_id) === 'post_name') {
 
 if ($db->isInputMode($chat_id) === 'post_set') {
     if (!empty($data['message'])) {
-        // 
+        $db->uploadPostDetails($telegram, $chat_id, $data)
         $db->setInputMode($chat_id, 'def');
         return;
     }

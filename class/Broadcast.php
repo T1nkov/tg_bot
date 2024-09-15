@@ -58,28 +58,57 @@ trait Broadcast {
             ]);
         }
     }
-    
 
-    public function addBroadcastMessageToDB($telegram, $chat_id, $url) {
-        $stmt = $this->conn->prepare("SELECT MAX(id) as max_id FROM channel_tg");
+    public function uploadPostDetails($telegram, $chat_id, $data) {
+        $stmt = $this->conn->prepare("
+            SELECT post_name FROM broadcast_posts 
+            WHERE photo_id = '' AND video_id = '' AND audio_id = '' AND message_text = '' 
+            LIMIT 1
+        ");
         $stmt->execute();
         $result = $stmt->get_result();
-        $maxId = $result->fetch_assoc()['max_id'];
-        $newId = $maxId ? $maxId + 1 : 1;
-        $stmt = $this->conn->prepare("INSERT INTO channel_tg (id, tg_key, tg_url) VALUES (?, ?, ?)");
-        $tgKey = $this->getChatId($telegram, $url);
-        $stmt->bind_param("iss", $newId, $tgKey, $url);
-        if ($stmt->execute()) {
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text' => "Канал $url добавлен с tg_key $tgKey"
-            ]);
+        $row = $result->fetch_assoc();
+        $postName = $row['post_name'];
+        $photoId = '';
+        $videoId = '';
+        $audioId = '';
+        $messageText = '';
+        if (!empty($data['message']['text'])) {
+            $messageText = $data['message']['text'];
+        } elseif (!empty($data['message']['photo'])) {
+            $photoId = $data['message']['photo'][0]['file_id'];
+            $messageText = !empty($data['message']['caption']) ? $data['message']['caption'] : '';
+        } elseif (!empty($data['message']['video'])) {
+            $videoId = $data['message']['video']['file_id'];
+            $messageText = !empty($data['message']['caption']) ? $data['message']['caption'] : '';
+        } elseif (!empty($data['message']['audio'])) {
+            $audioId = $data['message']['audio']['file_id'];
+            $messageText = !empty($data['message']['caption']) ? $data['message']['caption'] : '';
+        }
+        $updateStmt = $this->conn->prepare("
+            UPDATE broadcast_posts 
+            SET photo_id = ?, video_id = ?, audio_id = ?, message_text = ? 
+            WHERE post_name = ?
+        ");
+        $updateStmt->bind_param("sssss", $photoId, $videoId, $audioId, $messageText, $postName);
+        if ($updateStmt->execute()) {
+            if ($updateStmt->affected_rows > 0) {
+                $telegram->sendMessage([
+                    'chat_id' => $chat_id,
+                    'text' => "Пост'$postName' успешно добавлен."
+                ]);
+            } else {
+                $telegram->sendMessage([
+                    'chat_id' => $chat_id,
+                    'text' => "Запись '$postName' не обновлена."
+                ]);
+            }
         } else {
             $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'text' => "Ошибка при добавлении канала."
+                'text' => "Ошибка при обновлении поста '$postName'."
             ]);
         }
-        $this->displayChannels($telegram, $chat_id);
     }
+    
 }
