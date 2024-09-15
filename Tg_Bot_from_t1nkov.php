@@ -159,6 +159,7 @@ if ($db->isInputMode($chat_id) === 'def') {
             $db->handleDownloadCommand($telegram, $chat_id);
             break;
         default:
+            return;
             break;
     }
 }
