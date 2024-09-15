@@ -7,7 +7,17 @@ trait Broadcast {
     }
 
     public function displayPosts($telegram, $chat_id) {
-        $message = "Ваши посты:\n" . $channelList;
+        $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $message = "Ваши посты:\n";
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $message .= $row['id'] . " " . $row['post_name'] . "\n";
+            }
+        } else {
+            $message .= "Нет доступных постов : /";
+        }
         $keyboard = [
             'inline_keyboard' => [
                 [['text' => 'Начать Рассылку', 'callback_data' => 'init_cast']],
