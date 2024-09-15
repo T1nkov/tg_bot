@@ -13,7 +13,7 @@ trait Broadcast {
         $message = "Ваши посты:\n";
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $message .= $row['id'] . " " . $row['post_name'] . "\n";
+                $message .= $row['id'] . " - " . $row['post_name'] . "\n";
             }
         } else {
             $message .= "Нет доступных постов : /";
