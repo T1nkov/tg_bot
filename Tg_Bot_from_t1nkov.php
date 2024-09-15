@@ -96,7 +96,7 @@ if ($db->isInputMode($chat_id) === 'post_name') {
     if (!empty($data['message']['text'])) {
         $postName = $data['message']['text'];
         $db->uploadNameforPost($telegram, $chat_id, $postName);
-        $db->handleNewPost($telegram, $chat_id) // quickly provide post setting msg
+        $db->handleNewPost($telegram, $chat_id); // quickly provide post setting msg
         return;
     }
 }
