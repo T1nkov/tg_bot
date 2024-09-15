@@ -69,7 +69,9 @@ $commands = [
 	'add_channel'    => 'promptAddChannel',
     'remove_channel' => 'promptRemoveChannel',
     'cancel_remove'  => 'displayChannels',
-    'next'           => 'handleJoinChannelCommand'
+    'next'           => 'handleJoinChannelCommand',
+    'init_cast'      => 'initiateBroadcast',
+    'create_post'    => 'handleNewPost'
 ];
 
 if (isset($commands[$callback_data])) {
