@@ -75,14 +75,6 @@ $commands = [
 ];
 
 if (isset($commands[$callback_data])) {
-    // if ($callback_data === 'add_channel') {
-    //     $db->promptAddChannel($telegram, $chat_id);
-    //     return;
-    // }
-    // if ($callback_data === 'create_post') {
-    //     $db->handleNewPost($telegram, $chat_id);
-    //     return;
-    // }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
     return;
 } elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
