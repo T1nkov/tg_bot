@@ -21,7 +21,8 @@ trait Broadcast {
         $keyboard = [
             'inline_keyboard' => [
                 [['text' => 'Начать Рассылку', 'callback_data' => 'init_cast']],
-                [['text' => 'Создать пост', 'callback_data' => 'create_post']]
+                [['text' => 'Создать пост', 'callback_data' => 'create_post']],
+                [['text' => 'Удалить пост', 'callback_data' => 'remove_post']]
             ]
         ];
         $content = [
