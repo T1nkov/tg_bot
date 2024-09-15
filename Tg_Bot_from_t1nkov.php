@@ -6,7 +6,7 @@ include 'class/DatabaseConnection.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$config_file = require __DIR__ . '/config.php';
+$config_file = require __DIR__ . 'config/config.php';
 
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
@@ -118,6 +118,9 @@ if ($db->isInputMode($chat_id) === 'def') {
             break;
         case $command !== null && strpos($command, 'Каналы') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { $db->displayChannels($telegram, $chat_id); }
+            break;
+        case $command !== null && strpos($command, 'Рассылка') === 0:
+            if ($db->isAdmin($telegram, $chat_id)) { $db->displayPosts($telegram, $chat_id); }
             break;
         case isTextMatchingButtons($command):
             $hhh = null;

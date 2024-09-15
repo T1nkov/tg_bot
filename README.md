@@ -3,6 +3,6 @@
 ---
 #### bot settings
 ```bash
-    $ mv config.php.example config.php
-    $ nano config.php # enter credentials 
+    $ mv config/config.php.example config/config.php
+    $ nano config/config.php # enter credentials 
 ```
