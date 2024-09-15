@@ -93,7 +93,7 @@ if ($db->isInputMode($chat_id) === 'input_mode') {
 }
 
 if ($db->isInputMode($chat_id) === 'post_edit') {
-    if (!empty($command)) {
+    if (!empty($data['message'])) {
         // 
         $db->setInputMode($chat_id, 'def');
         return;
