@@ -669,7 +669,7 @@ class DatabaseConnection {
 	}
 
 	public function setInputMode($chat_id, $mode) {
-		$sql  = "UPDATE users SET status = ? WHERE id_tg = ?"; // id_tg
+		$sql  = "UPDATE users SET status = ? WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
 		if ($stmt === false) { return false; }
 		$stmt->bind_param("si", $mode, $chat_id);
