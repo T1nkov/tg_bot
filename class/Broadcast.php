@@ -6,30 +6,29 @@ trait Broadcast {
         $stmt = $this->conn->prepare("SELECT photo_id, video_id, audio_id, message_text FROM broadcast_posts LIMIT 1");
         $stmt->execute();
         $result = $stmt->get_result();
-        if ($result->num_rows === 0) {
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text'    => "Нет доступных постов для рассылки."
-            ]);
-            return;
-        }
         $row = $result->fetch_assoc();
+        if (!is_null($row['video_id'])) {
+            $content = ['chat_id' => $chat_id, 'video' => $row['video_id']];
+            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+            $telegram->sendVideo($content);
+            $message_sent = true;
+        }
         if (!is_null($row['photo_id'])) {
             $content = ['chat_id' => $chat_id, 'photo' => $row['photo_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendPhoto($content);
-        } elseif (!is_null($row['video_id'])) {
-            $content = ['chat_id' => $chat_id, 'video' => $row['video_id']];
-            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
-            $telegram->sendVideo($content);
-        } elseif (!is_null($row['audio_id'])) {
+            $message_sent = true;
+        }
+        if (!is_null($row['audio_id'])) {
             $content = ['chat_id' => $chat_id, 'audio' => $row['audio_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendAudio($content);
-        } elseif ($message_text !== '') {
+            $message_sent = true;
+        }
+        if (!$message_sent && trim($row['message_text']) !== '') {
             $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'text'    => $message_text
+                'text'    => $row['message_text']
             ]);
         }
     }
