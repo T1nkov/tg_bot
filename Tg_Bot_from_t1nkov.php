@@ -83,10 +83,39 @@ if (isset($commands[$callback_data])) {
     $db->displayChannels($telegram, $chat_id);
 }
 
-$telegram->sendMessage([
-	'chat_id' => $chat_id,
-	'text'    => 'Text: ' . $command
-]);
+if (isset($data['message'])) {
+    $message = $data['message'];
+    $text = $message['text'] ?? '';
+    if (isset($message['photo'])) {
+        $photo = $message['photo'][0]['file_id'];
+        $telegram->sendPhoto([
+            'chat_id' => $chat_id,
+            'photo'   => $photo,
+            'caption' => $text
+        ]);
+    } elseif (isset($message['video'])) {
+        $video = $message['video']['file_id'];
+        $telegram->sendVideo([
+            'chat_id' => $chat_id,
+            'video'   => $video,
+            'caption' => $text
+        ]);
+    } elseif (isset($message['audio'])) {
+        $audio = $message['audio']['file_id'];
+        $telegram->sendAudio([
+            'chat_id' => $chat_id,
+            'audio'   => $audio,
+            'caption' => $text
+        ]);
+    } elseif (isset($message['document'])) {
+        $document = $message['document']['file_id'];
+        $telegram->sendDocument([
+            'chat_id' => $chat_id,
+            'document' => $document,
+            'caption' => $text
+        ]);
+    }
+}
 
 if ($db->isInputMode($chat_id) === 'input_mode') {
     if (!empty($command)) {
