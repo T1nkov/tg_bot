@@ -122,15 +122,15 @@ if ($db->isInputMode($chat_id) === 'def') {
         case $command !== null && strpos($command, 'Рассылка') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { $db->displayPosts($telegram, $chat_id); }
             break;
-        case $GLOBALS['buttons']['ru']: // With Greeting
+        case $GLOBALS['buttons']['ru'][0]: // With Greeting
             $db->updateUserLanguage($chat_id, 'ru');
             $db->handleLanguage($telegram, $chat_id);
             break;
-        case $GLOBALS['buttons']['en']: // With Greeting
+        case $GLOBALS['buttons']['en'][0]: // With Greeting
             $db->updateUserLanguage($chat_id, 'en');
             $db->handleLanguage($telegram, $chat_id);
             break;
-        case $GLOBALS['buttons']['kz']: // With Greeting
+        case $GLOBALS['buttons']['kz'][0]: // With Greeting
             $db->updateUserLanguage($chat_id, 'kz');
             $db->handleLanguage($telegram, $chat_id);
             break;
