@@ -11,18 +11,18 @@ def get_crontab():
 
 def update_crontab(cron_jobs):
     new_cron = "\n".join(cron_jobs)
+    if new_cron and not new_cron.endswith('\n'):
+        new_cron += '\n'
     process = subprocess.Popen(['crontab'], stdin=subprocess.PIPE, text=True)
     process.communicate(input=new_cron)
     process.wait()
 
 def main():
     cron_jobs = get_crontab()
-
     if sys.argv[1] == '--start':
         cron_jobs = [task.lstrip('#') for task in cron_jobs]
     elif sys.argv[1] == '--stop':
         cron_jobs = [f'#{task}' if not task.startswith('#') else task for task in cron_jobs]
-
     update_crontab(cron_jobs)
     print("Crontab changed.")
 
