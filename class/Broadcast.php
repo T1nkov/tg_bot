@@ -26,7 +26,7 @@ trait Broadcast {
         ]];    
         $telegram->sendMessage([
             'chat_id' => $chat_id,
-            'text'    => "Выберите пост для рассылки:",
+            'text'    => "Какой пост хотите посмотреть?",
             'reply_markup' => json_encode($keyboard)
         ]);
     }
