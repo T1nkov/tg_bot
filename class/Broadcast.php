@@ -3,10 +3,6 @@
 trait Broadcast {
     
     public function initiateBroadcast($telegram, $chat_id) {
-        $telegram->sendMessage([
-            'chat_id' => $chat_id,
-            'text' => "Какой пост разослать?"
-        ]);
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
         $stmt->execute();
         $result = $stmt->get_result();
@@ -68,7 +64,6 @@ trait Broadcast {
                         'text'    => $row['message_text']
                     ]);
                 }
-                usleep(10000); // 10ms timeout
             } catch (Exception $e) {
                 continue;
             }
@@ -80,9 +75,7 @@ trait Broadcast {
         $stmt->execute();
         $result = $stmt->get_result();
         $users = [];
-        while ($row = $result->fetch_assoc()) {
-            $users[] = $row['id_tg'];
-        }
+        while ($row = $result->fetch_assoc()) { $users[] = $row['id_tg']; }
         return $users;
     }
     
