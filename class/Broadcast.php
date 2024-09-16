@@ -68,7 +68,7 @@ trait Broadcast {
         $users = $this->getAllUsers();
         foreach ($users as $userId) {
             try {
-                $this->sendPostwithTypeDetect($telegram, $post, $userID);
+                $this->sendPostwithTypeDetect($telegram, $post, $userId);
             } catch (Exception $e) {
                 continue;
             }
