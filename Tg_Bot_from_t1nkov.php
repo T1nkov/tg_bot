@@ -87,7 +87,7 @@ if (isset($commands[$callback_data])) {
 } elseif (isset($callback_data) && preg_match('/^view_post_/', $callback_data)) {
     $postIdToView = str_replace('view_post_', '', $callback_data);
     $db->sendPostById($telegram, $chat_id, $postIdToView);
-} elseif (isset($callback_data) && preg_match('/^view_post_/', $callback_data)) {
+} elseif (isset($callback_data) && preg_match('/^send_post_/', $callback_data)) {
     $postIdToSend = str_replace('send_post_', '', $callback_data);
     $db->handleSendPost($telegram, $postIdToSend);
 }
