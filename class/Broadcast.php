@@ -64,11 +64,11 @@ trait Broadcast {
     }
     
     public function handleSendPost($telegram, $postId) {
-        $post = this->rowOfPost($postId);
+        $post = $this->rowOfPost($postId);
         $users = $this->getAllUsers();
         foreach ($users as $userId) {
             try {
-                this->sendPostwithTypeDetect($telegram, $row, $userID);
+                $this->sendPostwithTypeDetect($telegram, $post, $userID);
             } catch (Exception $e) {
                 continue;
             }
@@ -114,8 +114,8 @@ trait Broadcast {
     }
     
     public function sendPostById($telegram, $chat_id, $postId) {
-        $row = this->rowOfPost($postId);
-        this->sendPostwithTypeDetect($telegram, $row, $chat_id);
+        $row = $this->rowOfPost($postId);
+        $this->sendPostwithTypeDetect($telegram, $row, $chat_id);
     }
 
     public function displayPosts($telegram, $chat_id) {
