@@ -109,7 +109,6 @@ class DatabaseConnection {
 		$stmt->close();
 		return $username;
 	}
-	
 
 	public function getUserBalance($id_tg) {
 		$sql  = "SELECT balance FROM users WHERE id_tg = ?";
