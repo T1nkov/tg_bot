@@ -15,7 +15,7 @@ $title = "T1nkov/tg_bot";
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
-            background-image: url('https://wallpapercave.com/wp/wp2970131.jpg');
+            background-image: url('https://wallpapercave.com/wp/wp2970133.jpg');
             background-size: cover;
             background-position: center;
             color: #333;
