@@ -134,10 +134,6 @@ class DatabaseConnection {
         }
         $sql  = "INSERT INTO users (usernameTg, role, id_tg, id_referal, balance, referals, status) VALUES (?, ?, ?, ?, ?, 0, ?)";
         $stmt = $this->conn->prepare($sql);
-        $telegram->sendMessage([
-            'chat_id' => $chat_id,
-            'text'    => 'New user sql: ' . $sql,
-        ]);
         try {
             $status = 'def';
             $stmt->bind_param("ssisds", $username, $role, $chat_id, $id_referal, $balance, $status);
