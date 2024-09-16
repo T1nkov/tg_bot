@@ -9,6 +9,8 @@
 
 #### bot broadcast setup:
 *Please run:*
+`$ chmod +x ./setup_cron.sh`
+
 `$ setup_cron.sh '\*/3 \* \* \* \*'` - visit:```https://crontab.guru/#*/3_*_*_*_*```
 ___
 ```bash 
