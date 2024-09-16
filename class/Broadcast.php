@@ -2,7 +2,7 @@
 
 trait Broadcast {
     
-    public function initiateBroadcast($telegram, $chat_id) {
+    public function broadcastView($telegram, $chat_id) {
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
         $stmt->execute();
         $result = $stmt->get_result();
@@ -79,6 +79,7 @@ trait Broadcast {
         $keyboard = [
             'inline_keyboard' => [
                 [['text' => 'Начать Рассылку', 'callback_data' => 'init_cast']],
+                [['text' => 'Посмотреть пост', 'callback_data' => 'view_cast']],
                 [['text' => 'Создать пост', 'callback_data' => 'create_post']],
                 [['text' => 'Удалить пост', 'callback_data' => 'remove_post']]
             ]

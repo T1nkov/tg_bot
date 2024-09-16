@@ -69,6 +69,7 @@ $commands = [
     'cancel_remove_post'  => 'displayPosts',
     'next'                => 'handleJoinChannelCommand',
     'init_cast'           => 'initiateBroadcast',
+    'view_cast'           => 'broadcastView',
     'create_post'         => 'handlePostName'
 ];
 
