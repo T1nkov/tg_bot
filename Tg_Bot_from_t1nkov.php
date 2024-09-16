@@ -42,10 +42,11 @@ $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
 $db = new DatabaseConnection($config_file);
 
-$telegram->sendMessage([
-    'chat_id' => $chat_id,
-    'text'    => 'Callback data: ' . $callback_data,
-]);
+// $telegram->sendMessage([
+//     'chat_id' => $chat_id,
+//     'text'    => 'Callback data: ' . $callback_data,
+// ]);
+// Ignore to avoid spam
 
 $commands = [
     'withdraw'            => 'handleWithdrawCommand',
@@ -92,10 +93,11 @@ if (isset($commands[$callback_data])) {
     $db->handleSendPost($telegram, $postIdToSend);
 }
 
-$telegram->sendMessage([
-	'chat_id' => $chat_id,
-	'text'    => 'Text: ' . json_encode($data, JSON_PRETTY_PRINT)
-]);
+// $telegram->sendMessage([
+// 	'chat_id' => $chat_id,
+// 	'text'    => 'Text: ' . json_encode($data, JSON_PRETTY_PRINT) // to handle all data
+// ]);
+// Ignore to avoid spam
 
 if ($db->isInputMode($chat_id) === 'input_mode') {
     if (!empty($command)) {
