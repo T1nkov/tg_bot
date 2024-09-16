@@ -24,7 +24,6 @@ trait Broadcast {
                 'text'    => $row['message_text']
             ]);
         }
-        return;
     }
 
     private function rowOfPost($postId) {
