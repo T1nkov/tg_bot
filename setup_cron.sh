@@ -1,17 +1,3 @@
-
-# tg_bot
----
-#### bot settings
-```bash
-    $ mv config/config.php.example config/config.php
-    $ nano config/config.php # enter credentials 
-```
-
-#### bot broadcast setup:
-*Please run:*
-`$ setup_cron.sh '\*/3 \* \* \* \*'` - visit:```https://crontab.guru/#*/3_*_*_*_*```
-___
-```bash 
 #!/bin/bash
 
 if [ "$#" -ne 1 ]; then
@@ -33,5 +19,3 @@ else
     echo "Cron job changed!"
     echo "$CRON_JOB"
 fi
-
-```
