@@ -2,7 +2,11 @@
 
 trait Broadcast {
     
-    public function broadcastView($telegram, $chat_id) {
+    public function initiateBroadcast($telegram, $chat_id) {
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => "Какой пост разослать?"
+        ]);
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
         $stmt->execute();
         $result = $stmt->get_result();
@@ -18,6 +22,86 @@ trait Broadcast {
             $keyboard['inline_keyboard'][] = [[
                 'text' => $row['post_name'],
                 'callback_data' => 'send_post_' . $row['id']
+            ]];
+        }
+        $keyboard['inline_keyboard'][] = [[
+            'text' => 'Отмена',
+            'callback_data' => 'cancel_broadcast'
+        ]];    
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => "Выберите пост для рассылки:",
+            'reply_markup' => json_encode($keyboard)
+        ]);
+    }
+    
+    public function handleSendPost($telegram, $postId) {
+        $stmt = $this->conn->prepare("SELECT photo_id, video_id, audio_id, message_text FROM broadcast_posts WHERE id = ?");
+        $stmt->bind_param("i", $postId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $post = $result->fetch_assoc();
+        $users = $this->getAllUsers();
+        foreach ($users as $userId) {
+            try {
+                if (!is_null($row['video_id'])) {
+                    $content = ['chat_id' => $userId, 'video' => $row['video_id']];
+                    if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+                    $telegram->sendVideo($content);
+                    $message_sent = true;
+                }
+                if (!is_null($row['photo_id'])) {
+                    $content = ['chat_id' => $userId, 'photo' => $row['photo_id']];
+                    if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+                    $telegram->sendPhoto($content);
+                    $message_sent = true;
+                }
+                if (!is_null($row['audio_id'])) {
+                    $content = ['chat_id' => $userId, 'audio' => $row['audio_id']];
+                    if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+                    $telegram->sendAudio($content);
+                    $message_sent = true;
+                }
+                if (!$message_sent && trim($row['message_text']) !== '') {
+                    $telegram->sendMessage([
+                        'chat_id' => $userId,
+                        'text'    => $row['message_text']
+                    ]);
+                }
+                usleep(10000); // 10ms timeout
+            } catch (Exception $e) {
+                continue;
+            }
+        }
+    }
+    
+    private function getAllUsers() {
+        $stmt = $this->conn->prepare("SELECT id_tg FROM users");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $users = [];
+        while ($row = $result->fetch_assoc()) {
+            $users[] = $row['id_tg'];
+        }
+        return $users;
+    }
+    
+    public function broadcastView($telegram, $chat_id) {
+        $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 0) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Нет доступных постов для рассылки."
+            ]);
+            return;
+        }
+        $keyboard = ['inline_keyboard' => []];
+        while ($row = $result->fetch_assoc()) {
+            $keyboard['inline_keyboard'][] = [[
+                'text' => $row['post_name'],
+                'callback_data' => 'view_post_' . $row['id']
             ]];
         }
         $keyboard['inline_keyboard'][] = [[
