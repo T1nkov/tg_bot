@@ -83,6 +83,9 @@ if (isset($commands[$callback_data])) {
     $postIdToRemove = str_replace('remove_post_', '', $callback_data);
     $db->removePostById($telegram, $chat_id, $postIdToRemove);
     $db->displayPosts($telegram, $chat_id);
+} elseif (isset($callback_data) && preg_match('/^send_post_/', $callback_data)) {
+    $postIdToSend = str_replace('send_post_', '', $callback_data);
+    $db->sendPostById($telegram, $chat_id, $$postIdToSend);
 }
 
 $telegram->sendMessage([

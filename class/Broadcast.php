@@ -3,10 +3,48 @@
 trait Broadcast {
     
     public function initiateBroadcast($telegram, $chat_id) {
-        $stmt = $this->conn->prepare("SELECT photo_id, video_id, audio_id, message_text FROM broadcast_posts LIMIT 1");
+        $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
         $stmt->execute();
         $result = $stmt->get_result();
+        if ($result->num_rows === 0) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Нет доступных постов для рассылки."
+            ]);
+            return;
+        }
+        $keyboard = ['inline_keyboard' => []];
+        while ($row = $result->fetch_assoc()) {
+            $keyboard['inline_keyboard'][] = [[
+                'text' => $row['post_name'],
+                'callback_data' => 'send_post_' . $row['id']
+            ]];
+        }
+        $keyboard['inline_keyboard'][] = [[
+            'text' => 'Отмена',
+            'callback_data' => 'cancel_broadcast'
+        ]];    
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => "Выберите пост для рассылки:",
+            'reply_markup' => json_encode($keyboard)
+        ]);
+    }
+    
+    public function sendPostById($telegram, $chat_id, $postId) {
+        $stmt = $this->conn->prepare("SELECT photo_id, video_id, audio_id, message_text FROM broadcast_posts WHERE id = ?");
+        $stmt->bind_param("i", $postId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 0) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Пост не найден."
+            ]);
+            return;
+        }
         $row = $result->fetch_assoc();
+        $message_sent = false;
         if (!is_null($row['video_id'])) {
             $content = ['chat_id' => $chat_id, 'video' => $row['video_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
@@ -32,7 +70,7 @@ trait Broadcast {
             ]);
         }
     }
-    
+
     public function displayPosts($telegram, $chat_id) {
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
         $stmt->execute();
