@@ -146,6 +146,12 @@ if ($db->isInputMode($chat_id) === 'def' && !empty($data['message']['text'])) {
         case $command !== null && strpos($command, 'Рассылка') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { $db->displayPosts($telegram, $chat_id); }
             break;
+        case $command !== null && strpos($command, 'Возобновить рассылку') === 0:
+            if ($db->isAdmin($telegram, $chat_id)) { exec('python src/broadcast_switch.py --start'); }
+            break;
+        case $command !== null && strpos($command, 'Остановить рассылку') === 0:
+            if ($db->isAdmin($telegram, $chat_id)) { exec('python src/broadcast_switch.py --stop'); }
+            break;
         case $GLOBALS['buttons']['ru'][0]: // With Greeting
             $db->updateUserLanguage($chat_id, 'ru');
             $db->handleLanguage($telegram, $chat_id);
