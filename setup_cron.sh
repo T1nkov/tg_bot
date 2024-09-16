@@ -1,21 +1,22 @@
 #!/bin/bash
 
-if [ "$#" -ne 1 ]; then
-    echo "Please follow: $0 'see rontab.guru for syntax'"
-    exit 1
-fi
+CRON_JOB="/usr/bin/php /var/www/t.mercadalibre.live/broadcast_driver.php"
 
-NEW_CRON_EXPRESSION=$1
-CRON_JOB="$NEW_CRON_EXPRESSION /usr/bin/php /var/www/t.mercadalibre.live/broadcast_driver.php"
-
-EXISTING_CRON_JOB=$(crontab -l | grep -E "/usr/bin/php /var/www/t.mercadalibre.live/broadcast_driver.php")
-
-if [ -z "$EXISTING_CRON_JOB" ]; then
-    (crontab -l; echo "$CRON_JOB") | crontab -
-    echo "Cron job added!"
-    echo "$CRON_JOB"
-else
-    (crontab -l | grep -v "/usr/bin/php /var/www/t.mercadalibre.live/broadcast_driver.php"; echo "$CRON_JOB") | crontab -
-    echo "Cron job changed!"
-    echo "$CRON_JOB"
-fi
+case "$1" in
+    --start)
+        if crontab -l | grep -q "# $CRON_JOB"; then
+            (crontab -l | sed "s|# $CRON_JOB|$CRON_JOB|") | crontab -
+            echo "Cron job started!"
+        else
+            echo "Cron job is already running or not set."
+        fi
+        ;;
+    --stop)
+        if crontab -l | grep -q "$CRON_JOB"; then
+            (crontab -l | sed "s|$CRON_JOB|# $CRON_JOB|") | crontab -
+            echo "Cron job stopped!"
+        else
+            echo "Cron job is already stopped."
+        fi
+        ;;
+esac
