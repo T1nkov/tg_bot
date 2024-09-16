@@ -12,6 +12,13 @@
 `$ chmod +x ./setup_cron.sh`
 
 `$ ./setup_cron.sh '\*/3 \* \* \* \*'` - visit:```https://crontab.guru/#*/3_*_*_*_*```
+##### After which you will see the output
++ Cron job added! 
+or
++ Cron job changed!
+##### To check crontab ->
++ `$ crontab -l` - get records
++ `$ crontab -e` - edit records manually
 ___
 ```bash 
 #!/bin/bash
