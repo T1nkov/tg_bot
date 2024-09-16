@@ -3,20 +3,24 @@
 trait Broadcast {
     
     private function sendPostwithTypeDetect($telegram, $row, $userID) {
+        $message_sent = false;
         if (!is_null($row['video_id'])) {
             $content = ['chat_id' => $userID, 'video' => $row['video_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendVideo($content);
+            $message_sent = true;
         }
         if (!is_null($row['photo_id'])) {
             $content = ['chat_id' => $userID, 'photo' => $row['photo_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendPhoto($content);
+            $message_sent = true;
         }
         if (!is_null($row['audio_id'])) {
             $content = ['chat_id' => $userID, 'audio' => $row['audio_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendAudio($content);
+            $message_sent = true;
         }
         if (!$message_sent && trim($row['message_text']) !== '') {
             $telegram->sendMessage([
