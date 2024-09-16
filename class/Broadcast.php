@@ -2,6 +2,39 @@
 
 trait Broadcast {
     
+    private function sendPostwithTypeDetect($telegram, $row, $userID) {
+        if (!is_null($row['video_id'])) {
+            $content = ['chat_id' => $userID, 'video' => $row['video_id']];
+            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+            $telegram->sendVideo($content);
+        }
+        if (!is_null($row['photo_id'])) {
+            $content = ['chat_id' => $userID, 'photo' => $row['photo_id']];
+            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+            $telegram->sendPhoto($content);
+        }
+        if (!is_null($row['audio_id'])) {
+            $content = ['chat_id' => $userID, 'audio' => $row['audio_id']];
+            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
+            $telegram->sendAudio($content);
+        }
+        if (!$message_sent && trim($row['message_text']) !== '') {
+            $telegram->sendMessage([
+                'chat_id' => $userID,
+                'text'    => $row['message_text']
+            ]);
+        }
+        return;
+    }
+
+    private function rowOfPost($postId) {
+        $stmt = $this->conn->prepare("SELECT photo_id, video_id, audio_id, message_text FROM broadcast_posts WHERE id = ?");
+        $stmt->bind_param("i", $postId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
     public function initiateBroadcast($telegram, $chat_id) {
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
         $stmt->execute();
@@ -32,38 +65,11 @@ trait Broadcast {
     }
     
     public function handleSendPost($telegram, $postId) {
-        $stmt = $this->conn->prepare("SELECT photo_id, video_id, audio_id, message_text FROM broadcast_posts WHERE id = ?");
-        $stmt->bind_param("i", $postId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $post = $result->fetch_assoc();
+        $post = this->rowOfPost($postId);
         $users = $this->getAllUsers();
         foreach ($users as $userId) {
             try {
-                if (!is_null($row['video_id'])) {
-                    $content = ['chat_id' => $userId, 'video' => $row['video_id']];
-                    if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
-                    $telegram->sendVideo($content);
-                    $message_sent = true;
-                }
-                if (!is_null($row['photo_id'])) {
-                    $content = ['chat_id' => $userId, 'photo' => $row['photo_id']];
-                    if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
-                    $telegram->sendPhoto($content);
-                    $message_sent = true;
-                }
-                if (!is_null($row['audio_id'])) {
-                    $content = ['chat_id' => $userId, 'audio' => $row['audio_id']];
-                    if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
-                    $telegram->sendAudio($content);
-                    $message_sent = true;
-                }
-                if (!$message_sent && trim($row['message_text']) !== '') {
-                    $telegram->sendMessage([
-                        'chat_id' => $userId,
-                        'text'    => $row['message_text']
-                    ]);
-                }
+                this->sendPostwithTypeDetect($telegram, $row, $userID);
             } catch (Exception $e) {
                 continue;
             }
@@ -109,36 +115,8 @@ trait Broadcast {
     }
     
     public function sendPostById($telegram, $chat_id, $postId) {
-        $stmt = $this->conn->prepare("SELECT photo_id, video_id, audio_id, message_text FROM broadcast_posts WHERE id = ?");
-        $stmt->bind_param("i", $postId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        $message_sent = false;
-        if (!is_null($row['video_id'])) {
-            $content = ['chat_id' => $chat_id, 'video' => $row['video_id']];
-            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
-            $telegram->sendVideo($content);
-            $message_sent = true;
-        }
-        if (!is_null($row['photo_id'])) {
-            $content = ['chat_id' => $chat_id, 'photo' => $row['photo_id']];
-            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
-            $telegram->sendPhoto($content);
-            $message_sent = true;
-        }
-        if (!is_null($row['audio_id'])) {
-            $content = ['chat_id' => $chat_id, 'audio' => $row['audio_id']];
-            if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
-            $telegram->sendAudio($content);
-            $message_sent = true;
-        }
-        if (!$message_sent && trim($row['message_text']) !== '') {
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text'    => $row['message_text']
-            ]);
-        }
+        $row = this->rowOfPost($postId);
+        this->sendPostwithTypeDetect($telegram, $row, $chat_id);
     }
 
     public function displayPosts($telegram, $chat_id) {
