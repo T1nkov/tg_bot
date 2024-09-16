@@ -7,19 +7,16 @@ trait Broadcast {
             $content = ['chat_id' => $userID, 'video' => $row['video_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendVideo($content);
-            return;
         }
         if (!is_null($row['photo_id'])) {
             $content = ['chat_id' => $userID, 'photo' => $row['photo_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendPhoto($content);
-            return;
         }
         if (!is_null($row['audio_id'])) {
             $content = ['chat_id' => $userID, 'audio' => $row['audio_id']];
             if ($row['message_text'] !== '') { $content['caption'] = $row['message_text']; }
             $telegram->sendAudio($content);
-            return;
         }
         if (!$message_sent && trim($row['message_text']) !== '') {
             $telegram->sendMessage([
