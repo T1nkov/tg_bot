@@ -329,6 +329,9 @@ trait Broadcast {
         } else {
             $pendingPost = $result->fetch_assoc();
             $this->handleSendPost($telegram, $pendingPost['id']);
+            $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE id = ?");
+            $updateStmt->bind_param("i", $pendingPost['id']);
+            $updateStmt->execute();
             $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE id > ? ORDER BY id LIMIT 1");
             $stmt->bind_param("i", $pendingPost['id']);
             $stmt->execute();
@@ -345,5 +348,6 @@ trait Broadcast {
             }
         }
     }
+    
     
 }
