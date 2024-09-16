@@ -3,7 +3,7 @@
 include 'class/Telegram.php';
 include 'class/DatabaseConnection.php';
 
-include '/src/broadcast_switch.php';
+include 'src/broadcast_switch.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
