@@ -39,7 +39,7 @@ trait Broadcast {
         if ($result->num_rows === 0) {
             $telegram->sendMessage([
                 'chat_id' => $chat_id,
-                'text'    => "Пост не найден."
+                'text'    => "Пост не найден." . $postId
             ]);
             return;
         }
