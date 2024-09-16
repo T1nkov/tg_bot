@@ -1,26 +1,3 @@
-
-# tg_bot
----
-#### bot settings
-```bash
-    $ mv config/config.php.example config/config.php
-    $ nano config/config.php # enter credentials 
-```
-
-#### bot broadcast setup:
-*Please run:*
-`$ chmod +x ./setup_cron.sh`
-
-`$ ./setup_cron.sh '\*/3 \* \* \* \*'` - visit:```https://crontab.guru/#*/3_*_*_*_*```
-##### After which you will see the output
-+ Cron job added! 
-or
-+ Cron job changed!
-##### To check crontab ->
-+ `$ crontab -l` - get records
-+ `$ crontab -e` - edit records manually
-___
-```bash 
 #!/bin/bash
 
 if [ "$#" -ne 1 ]; then
@@ -42,5 +19,3 @@ else
     echo "Cron job changed!"
     echo "$CRON_JOB"
 fi
-
-```

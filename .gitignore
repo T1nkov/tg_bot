@@ -2,3 +2,5 @@ config.php
 .DS_Store
 .vscode
 logs
+broadcast
+config

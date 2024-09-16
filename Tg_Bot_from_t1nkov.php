@@ -6,7 +6,7 @@ include 'class/DatabaseConnection.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$config_file = require __DIR__ . '/config.php';
+$config_file = require __DIR__ . '/config/config.php';
 
 $bot_token = $config_file['bot_token'];
 $telegram = new Telegram($bot_token);
@@ -40,55 +40,64 @@ $callback_data = $update['callback_query']['data'] ?? null;
 $message_id = $update['callback_query']['message']['message_id'] ?? null;
 $GLOBALS['username1'] = $data['message']['from']['username'] ?? null;
 
-function isTextMatchingButtons($command) {
-    return in_array($command, array_merge(...array_values($GLOBALS['buttons'])));
-}
-
 $db = new DatabaseConnection($config_file);
 
-$telegram->sendMessage([
-    'chat_id' => $chat_id,
-    'text'    => 'Callback data: ' . $callback_data,
-]);
+// $telegram->sendMessage([
+//     'chat_id' => $chat_id,
+//     'text'    => 'Callback data: ' . $callback_data,
+// ]);
+// Ignore to avoid spam
 
 $commands = [
-    'withdraw'       => 'handleWithdrawCommand',
-    'rep_ru'         => 'handleReportCommand',
-    'fraud'          => 'handleFraudCommand',
-    'spam'           => 'handleSpamCommand',
-    'violence'       => 'handleViolenceCommand',
-    'copyright'      => 'handleCopyrightCommand',
-    'other'          => 'handleOtherCommand',
-    'invite_friend'  => 'handlePartnerCommand',
-    'join_channel'   => 'handleJoinChannelCommand',
-    'skip'           => 'handleJoinChannelCommand',
-    'view_post'      => 'handleViewPost',
-    'check'          => 'handleSubscribeCommand',
-    'checkSub'       => 'handleBalanceCommand',
-    'no'             => 'handleCanceledCommand',
-	'add_channel'    => 'promptAddChannel',
-    'remove_channel' => 'promptRemoveChannel',
-    'cancel_remove'  => 'displayChannels',
-    'next'           => 'handleJoinChannelCommand'
+    'withdraw'            => 'handleWithdrawCommand',
+    'rep_ru'              => 'handleReportCommand',
+    'fraud'               => 'handleFraudCommand',
+    'spam'                => 'handleSpamCommand',
+    'violence'            => 'handleViolenceCommand',
+    'copyright'           => 'handleCopyrightCommand',
+    'other'               => 'handleOtherCommand',
+    'invite_friend'       => 'handlePartnerCommand',
+    'join_channel'        => 'handleJoinChannelCommand',
+    'skip'                => 'handleJoinChannelCommand',
+    'view_post'           => 'handleViewPost',
+    'check'               => 'handleSubscribeCommand',
+    'checkSub'            => 'handleBalanceCommand',
+    'no'                  => 'handleCanceledCommand',
+	'add_channel'         => 'promptAddChannel',
+    'remove_channel'      => 'promptRemoveChannel',
+    'remove_post'         => 'promptRemovePost',
+    'cancel_remove'       => 'displayChannels',
+    'cancel_remove_post'  => 'displayPosts',
+    'next'                => 'handleJoinChannelCommand',
+    'init_cast'           => 'initiateBroadcast',
+    'view_cast'           => 'broadcastView',
+    'create_post'         => 'handlePostName'
 ];
 
 if (isset($commands[$callback_data])) {
-    if ($callback_data === 'add_channel') {
-        $catch_url = $telegram->Text();
-        $db->promptAddChannel($telegram, $chat_id);
-        return;
-    }
     $db->{$commands[$callback_data]}($telegram, $chat_id, $message_id, $bot_token ?? null);
-} elseif (isset($callback_data) && preg_match('/^remove_/', $callback_data)) {
-    $urlToRemove = str_replace('remove_', '', $callback_data);
+    return;
+} elseif (isset($callback_data) && preg_match('/^remove_channel_/', $callback_data)) {
+    $urlToRemove = str_replace('remove_channel_', '', $callback_data);
     $db->removeChannelURL($telegram, $chat_id, $urlToRemove);
     $db->displayChannels($telegram, $chat_id);
+} elseif (isset($callback_data) && preg_match('/^remove_post_/', $callback_data)) {
+    $postIdToRemove = str_replace('remove_post_', '', $callback_data);
+    $db->removePostById($telegram, $chat_id, $postIdToRemove);
+    $db->displayPosts($telegram, $chat_id);
+} elseif (isset($callback_data) && preg_match('/^view_post_/', $callback_data)) {
+    $postIdToView = str_replace('view_post_', '', $callback_data);
+    $db->sendPostById($telegram, $chat_id, $postIdToView);
+} elseif (isset($callback_data) && preg_match('/^send_post_/', $callback_data)) {
+    $postIdToSend = str_replace('send_post_', '', $callback_data);
+    $db->handleSendPost($telegram, $postIdToSend);
 }
 
-$telegram->sendMessage([
-	'chat_id' => $chat_id,
-	'text'    => 'Text: ' . $command
-]);
+// $telegram->sendMessage([
+// 	'chat_id' => $chat_id,
+// 	'text'    => 'Text: ' . json_encode($data, JSON_PRETTY_PRINT) // to handle all data
+// ]);
+// Ignore to avoid spam
 
 if ($db->isInputMode($chat_id) === 'input_mode') {
     if (!empty($command)) {
@@ -98,7 +107,24 @@ if ($db->isInputMode($chat_id) === 'input_mode') {
     }
 }
 
-if ($db->isInputMode($chat_id) === 'def') {
+if ($db->isInputMode($chat_id) === 'post_name') {
+    if (!empty($data['message']['text'])) {
+        $postName = $data['message']['text'];
+        $db->uploadNameforPost($telegram, $chat_id, $postName);
+        $db->handleNewPost($telegram, $chat_id); // quickly provide post setting msg
+        return;
+    }
+}
+
+if ($db->isInputMode($chat_id) === 'post_set') {
+    if (!empty($data['message'])) {
+        $db->uploadPostDetails($telegram, $chat_id, $data);
+        $db->setInputMode($chat_id, 'def');
+        return;
+    }
+}
+
+if ($db->isInputMode($chat_id) === 'def' && !empty($data['message']['text'])) {
     switch ($command) {
         case $command !== null && strpos($command, '/start') === 0:
             $db->handleStartCommand($telegram, $chat_id, $update);
@@ -117,15 +143,19 @@ if ($db->isInputMode($chat_id) === 'def') {
         case $command !== null && strpos($command, 'Каналы') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { $db->displayChannels($telegram, $chat_id); }
             break;
-        case isTextMatchingButtons($command):
-            $hhh = null;
-            foreach ($GLOBALS['buttons'] as $key => $values) {
-                if (in_array($command, $values)) {
-                    $hhh = $key;
-                    break;
-                }
-            }
-            if ($hhh !== null) { $db->updateUserLanguage($chat_id, $hhh); }
+        case $command !== null && strpos($command, 'Рассылка') === 0:
+            if ($db->isAdmin($telegram, $chat_id)) { $db->displayPosts($telegram, $chat_id); }
+            break;
+        case $GLOBALS['buttons']['ru'][0]: // With Greeting
+            $db->updateUserLanguage($chat_id, 'ru');
+            $db->handleLanguage($telegram, $chat_id);
+            break;
+        case $GLOBALS['buttons']['en'][0]: // With Greeting
+            $db->updateUserLanguage($chat_id, 'en');
+            $db->handleLanguage($telegram, $chat_id);
+            break;
+        case $GLOBALS['buttons']['kz'][0]: // With Greeting
+            $db->updateUserLanguage($chat_id, 'kz');
             $db->handleLanguage($telegram, $chat_id);
             break;
         case $db->getPhraseText("button_earn", $chat_id):
@@ -150,6 +180,7 @@ if ($db->isInputMode($chat_id) === 'def') {
             $db->handleDownloadCommand($telegram, $chat_id);
             break;
         default:
+            return;
             break;
     }
 }

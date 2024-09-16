@@ -2,11 +2,13 @@
 require_once 'AdminPanel.php';
 require_once 'ViewTgPost.php';
 require_once 'SubscribeLogic.php';
+require_once 'Broadcast.php';
 
 class DatabaseConnection {
 	use AdminPanel;
 	use ViewTgPost;
 	use SubscribeLogic;
+	use Broadcast;
 
 	private $host;
     private $database;
@@ -299,7 +301,7 @@ class DatabaseConnection {
 		$telegram->sendMessage($content);
 	}	
 
-	// Start message after language selection
+	// Start message after language selectiаon
 	public function handleLanguage($telegram, $chat_id) {
 		$message1     = $this->getPhraseText('welcome_message', $chat_id);
 		$message      = str_replace(
@@ -667,7 +669,7 @@ class DatabaseConnection {
 	}
 
 	public function setInputMode($chat_id, $mode) {
-		$sql  = "UPDATE users SET status = ? WHERE id_tg = ?"; // id_tg
+		$sql  = "UPDATE users SET status = ? WHERE id_tg = ?";
 		$stmt = $this->conn->prepare($sql);
 		if ($stmt === false) { return false; }
 		$stmt->bind_param("si", $mode, $chat_id);
