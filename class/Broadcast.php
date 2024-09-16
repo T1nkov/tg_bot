@@ -33,7 +33,6 @@ trait Broadcast {
         }
     }
     
-    
     public function displayPosts($telegram, $chat_id) {
         $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
         $stmt->execute();
@@ -187,6 +186,7 @@ trait Broadcast {
                 'chat_id' => $chat_id,
                 'text' => "Пост с ID $postId удалён"
             ]);
+            $this->reorderPosts();
             $this->displayPosts($telegram, $chat_id);
         } else {
             $telegram->sendMessage([
@@ -196,4 +196,14 @@ trait Broadcast {
         }
     }
     
+    private function reorderPosts() {
+        $stmt = $this->conn->query("SELECT id FROM broadcast_posts ORDER BY id ASC");
+        $counter = 1;
+        while ($row = $stmt->fetch_assoc()) {
+            $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET id = ? WHERE id = ?");
+            $updateStmt->bind_param("ii", $counter, $row['id']);
+            $updateStmt->execute();
+            $counter++;
+        }
+    }
 }
