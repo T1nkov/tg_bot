@@ -36,13 +36,6 @@ trait Broadcast {
         $stmt->bind_param("i", $postId);
         $stmt->execute();
         $result = $stmt->get_result();
-        if ($result->num_rows === 0) {
-            $telegram->sendMessage([
-                'chat_id' => $chat_id,
-                'text'    => "Пост не найден. $postId"
-            ]);
-            return;
-        }
         $row = $result->fetch_assoc();
         $message_sent = false;
         if (!is_null($row['video_id'])) {
