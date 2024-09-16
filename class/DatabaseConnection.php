@@ -124,43 +124,43 @@ class DatabaseConnection {
 	public function generateReferralLink($chat_id) { return "https://t.me/{$GLOBALS['bot_name']}?start=" . urlencode($chat_id); }
 	
 	public function registerUser($telegram, $chat_id, $id_referal, $balance = 0.0, $role = 'user') {
-		$username = $GLOBALS['username1'];
-		if (empty($username)) {
-			$telegram->sendMessage([
-				'chat_id' => $chat_id,
-				'text'    => 'Error: Username cannot be empty',
-			]);
-			return null;
-		}
-		$sql  = "INSERT INTO users (usernameTg, role, id_tg, id_referal, balance, referals, status) VALUES (?, ?, ?, ?, ?, 0, ?)";
-		$stmt = $this->conn->prepare($sql);
-		$telegram->sendMessage([
-			'chat_id' => $chat_id,
-			'text'    => 'New user sql: ' . $sql,
-		]);
-		try {
-			$status = 'def';
-			$stmt->bind_param("ssisds", $username, $role, $chat_id, (string)$id_referal, $balance, $status);
-		} catch (\Exception $e) {
-			$telegram->sendMessage([
-				'chat_id' => $chat_id,
-				'text'    => 'Error with new user bind params: ' . $e->getMessage(),
-			]);
-			return null;
-		}
-		$telegram->sendMessage([
-			'chat_id' => $chat_id,
-			'text'    => 'Before execute',
-		]);
-		if (!$stmt->execute()) {
-			$telegram->sendMessage([
-				'chat_id' => $chat_id,
-				'text'    => 'Error executing user registration: ' . $stmt->error,
-			]);
-			return null;
-		}
-		return $this->conn->insert_id;
-	}
+        $username = $GLOBALS['username1'];
+        if (empty($username)) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => 'Error: Username cannot be empty',
+            ]);
+            return null;
+        }
+        $sql  = "INSERT INTO users (usernameTg, role, id_tg, id_referal, balance, referals, status) VALUES (?, ?, ?, ?, ?, 0, ?)";
+        $stmt = $this->conn->prepare($sql);
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => 'New user sql: ' . $sql,
+        ]);
+        try {
+            $status = 'def';
+            $stmt->bind_param("ssisds", $username, $role, $chat_id, $id_referal, $balance, $status);
+        } catch (\Exception $e) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => 'Error with new user bind params: ' . $e->getMessage(),
+            ]);
+            return null;
+        }
+        $telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text'    => 'Before execute',
+        ]);
+        if (!$stmt->execute()) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => 'Error executing user registration: ' . $stmt->error,
+            ]);
+            return null;
+        }
+        return $this->conn->insert_id;
+    }
 
 	// If there is already such a user
 	public function userExists($id_tg) {
