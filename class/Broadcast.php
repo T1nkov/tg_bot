@@ -73,7 +73,7 @@ trait Broadcast {
         foreach ($users as $userId) {
             try {
                 $this->sendPostwithTypeDetect($telegram, $post, $userId);
-                usleep(100000); // small timeout
+                usleep(50000); // small timeout
             } catch (Exception $e) {
                 continue;
             }
