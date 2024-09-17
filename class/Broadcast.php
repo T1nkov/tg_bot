@@ -124,13 +124,14 @@ trait Broadcast {
     }
 
     public function displayPosts($telegram, $chat_id) {
-        $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
+        $stmt = $this->conn->prepare("SELECT id, post_name, switch FROM broadcast_posts");
         $stmt->execute();
         $result = $stmt->get_result();
         $message = "Ваши посты:\n";
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                $message .= $row['id'] . " - " . $row['post_name'] . "\n";
+                $switch = ($row['switch'] === 'enabled') ? '✅' : '❌';
+                $message .= $row['id'] . $switch . " - " . $row['post_name'] . " \n"
             }
         } else {
             $message .= "Нет доступных постов : /";
