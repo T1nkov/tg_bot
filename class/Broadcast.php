@@ -412,6 +412,10 @@ trait Broadcast {
                     $result = $stmt->get_result();
                     if ($result->num_rows > 0) {
                         $nextPost = $result->fetch_assoc();
+                        $this->handleSendPost($telegram, $nextPost['id']);
+                        $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE id = ?");
+                        $updateStmt->bind_param("i", $pendingPost['id']);
+                        $updateStmt->execute();
                         $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = 'pending' WHERE id = ?");
                         $updateStmt->bind_param("i", $nextPost['id']);
                         $updateStmt->execute();
@@ -424,6 +428,7 @@ trait Broadcast {
             }
         }
     }
+    
     
     public function startBC($telegram, $chat_id) {
         $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE status = 'halted'");
