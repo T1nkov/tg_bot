@@ -380,27 +380,50 @@ trait Broadcast {
             }
         } else {
             $pendingPost = $result->fetch_assoc();
-            $this->handleSendPost($telegram, $pendingPost['id']);
-            $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE id = ?");
-            $updateStmt->bind_param("i", $pendingPost['id']);
-            $updateStmt->execute();
-            $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE id > ? AND switch = 'enabled' ORDER BY id LIMIT 1");
+            $stmt = $this->conn->prepare("SELECT switch FROM broadcast_posts WHERE id = ?");
             $stmt->bind_param("i", $pendingPost['id']);
             $stmt->execute();
-            $result = $stmt->get_result();
-            if ($result->num_rows > 0) {
-                $nextPost = $result->fetch_assoc();
-                $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = 'pending' WHERE id = ?");
-                $updateStmt->bind_param("i", $nextPost['id']);
-                $updateStmt->execute();
-            } else {
-                $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE id = ?");
-                $updateStmt->bind_param("i", $pendingPost['id']);
-                $updateStmt->execute();
+            $checkResult = $stmt->get_result();
+            if ($checkResult->num_rows > 0) {
+                $checkRow = $checkResult->fetch_assoc();
+                if ($checkRow['switch'] === 'enabled') {
+                    $this->handleSendPost($telegram, $pendingPost['id']);
+                    $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE id = ?");
+                    $updateStmt->bind_param("i", $pendingPost['id']);
+                    $updateStmt->execute();
+                    $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE id > ? AND switch = 'enabled' ORDER BY id LIMIT 1");
+                    $stmt->bind_param("i", $pendingPost['id']);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    if ($result->num_rows > 0) {
+                        $nextPost = $result->fetch_assoc();
+                        $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = 'pending' WHERE id = ?");
+                        $updateStmt->bind_param("i", $nextPost['id']);
+                        $updateStmt->execute();
+                    } else {
+                        $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE id = ?");
+                        $updateStmt->bind_param("i", $pendingPost['id']);
+                        $updateStmt->execute();
+                    }
+                } else {
+                    $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE id > ? AND switch = 'enabled' ORDER BY id LIMIT 1");
+                    $stmt->bind_param("i", $pendingPost['id']);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    if ($result->num_rows > 0) {
+                        $nextPost = $result->fetch_assoc();
+                        $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = 'pending' WHERE id = ?");
+                        $updateStmt->bind_param("i", $nextPost['id']);
+                        $updateStmt->execute();
+                    } else {
+                        $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE id = ?");
+                        $updateStmt->bind_param("i", $pendingPost['id']);
+                        $updateStmt->execute();
+                    }
+                }
             }
         }
     }
-    
     
     public function startBC($telegram, $chat_id) {
         $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE status = 'halted'");
