@@ -303,6 +303,10 @@ trait Broadcast {
     }
 
     public function broadcastToAllByCron($telegram) {
+        $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE status != 'halted'");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 0) { return; } // nothing to do, skip for now
         $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE status = 'pending'");
         $stmt->execute();
         $result = $stmt->get_result();
@@ -354,10 +358,15 @@ trait Broadcast {
     }
     
     public function startBC($telegram, $chat_id) {
+        $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE status = 'halted'");
+        $updateStmt->execute();
         $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Рассылка начата.']);
     }
     
+    
     public function stopBC($telegram, $chat_id) {
+        $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = 'halted'");
+        $updateStmt->execute();
         $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Рассылка остановлена.']);
     }
 }
