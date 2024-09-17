@@ -305,14 +305,14 @@ trait Broadcast {
     }
 
     public function switchStatusPostById($telegram, $postId) {
-        $stmt = $this->conn->prepare("SELECT status FROM broadcast_posts WHERE id = ?");
+        $stmt = $this->conn->prepare("SELECT switch FROM broadcast_posts WHERE id = ?");
         $stmt->bind_param("i", $postId);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
-        $currentStatus = $row['status'];
+        $currentStatus = $row['switch'];
         $newStatus = ($currentStatus === 'enabled') ? 'disabled' : 'enabled';
-        $stmt = $this->conn->prepare("UPDATE broadcast_posts SET status = ? WHERE id = ?");
+        $stmt = $this->conn->prepare("UPDATE broadcast_posts SET switch = ? WHERE id = ?");
         $stmt->bind_param("si", $newStatus, $postId);
         $stmt->execute();
     }
