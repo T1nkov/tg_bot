@@ -315,7 +315,6 @@ trait Broadcast {
         $stmt = $this->conn->prepare("UPDATE broadcast_posts SET status = ? WHERE id = ?");
         $stmt->bind_param("si", $newStatus, $postId);
         $stmt->execute();
-        $this->displayPosts($telegram, $chat_id);
     }
 
     public function removePostById($telegram, $chat_id, $postId) {

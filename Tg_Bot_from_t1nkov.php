@@ -96,7 +96,8 @@ if (isset($commands[$callback_data])) {
     $db->handleSendPost($telegram, $postIdToSend);
 } elseif (isset($callback_data) && preg_match('/^switch_post_/', $callback_data)) {
     $postIdToChange = str_replace('switch_post_', '', $callback_data);
-    $db->promptSwitchStatusPost($telegram, $postIdToChange);
+    $db->switchStatusPostById($telegram, $postIdToChange);
+    $db->displayPosts($telegram, $chat_id);
 }
 
 // $telegram->sendMessage([
