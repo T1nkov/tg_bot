@@ -131,7 +131,7 @@ trait Broadcast {
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $switch = ($row['switch'] === 'enabled') ? '✅' : '❌';
-                $message .= $row['id'] . $switch . " - " . $row['post_name'] . " \n"
+                $message .= $row['id'] . " - " . $switch . " " . $row['post_name'] . " \n";
             }
         } else {
             $message .= "Нет доступных постов : /";
