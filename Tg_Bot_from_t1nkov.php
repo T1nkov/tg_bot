@@ -3,7 +3,7 @@
 include 'class/Telegram.php';
 include 'class/DatabaseConnection.php';
 
-include 'src/broadcast_switch.php';
+include __DIR__ . '/src/broadcast_switch.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -148,10 +148,10 @@ if ($db->isInputMode($chat_id) === 'def' && !empty($data['message']['text'])) {
         case $command !== null && strpos($command, 'Рассылка') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { $db->displayPosts($telegram, $chat_id); }
             break;
-        case $command !== null && strpos($command, '/resume') === 0:
+        case $command !== null && strpos($command, 'Возобновить рассылку') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { startBC(); }
             break;
-        case $command !== null && strpos($command, '/brake') === 0:
+        case $command !== null && strpos($command, 'Остановить рассылку') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { stopBC(); }
             break;
         case $GLOBALS['buttons']['ru'][0]: // With Greeting
