@@ -386,20 +386,28 @@ trait Broadcast {
     }
     
     public function startBC($telegram, $chat_id) {
-        $cronJobs = $this->getCrontab();
-        $newJobs = array_map(function($job) {
-            return ltrim($job, '#');
-        }, $cronJobs);
-        $this->updateCrontab($newJobs);
-        $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Рассылка начата.']);
+        try {
+            $cronJobs = $this->getCrontab();
+            $newJobs = array_map(function($job) {
+                return ltrim($job, '#');
+            }, $cronJobs);
+            $this->updateCrontab($newJobs);
+            $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Рассылка начата.']);
+        } catch (Exception $e) {
+            $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'resume_bc: ' . $e->getMessage()]);
+        }
     }
     
     public function stopBC($telegram, $chat_id) {
-        $cronJobs = $this->getCrontab();
-        $newJobs = array_map(function($job) {
-            return (strpos($job, '#') === false) ? '#' . $job : $job;
-        }, $cronJobs);
-        $this->updateCrontab($newJobs);
-        $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Рассылка остановлена.']);
+        try {
+            $cronJobs = $this->getCrontab();
+            $newJobs = array_map(function($job) {
+                return (strpos($job, '#') === false) ? '#' . $job : $job;
+            }, $cronJobs);
+            $this->updateCrontab($newJobs);
+            $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Рассылка остановлена.']);
+        } catch (Exception $e) {
+            $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'brake_bc: ' . $e->getMessage()]);
+        }
     }
 }
