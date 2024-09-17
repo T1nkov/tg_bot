@@ -58,7 +58,7 @@ trait Broadcast {
         }
         $keyboard['inline_keyboard'][] = [[
             'text' => 'Отмена',
-            'callback_data' => 'cancel_broadcast'
+            'callback_data' => 'cancel_post_job'
         ]];    
         $telegram->sendMessage([
             'chat_id' => $chat_id,
@@ -109,7 +109,7 @@ trait Broadcast {
         }
         $keyboard['inline_keyboard'][] = [[
             'text' => 'Отмена',
-            'callback_data' => 'cancel_broadcast'
+            'callback_data' => 'cancel_post_job'
         ]];    
         $telegram->sendMessage([
             'chat_id' => $chat_id,
@@ -264,11 +264,40 @@ trait Broadcast {
         }
         $keyboard['inline_keyboard'][] = [[
             'text' => 'Отмена', 
-            'callback_data' => 'cancel_remove_post'
+            'callback_data' => 'cancel_post_job'
         ]];
         $telegram->sendMessage([
             'chat_id'      => $chat_id,
             'text'         => "Выберите пост для удаления:",
+            'reply_markup' => json_encode($keyboard)
+        ]);
+    }
+
+    public function promptSwitchStatusPost($telegram, $chat_id) {
+        $stmt = $this->conn->prepare("SELECT id, post_name FROM broadcast_posts");
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows === 0) {
+            $telegram->sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => "Сначала добавьте посты!"
+            ]);
+            return;
+        }
+        $keyboard = ['inline_keyboard' => []];
+        while ($row = $result->fetch_assoc()) {
+            $keyboard['inline_keyboard'][] = [[
+                'text' => $row['post_name'], 
+                'callback_data' => 'switch_post_' . $row['id']
+            ]];
+        }
+        $keyboard['inline_keyboard'][] = [[
+            'text' => 'Отмена', 
+            'callback_data' => 'cancel_post_job'
+        ]];
+        $telegram->sendMessage([
+            'chat_id'      => $chat_id,
+            'text'         => "Выберите пост для изменения его состояния:",
             'reply_markup' => json_encode($keyboard)
         ]);
     }
