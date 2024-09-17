@@ -140,11 +140,11 @@ trait Broadcast {
                 [['text' => 'Начать Рассылку', 'callback_data' => 'init_cast']],
                 [['text' => 'Посмотреть пост', 'callback_data' => 'view_cast']],
                 [['text' => 'Создать пост', 'callback_data' => 'create_post']],
-                [['text' => 'Удалить пост', 'callback_data' => 'remove_post']]
-            ],
-            [
-                [['text' => 'Возобновить Рассылку', 'callback_data' => 'resume_bc']],
-                [['text' => 'Остановить Рассылку', 'callback_data' => 'brake_bc']],
+                [['text' => 'Удалить пост', 'callback_data' => 'remove_post']],
+                [
+                    ['text' => 'Возобновить Рассылку', 'callback_data' => 'resume_bc'],
+                    ['text' => 'Остановить Рассылку', 'callback_data' => 'brake_bc']
+                ]
             ]
         ];
         $content = [
