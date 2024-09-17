@@ -68,6 +68,7 @@ $commands = [
     'remove_post'         => 'promptRemovePost',
     'cancel_remove'       => 'displayChannels',
     'cancel_remove_post'  => 'displayPosts',
+    'cancel_broadcast'    => 'displayPosts',
     'next'                => 'handleJoinChannelCommand',
     'init_cast'           => 'initiateBroadcast',
     'view_cast'           => 'broadcastView',
