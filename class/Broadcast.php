@@ -350,18 +350,18 @@ trait Broadcast {
         $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE status != 'halted'");
         $stmt->execute();
         $result = $stmt->get_result();
-        if ($result->num_rows === 0) { return; } // nothing to do, skip for now
+        if ($result->num_rows === 0) { return; }
         $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE status = 'pending'");
         $stmt->execute();
         $result = $stmt->get_result();
         if ($result->num_rows === 0) {
-            $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts ORDER BY id LIMIT 1");
+            $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE switch = 'enabled' ORDER BY id LIMIT 1");
             $stmt->execute();
             $result = $stmt->get_result();
             if ($result->num_rows > 0) {
                 $firstPost = $result->fetch_assoc();
                 $this->handleSendPost($telegram, $firstPost['id']);
-                $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE id > ? ORDER BY id LIMIT 1");
+                $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE id > ? AND switch = 'enabled' ORDER BY id LIMIT 1");
                 $stmt->bind_param("i", $firstPost['id']);
                 $stmt->execute();
                 $result = $stmt->get_result();
@@ -384,7 +384,7 @@ trait Broadcast {
             $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE id = ?");
             $updateStmt->bind_param("i", $pendingPost['id']);
             $updateStmt->execute();
-            $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE id > ? ORDER BY id LIMIT 1");
+            $stmt = $this->conn->prepare("SELECT id FROM broadcast_posts WHERE id > ? AND switch = 'enabled' ORDER BY id LIMIT 1");
             $stmt->bind_param("i", $pendingPost['id']);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -400,6 +400,7 @@ trait Broadcast {
             }
         }
     }
+    
     
     public function startBC($telegram, $chat_id) {
         $updateStmt = $this->conn->prepare("UPDATE broadcast_posts SET status = '' WHERE status = 'halted'");
