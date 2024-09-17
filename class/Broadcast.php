@@ -140,6 +140,7 @@ trait Broadcast {
             'inline_keyboard' => [
                 [['text' => 'Начать Рассылку', 'callback_data' => 'init_cast']],
                 [['text' => 'Посмотреть пост', 'callback_data' => 'view_cast']],
+                [['text' => 'Изменить статус поста', 'callback_data' => 'sw_post_st']],
                 [['text' => 'Создать пост', 'callback_data' => 'create_post']],
                 [['text' => 'Удалить пост', 'callback_data' => 'remove_post']],
                 [
@@ -301,6 +302,20 @@ trait Broadcast {
             'text'         => "Выберите пост для изменения его состояния:",
             'reply_markup' => json_encode($keyboard)
         ]);
+    }
+
+    public function switchStatusPostById($telegram, $postId) {
+        $stmt = $this->conn->prepare("SELECT status FROM broadcast_posts WHERE id = ?");
+        $stmt->bind_param("i", $postId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $currentStatus = $row['status'];
+        $newStatus = ($currentStatus === 'enabled') ? 'disabled' : 'enabled';
+        $stmt = $this->conn->prepare("UPDATE broadcast_posts SET status = ? WHERE id = ?");
+        $stmt->bind_param("si", $newStatus, $postId);
+        $stmt->execute();
+        $this->displayPosts($telegram, $chat_id);
     }
 
     public function removePostById($telegram, $chat_id, $postId) {

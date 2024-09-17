@@ -67,13 +67,14 @@ $commands = [
     'remove_channel'      => 'promptRemoveChannel',
     'remove_post'         => 'promptRemovePost',
     'cancel_remove'       => 'displayChannels',
-    'cancel_post_job'  => 'displayPosts',
+    'cancel_post_job'     => 'displayPosts',
     'next'                => 'handleJoinChannelCommand',
     'init_cast'           => 'initiateBroadcast',
     'view_cast'           => 'broadcastView',
     'create_post'         => 'handlePostName',
     'resume_bc'           => 'startBC',
-    'brake_bc'            => 'stopBC'
+    'brake_bc'            => 'stopBC',
+    'sw_post_st'          => 'promptSwitchStatusPost'
 ];
 
 if (isset($commands[$callback_data])) {
@@ -93,6 +94,9 @@ if (isset($commands[$callback_data])) {
 } elseif (isset($callback_data) && preg_match('/^send_post_/', $callback_data)) {
     $postIdToSend = str_replace('send_post_', '', $callback_data);
     $db->handleSendPost($telegram, $postIdToSend);
+} elseif (isset($callback_data) && preg_match('/^switch_post_/', $callback_data)) {
+    $postIdToChange = str_replace('switch_post_', '', $callback_data);
+    $db->switchStatusPostById($telegram, $postIdToChange);
 }
 
 // $telegram->sendMessage([
