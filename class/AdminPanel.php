@@ -27,10 +27,6 @@ trait AdminPanel {
 				'Рассылка',
 				'Каналы', // add to DB
 				'Выход' // send same command /exit
-            ],
-            [
-                'Возобновить рассылку',
-                'Остановить рассылку'
             ]
 		];
 		$telegram->sendMessage([
