@@ -3,8 +3,6 @@
 include 'class/Telegram.php';
 include 'class/DatabaseConnection.php';
 
-include __DIR__ . '/src/broadcast_switch.php';
-
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -73,7 +71,9 @@ $commands = [
     'next'                => 'handleJoinChannelCommand',
     'init_cast'           => 'initiateBroadcast',
     'view_cast'           => 'broadcastView',
-    'create_post'         => 'handlePostName'
+    'create_post'         => 'handlePostName',
+    'resume_bc'           => 'startBC',
+    'brake_bc'            => 'stopBC'
 ];
 
 if (isset($commands[$callback_data])) {
@@ -147,12 +147,6 @@ if ($db->isInputMode($chat_id) === 'def' && !empty($data['message']['text'])) {
             break;
         case $command !== null && strpos($command, 'Рассылка') === 0:
             if ($db->isAdmin($telegram, $chat_id)) { $db->displayPosts($telegram, $chat_id); }
-            break;
-        case $command !== null && strpos($command, 'Возобновить рассылку') === 0:
-            if ($db->isAdmin($telegram, $chat_id)) { startBC(); }
-            break;
-        case $command !== null && strpos($command, 'Остановить рассылку') === 0:
-            if ($db->isAdmin($telegram, $chat_id)) { stopBC(); }
             break;
         case $GLOBALS['buttons']['ru'][0]: // With Greeting
             $db->updateUserLanguage($chat_id, 'ru');

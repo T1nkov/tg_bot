@@ -141,6 +141,10 @@ trait Broadcast {
                 [['text' => 'Посмотреть пост', 'callback_data' => 'view_cast']],
                 [['text' => 'Создать пост', 'callback_data' => 'create_post']],
                 [['text' => 'Удалить пост', 'callback_data' => 'remove_post']]
+            ],
+            [
+                [['text' => 'Возобновить Рассылку', 'callback_data' => 'resume_bc']],
+                [['text' => 'Остановить Рассылку', 'callback_data' => 'brake_bc']],
             ]
         ];
         $content = [
@@ -349,5 +353,53 @@ trait Broadcast {
         }
     }
     
+    private function getCrontab() {
+        exec('crontab -l 2>&1', $output, $return_var);
+        if ($return_var !== 0) {
+            echo "Cannot read crontab: " . implode("\n", $output);
+            exit(1);
+        }
+        return $output;
+    }
     
+    private function updateCrontab($cronJobs) {
+        $newCron = implode("\n", $cronJobs);
+        if (!empty($newCron) && substr($newCron, -1) !== "\n") {
+            $newCron .= "\n";
+        }
+        $process = proc_open('crontab', [
+            ['pipe', 'r'],
+            ['pipe', 'w'],
+            ['pipe', 'w'],
+        ], $pipes);
+    
+        if (is_resource($process)) {
+            fwrite($pipes[0], $newCron);
+            fclose($pipes[0]);
+            stream_get_contents($pipes[1]);
+            fclose($pipes[1]);
+            stream_get_contents($pipes[2]);
+            fclose($pipes[2]);
+            proc_close($process);
+        }
+        echo "Crontab changed.\n";
+    }
+    
+    public function startBC($telegram, $chat_id) {
+        $cronJobs = $this->getCrontab();
+        $newJobs = array_map(function($job) {
+            return ltrim($job, '#');
+        }, $cronJobs);
+        $this->updateCrontab($newJobs);
+        $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Рассылка начата.']);
+    }
+    
+    public function stopBC($telegram, $chat_id) {
+        $cronJobs = $this->getCrontab();
+        $newJobs = array_map(function($job) {
+            return (strpos($job, '#') === false) ? '#' . $job : $job;
+        }, $cronJobs);
+        $this->updateCrontab($newJobs);
+        $telegram->sendMessage(['chat_id' => $chat_id, 'text' => 'Рассылка остановлена.']);
+    }
 }
